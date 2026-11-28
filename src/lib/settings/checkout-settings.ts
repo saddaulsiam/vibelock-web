@@ -1,8 +1,8 @@
 import "server-only";
 
-import { z } from "zod";
-import { getStoreSetting, updateStoreSetting, STORE_SETTING_KEYS } from "./store-settings-service";
 import { env } from "@/lib/config/env";
+import { z } from "zod";
+import { getStoreSetting, STORE_SETTING_KEYS, updateStoreSetting } from "./store-settings-service";
 
 export const CheckoutSettingsSchema = z.object({
   minOrderValue: z.coerce.number().min(0, "Minimum order value cannot be negative").default(0),

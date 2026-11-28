@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
 
 interface HeaderShellProps {
   children: React.ReactNode;
@@ -54,9 +54,7 @@ export function HeaderShell({ children, announcement }: HeaderShellProps) {
       )}
     >
       {announcement && <div className="pointer-events-auto w-full">{announcement}</div>}
-      <div className="w-full px-2.5 pt-2 sm:px-6 sm:pt-2.5 lg:px-8">
-        {children}
-      </div>
+      <div className="w-full px-2.5 pt-2 sm:px-6 sm:pt-2.5 lg:px-8">{children}</div>
     </header>
   );
 }

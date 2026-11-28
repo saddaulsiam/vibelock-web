@@ -1,12 +1,12 @@
 "use client";
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Zap } from "lucide-react";
-import { toast } from "sonner";
-import { addVariantToCartAction } from "@/lib/cart/actions";
-import { trackMetaPixelEvent } from "@/lib/analytics/meta-pixel";
 import { Button } from "@/components/ui/button";
+import { trackMetaPixelEvent } from "@/lib/analytics/meta-pixel";
+import { addVariantToCartAction } from "@/lib/cart/actions";
+import { Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { toast } from "sonner";
 
 interface BuyNowButtonProps {
   variantId: string | null;

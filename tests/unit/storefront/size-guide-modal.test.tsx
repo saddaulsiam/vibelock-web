@@ -1,14 +1,13 @@
-import { describe, it, expect } from "vitest";
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import {
-  SizeGuideModal,
-  BOTTOMS_SIZES_IN,
-  BOTTOMS_SIZES_CM,
-  TOPS_SIZES_IN,
-  TOPS_FIT_GUIDE,
   BOTTOMS_FIT_GUIDE,
+  BOTTOMS_SIZES_CM,
+  BOTTOMS_SIZES_IN,
+  SizeGuideModal,
+  TOPS_FIT_GUIDE,
+  TOPS_SIZES_IN,
 } from "@/components/storefront/product/size-guide-modal";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 describe("SizeGuideModal Component & Data", () => {
   it("includes complete 28 to 40 scale in bottoms measurements", () => {
@@ -16,7 +15,19 @@ describe("SizeGuideModal Component & Data", () => {
     const bottomSizesCm = BOTTOMS_SIZES_CM.map((s) => s.size);
 
     const expectedRange = [
-      "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+      "28",
+      "29",
+      "30",
+      "31",
+      "32",
+      "33",
+      "34",
+      "35",
+      "36",
+      "37",
+      "38",
+      "39",
+      "40",
     ];
 
     expect(bottomSizesIn).toEqual(expectedRange);

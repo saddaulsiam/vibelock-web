@@ -1,6 +1,6 @@
+import { LoyaltySettingsForm } from "@/components/admin/settings/loyalty-settings-form";
 import { requireRole } from "@/lib/auth/authorization";
 import { getLoyaltySettings } from "@/lib/settings/loyalty-settings";
-import { LoyaltySettingsForm } from "@/components/admin/settings/loyalty-settings-form";
 
 export const dynamic = "force-dynamic";
 

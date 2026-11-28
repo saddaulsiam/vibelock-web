@@ -1,11 +1,10 @@
-import Link from "next/link";
-import { requireRole } from "@/lib/auth/authorization";
-import { AdminPageHeader } from "@/components/admin/shared";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
-import { getAdminPayments, getAdminPaymentStats } from "@/lib/admin/payments";
 import { AdminPaymentsTable } from "@/components/admin/payments";
+import { AdminKpiCard, AdminKpiGrid, AdminPageHeader } from "@/components/admin/shared";
+import { getAdminPayments, getAdminPaymentStats } from "@/lib/admin/payments";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
+import { requireRole } from "@/lib/auth/authorization";
 import { CheckCircle2, Clock, DollarSign, Settings, XCircle } from "lucide-react";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 

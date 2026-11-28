@@ -1,12 +1,12 @@
 "use client";
 
-import * as React from "react";
-import { Minus, Plus, X } from "lucide-react";
-import type { InventoryTransactionType } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { quickAdjustInventoryAction } from "@/lib/admin/inventory/inventory-actions";
 import type { AdminInventoryDetailResult } from "@/lib/admin/inventory/inventory-queries";
+import type { InventoryTransactionType } from "@prisma/client";
+import { Minus, Plus, X } from "lucide-react";
+import * as React from "react";
 import { COMMON_REASONS } from "./admin-inventory-adjust-modal";
 
 export interface AdminInventoryDetailAdjustModalProps {

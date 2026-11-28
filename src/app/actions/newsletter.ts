@@ -1,7 +1,7 @@
 "use server";
 
-import prisma from "@/lib/prisma/client";
 import { sendNewsletterWelcomeEmail } from "@/lib/email/client";
+import prisma from "@/lib/prisma/client";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { z } from "zod";
 

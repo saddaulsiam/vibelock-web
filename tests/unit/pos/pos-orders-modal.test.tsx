@@ -1,5 +1,5 @@
-import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -35,8 +35,8 @@ vi.mock("@/lib/pos/pos-order-history-actions", () => ({
   }),
 }));
 
-import { PosOrdersModal } from "@/components/pos/pos-orders-modal";
 import { PosHeader } from "@/components/pos/pos-header";
+import { PosOrdersModal } from "@/components/pos/pos-orders-modal";
 
 describe("POS Orders History & Reprint", () => {
   describe("PosOrdersModal Component", () => {

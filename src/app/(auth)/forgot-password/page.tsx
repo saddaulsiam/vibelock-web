@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { forgotPasswordAction } from "@/app/actions/account-security";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Mail, ArrowRight, RefreshCw, AlertCircle, ChevronLeft, CheckCircle2 } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, ChevronLeft, Mail, RefreshCw } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

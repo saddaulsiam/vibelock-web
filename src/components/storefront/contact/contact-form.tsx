@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Send, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select-native";
+import { Textarea } from "@/components/ui/textarea";
+import { CheckCircle2, Send } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);

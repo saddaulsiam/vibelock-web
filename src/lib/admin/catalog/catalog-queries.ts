@@ -1,9 +1,9 @@
 import "server-only";
 
-import { BannerPlacement, ProductStatus } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import { getEffectiveLowStockThreshold } from "@/lib/settings/inventory-return-settings";
+import { BannerPlacement, ProductStatus } from "@prisma/client";
 
 export type AdminProductsQueryOptions = {
   search?: string;
@@ -217,7 +217,8 @@ export async function getAdminProducts(
     draft: allMappedProducts.filter((p) => p.status === "DRAFT").length,
     archived: allMappedProducts.filter((p) => p.status === "ARCHIVED").length,
     inStock: allMappedProducts.filter((p) => p.totalStock > 0).length,
-    lowStock: allMappedProducts.filter((p) => p.totalStock > 0 && p.totalStock <= lowStockThreshold).length,
+    lowStock: allMappedProducts.filter((p) => p.totalStock > 0 && p.totalStock <= lowStockThreshold)
+      .length,
     outOfStock: allMappedProducts.filter((p) => p.totalStock <= 0).length,
   };
 
@@ -363,8 +364,8 @@ export async function getAdminProductFormData(id?: string) {
             stock: String(variant.inventoryTransactions.reduce((acc, t) => acc + t.quantity, 0)),
             hasHistory: Boolean(
               variant._count.inventoryTransactions > 0 ||
-                variant._count.inventoryReservations > 0 ||
-                variant._count.cartItems > 0
+              variant._count.inventoryReservations > 0 ||
+              variant._count.cartItems > 0
             ),
           })),
           images: product.images,

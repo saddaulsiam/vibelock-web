@@ -1,6 +1,6 @@
-import { SITE_URL } from "./site";
-import { getDisplayPhoneNumber, getWhatsAppNumber } from "@/lib/config/contact";
 import type { ProductDetail } from "@/lib/catalog/types";
+import { getDisplayPhoneNumber, getWhatsAppNumber } from "@/lib/config/contact";
+import { SITE_URL } from "./site";
 
 /**
  * Safely serializes JSON-LD object to string, escaping '<' to prevent script injection.
@@ -80,15 +80,7 @@ export function getLocalBusinessJsonLd() {
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
-        dayOfWeek: [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday",
-        ],
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
         opens: "10:00",
         closes: "22:00",
       },
@@ -189,9 +181,7 @@ export function getProductJsonLd(
   reviewSummary?: { totalReviews: number; averageRating: number }
 ) {
   const canonicalUrl = `${SITE_URL}/product/${product.slug}`;
-  const images = (product.images || [])
-    .map((img) => toAbsoluteUrl(img.url))
-    .filter(Boolean);
+  const images = (product.images || []).map((img) => toAbsoluteUrl(img.url)).filter(Boolean);
 
   // Fallback to primaryImage if images array is empty
   if (images.length === 0 && product.primaryImage?.url) {

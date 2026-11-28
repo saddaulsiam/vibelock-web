@@ -1,14 +1,14 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { ProductCard } from "@/components/storefront/catalog/product-card";
 import { InfiniteScroll } from "@/components/shared/infinite-scroll";
+import { ProductCard } from "@/components/storefront/catalog/product-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { loadMoreProductsAction } from "@/lib/catalog/actions";
 import type { ProductSummary } from "@/lib/catalog/types";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import * as React from "react";
 
 export interface ProductInfiniteGridProps {
   initialProducts: ProductSummary[];

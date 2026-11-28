@@ -1,9 +1,9 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { BannerForm } from "@/components/admin/banners";
 import { Card, CardContent } from "@/components/ui/card";
-import prisma from "@/lib/prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
+import prisma from "@/lib/prisma/client";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 async function getBannerCategories() {
   for (let attempt = 1; attempt <= 2; attempt++) {

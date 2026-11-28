@@ -1,5 +1,5 @@
 import * as React from "react";
-import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("@/lib/config/env", () => ({
   env: {
@@ -13,10 +13,10 @@ vi.mock("@/lib/config/env", () => ({
   },
 }));
 
-import { renderToStaticMarkup } from "react-dom/server";
-import { SteadfastCourierProvider } from "@/lib/shipping/providers/steadfast";
 import { OrderCustomerRiskCard } from "@/components/admin/orders";
 import type { CombinedCustomerRiskProfile } from "@/lib/admin/customers";
+import { SteadfastCourierProvider } from "@/lib/shipping/providers/steadfast";
+import { renderToStaticMarkup } from "react-dom/server";
 
 describe("Steadfast Courier Fraud Check & Risk Intelligence", () => {
   const originalFetch = global.fetch;

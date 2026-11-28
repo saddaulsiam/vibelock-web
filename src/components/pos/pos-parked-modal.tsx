@@ -1,16 +1,16 @@
 "use client";
 
-import { PauseCircle, Play, Trash2, Clock, Phone, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import type { PosParkedCart } from "@/lib/pos/pos-parked-types";
+import { AlertCircle, Clock, PauseCircle, Phone, Play, Trash2 } from "lucide-react";
 
 interface PosParkedModalProps {
   isOpen: boolean;

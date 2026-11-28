@@ -3,8 +3,8 @@
 import { requireRole } from "@/lib/auth/authorization";
 import {
   CheckoutSettingsSchema,
-  updateCheckoutSettings,
   getCheckoutSettings,
+  updateCheckoutSettings,
 } from "@/lib/settings/checkout-settings";
 import { revalidatePath } from "next/cache";
 
@@ -22,8 +22,12 @@ export async function updateCheckoutSettingsAction(
   const { settings: current } = await getCheckoutSettings();
 
   const raw = {
-    minOrderValue: formData.has("minOrderValue") ? formData.get("minOrderValue") : current.minOrderValue,
-    maxCodOrderValue: formData.has("maxCodOrderValue") ? formData.get("maxCodOrderValue") : current.maxCodOrderValue,
+    minOrderValue: formData.has("minOrderValue")
+      ? formData.get("minOrderValue")
+      : current.minOrderValue,
+    maxCodOrderValue: formData.has("maxCodOrderValue")
+      ? formData.get("maxCodOrderValue")
+      : current.maxCodOrderValue,
     onlineReservationTtlMinutes: formData.has("onlineReservationTtlMinutes")
       ? formData.get("onlineReservationTtlMinutes")
       : current.onlineReservationTtlMinutes,
@@ -66,6 +70,7 @@ export async function updateCheckoutSettingsAction(
 
   return {
     error: null,
-    message: "Checkout policies, COD fraud ceilings, and inventory reservation TTL updated successfully.",
+    message:
+      "Checkout policies, COD fraud ceilings, and inventory reservation TTL updated successfully.",
   };
 }

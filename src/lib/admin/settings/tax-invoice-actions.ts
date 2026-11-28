@@ -2,9 +2,9 @@
 
 import { requireRole } from "@/lib/auth/authorization";
 import {
+  getTaxInvoiceSettings,
   TaxInvoiceSettingsSchema,
   updateTaxInvoiceSettings,
-  getTaxInvoiceSettings,
 } from "@/lib/settings/tax-invoice-settings";
 import { revalidatePath } from "next/cache";
 
@@ -23,16 +23,24 @@ export async function updateTaxInvoiceSettingsAction(
 
   const raw = {
     enableTax: formData.has("enableTax") ? formData.get("enableTax") === "true" : current.enableTax,
-    vatRatePercent: formData.has("vatRatePercent") ? formData.get("vatRatePercent") : current.vatRatePercent,
+    vatRatePercent: formData.has("vatRatePercent")
+      ? formData.get("vatRatePercent")
+      : current.vatRatePercent,
     taxCalculationMode: formData.has("taxCalculationMode")
       ? formData.get("taxCalculationMode")?.toString()?.trim() || "INCLUSIVE"
       : current.taxCalculationMode,
     applyTaxToShipping: formData.has("applyTaxToShipping")
       ? formData.get("applyTaxToShipping") === "true"
       : current.applyTaxToShipping,
-    binNumber: formData.has("binNumber") ? formData.get("binNumber")?.toString()?.trim() || "" : current.binNumber,
-    taxCircle: formData.has("taxCircle") ? formData.get("taxCircle")?.toString()?.trim() || "" : current.taxCircle,
-    taxZone: formData.has("taxZone") ? formData.get("taxZone")?.toString()?.trim() || "" : current.taxZone,
+    binNumber: formData.has("binNumber")
+      ? formData.get("binNumber")?.toString()?.trim() || ""
+      : current.binNumber,
+    taxCircle: formData.has("taxCircle")
+      ? formData.get("taxCircle")?.toString()?.trim() || ""
+      : current.taxCircle,
+    taxZone: formData.has("taxZone")
+      ? formData.get("taxZone")?.toString()?.trim() || ""
+      : current.taxZone,
     registeredBusinessName: formData.has("registeredBusinessName")
       ? formData.get("registeredBusinessName")?.toString()?.trim() || "VibeLock Apparel Ltd."
       : current.registeredBusinessName,
@@ -85,6 +93,7 @@ export async function updateTaxInvoiceSettingsAction(
 
   return {
     error: null,
-    message: "VAT calculation rules, NBR BIN information, and Mushak 6.3 invoice settings updated successfully.",
+    message:
+      "VAT calculation rules, NBR BIN information, and Mushak 6.3 invoice settings updated successfully.",
   };
 }

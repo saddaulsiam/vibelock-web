@@ -1,8 +1,8 @@
+import { auth } from "@/auth";
+import { logSecurityAlert } from "@/lib/monitoring/security-logger";
+import { processAbandonedReminders } from "@/lib/orders/abandoned-recovery";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { auth } from "@/auth";
-import { processAbandonedReminders } from "@/lib/orders/abandoned-recovery";
-import { logSecurityAlert } from "@/lib/monitoring/security-logger";
 
 function verifyCronSecret(req: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
@@ -73,8 +73,7 @@ async function parseParams(req: NextRequest) {
   const rawOlderThan = body.olderThanMinutes ?? searchParams.get("olderThanMinutes");
   const rawCheckoutOlderThan =
     body.checkoutOlderThanMinutes ?? searchParams.get("checkoutOlderThanMinutes");
-  const rawCartOlderThan =
-    body.cartOlderThanMinutes ?? searchParams.get("cartOlderThanMinutes");
+  const rawCartOlderThan = body.cartOlderThanMinutes ?? searchParams.get("cartOlderThanMinutes");
   const rawBatchSize =
     body.maxBatchSize ??
     body.batchSize ??
@@ -122,9 +121,7 @@ async function parseParams(req: NextRequest) {
         ? cartOlderThanMinutes
         : undefined,
     maxBatchSize:
-      typeof maxBatchSize === "number" && !isNaN(maxBatchSize)
-        ? maxBatchSize
-        : undefined,
+      typeof maxBatchSize === "number" && !isNaN(maxBatchSize) ? maxBatchSize : undefined,
     dryRun,
     ignoreQuietHours,
   };

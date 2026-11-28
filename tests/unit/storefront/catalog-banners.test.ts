@@ -1,6 +1,6 @@
-import { describe, expect, test, vi, beforeEach } from "vitest";
 import { getCategoryPromoBanner, getSearchPromoBanner } from "@/lib/catalog/banners";
 import prisma from "@/lib/prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("@/lib/prisma/client", () => ({
   default: {

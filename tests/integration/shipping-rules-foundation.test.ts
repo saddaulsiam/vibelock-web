@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 interface MockSession {
   user?: {
@@ -75,16 +75,16 @@ vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
 }));
 
+import AdminSettingsLayout from "../../src/app/(protected)/admin/settings/layout";
+import AdminShippingRulesPage from "../../src/app/(protected)/admin/settings/shipping/page";
+import { updateShippingRulesAction } from "../../src/lib/admin/settings/shipping-rules-actions";
 import {
+  calculateEffectiveShippingFee,
+  getDefaultShippingRulesSettings,
   getShippingRulesSettings,
   updateShippingRulesSettings,
-  getDefaultShippingRulesSettings,
-  calculateEffectiveShippingFee,
   type ShippingRulesSettings,
 } from "../../src/lib/settings/shipping-rules-settings";
-import { updateShippingRulesAction } from "../../src/lib/admin/settings/shipping-rules-actions";
-import AdminShippingRulesPage from "../../src/app/(protected)/admin/settings/shipping/page";
-import AdminSettingsLayout from "../../src/app/(protected)/admin/settings/layout";
 
 describe("Phase 3: VibeLock Logistics, Shipping Rules & Free Delivery Engine", () => {
   beforeEach(() => {
@@ -186,7 +186,11 @@ describe("Phase 3: VibeLock Logistics, Shipping Rules & Free Delivery Engine", (
       mockPrisma.storeSetting.findUnique.mockResolvedValue({
         id: "setting-shipping-1",
         key: "SHIPPING_DELIVERY_RULES",
-        value: { ...getDefaultShippingRulesSettings(), freeShippingThreshold: 2500, freeShippingScope: "NATIONWIDE" },
+        value: {
+          ...getDefaultShippingRulesSettings(),
+          freeShippingThreshold: 2500,
+          freeShippingScope: "NATIONWIDE",
+        },
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -368,7 +372,9 @@ describe("Phase 3: VibeLock Logistics, Shipping Rules & Free Delivery Engine", (
 
       const res = await updateShippingRulesAction({ error: null }, formData);
       expect(res.error).toBeNull();
-      expect(res.message).toContain("Free shipping rules, courier dispatch hub, and delivery SLA promises updated");
+      expect(res.message).toContain(
+        "Free shipping rules, courier dispatch hub, and delivery SLA promises updated"
+      );
     });
   });
 });

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
-import * as Sentry from "@sentry/nextjs";
-import { Button } from "@/components/ui/button";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
+import { Button } from "@/components/ui/button";
+import * as Sentry from "@sentry/nextjs";
+import Link from "next/link";
+import { useEffect } from "react";
 
 export default function Error({
   error,

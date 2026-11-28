@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
-import { ChevronLeft, ChevronRight, Globe, ImagePlus, Star, Trash2, Upload } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ChevronLeft, ChevronRight, Globe, ImagePlus, Star, Trash2, Upload } from "lucide-react";
+import Image from "next/image";
+import * as React from "react";
+import { toast } from "sonner";
 
 export type ProductImageItem = {
   id: string;

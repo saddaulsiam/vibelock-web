@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
 import { CategoryForm } from "@/components/admin/categories";
 import { getAdminCategoryFormData } from "@/lib/admin/catalog";
+import { notFound } from "next/navigation";
 
 export default async function EditAdminCategoryPage({
   params,

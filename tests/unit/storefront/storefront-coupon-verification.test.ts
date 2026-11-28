@@ -1,12 +1,12 @@
-import { describe, expect, test } from "vitest";
-import { Prisma } from "@prisma/client";
 import {
   calculateCouponDiscount,
   getEligibleSubtotal,
   validateCouponRules,
-  type CouponData,
   type CartItemCategoryInfo,
+  type CouponData,
 } from "@/lib/checkout/coupons";
+import { Prisma } from "@prisma/client";
+import { describe, expect, test } from "vitest";
 
 describe("Storefront Coupon Application & End-to-End Verification", () => {
   // Test Categories

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
 import { authConfig } from "@/auth";
 import prisma from "@/lib/prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const { mockCompare } = vi.hoisted(() => ({
   mockCompare: vi.fn(),

@@ -4,9 +4,9 @@ import {
   ADMIN_TABLE_CLASSES,
   AdminTableColumnVisibility,
   AdminTableFilterSelect,
-  InfiniteScroll,
   AdminTableSearchInput,
   AdminTableTabs,
+  InfiniteScroll,
   useAdminTableColumns,
   type AdminTableTabItem,
 } from "@/components/admin/shared";

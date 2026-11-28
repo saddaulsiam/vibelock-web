@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { StarRating } from "./star-rating";
-import { submitReviewAction } from "@/lib/reviews/actions";
-import type { UserReviewEligibility } from "@/lib/reviews/types";
-import { CheckCircle2, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { submitReviewAction } from "@/lib/reviews/actions";
+import type { UserReviewEligibility } from "@/lib/reviews/types";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { StarRating } from "./star-rating";
 
 interface ProductReviewModalProps {
   productId: string;

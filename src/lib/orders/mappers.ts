@@ -1,14 +1,14 @@
+import { extractCardMetadata } from "@/lib/payment/format";
 import {
   Order,
   OrderItem,
   Payment,
   Refund,
-  ReturnRequest,
   ReturnItem,
+  ReturnRequest,
   Shipment,
 } from "@prisma/client";
-import { OrderSummary, OrderDetail, OrderItemSummary } from "./types";
-import { extractCardMetadata } from "@/lib/payment/format";
+import { OrderDetail, OrderItemSummary, OrderSummary } from "./types";
 
 type PrismaOrderWithItems = Order & {
   items: OrderItem[];
@@ -78,11 +78,7 @@ export function mapOrderDetail(
 
   const hasUnresolvedOnlinePayment =
     order.paymentMethod === "ONLINE" &&
-    Boolean(
-      order.payments?.some(
-        (p) => p.status === "INITIATED" || p.status === "PENDING"
-      )
-    );
+    Boolean(order.payments?.some((p) => p.status === "INITIATED" || p.status === "PENDING"));
 
   const canCancelOrder =
     order.status === "PENDING" &&

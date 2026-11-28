@@ -1,5 +1,5 @@
-import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma/client";
+import { Prisma } from "@prisma/client";
 
 export const DEFAULT_EXPIRATION_BATCH_SIZE = 50;
 export const MAX_EXPIRATION_BATCH_SIZE = 100;
@@ -81,8 +81,7 @@ export async function expireOrder(
 
     // FINANCIAL & FULFILLMENT IMMUNITY: Never expire or cancel successfully paid orders
     const isPaid =
-      order.paymentStatus === "SUCCESS" ||
-      order.payments?.some((p) => p.status === "SUCCESS");
+      order.paymentStatus === "SUCCESS" || order.payments?.some((p) => p.status === "SUCCESS");
 
     if (isPaid) {
       return {
@@ -232,7 +231,10 @@ export async function cleanupExpiredOrders(options?: CleanupOptions): Promise<Cl
     MAX_EXPIRATION_BATCH_SIZE
   );
 
-  const olderThanMinutes = Math.max(1, options?.olderThanMinutes ?? DEFAULT_ABANDONED_TIMEOUT_MINUTES);
+  const olderThanMinutes = Math.max(
+    1,
+    options?.olderThanMinutes ?? DEFAULT_ABANDONED_TIMEOUT_MINUTES
+  );
   const now = new Date();
   const cutoffTime = options?.cutoffTime ?? new Date(now.getTime() - olderThanMinutes * 60 * 1000);
 

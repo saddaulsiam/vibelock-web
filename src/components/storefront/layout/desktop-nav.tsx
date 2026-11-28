@@ -1,12 +1,12 @@
 "use client";
 
+import type { CategorySummary } from "@/lib/catalog/types";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { CategoriesDrawer } from "./categories-drawer";
 import { CategoryMegaMenu } from "./category-mega-menu";
 import { getCategoryMegaMenuData } from "./mega-menu-data";
-import type { CategorySummary } from "@/lib/catalog/types";
 
 interface DesktopNavProps {
   categories?: CategorySummary[];

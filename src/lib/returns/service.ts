@@ -87,7 +87,8 @@ export class ReturnService {
 
     let defaultGrade: "RESELLABLE" | "DAMAGED" = "RESELLABLE";
     try {
-      const { getInventoryReturnSettings } = await import("@/lib/settings/inventory-return-settings");
+      const { getInventoryReturnSettings } =
+        await import("@/lib/settings/inventory-return-settings");
       const { settings } = await getInventoryReturnSettings();
       defaultGrade = settings.autoRestockCompletedReturns ? "RESELLABLE" : "DAMAGED";
     } catch {

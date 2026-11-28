@@ -6,6 +6,7 @@ import {
   useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -14,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import {
   deleteProductAction,
   loadMoreAdminProductsAction,

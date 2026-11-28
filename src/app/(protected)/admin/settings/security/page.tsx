@@ -1,6 +1,6 @@
+import { SecurityPixelForm } from "@/components/admin/settings/security-pixel-form";
 import { requireRole } from "@/lib/auth/authorization";
 import { getSecurityPixelSettings } from "@/lib/settings/security-pixel-settings";
-import { SecurityPixelForm } from "@/components/admin/settings/security-pixel-form";
 
 export const dynamic = "force-dynamic";
 

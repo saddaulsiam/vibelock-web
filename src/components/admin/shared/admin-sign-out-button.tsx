@@ -1,8 +1,8 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
-import { LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Loader2, LogOut } from "lucide-react";
+import { useFormStatus } from "react-dom";
 
 export function AdminSignOutButton() {
   const { pending } = useFormStatus();

@@ -1,7 +1,7 @@
 import "server-only";
 
-import { BannerPlacement, Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma/client";
+import { BannerPlacement, Prisma } from "@prisma/client";
 
 const publicBannerSelect = {
   id: true,

@@ -1,16 +1,16 @@
+import { Container } from "@/components/shared/container";
+import { Section } from "@/components/shared/section";
+import { MetaInitiateCheckout } from "@/components/storefront/analytics/meta-initiate-checkout";
+import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
+import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { getCart } from "@/lib/cart/queries";
+import { getCheckoutSettings } from "@/lib/settings/checkout-settings";
+import { getStorefrontLoyaltyInfo } from "@/lib/settings/loyalty-settings";
+import { getStorefrontPaymentMethods } from "@/lib/settings/payment-settings";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/get-current-user";
-import { getCart } from "@/lib/cart/queries";
-import { getStorefrontPaymentMethods } from "@/lib/settings/payment-settings";
-import { getCheckoutSettings } from "@/lib/settings/checkout-settings";
-import { getStorefrontLoyaltyInfo } from "@/lib/settings/loyalty-settings";
-import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
-import { MetaInitiateCheckout } from "@/components/storefront/analytics/meta-initiate-checkout";
-import { Container } from "@/components/shared/container";
-import { Section } from "@/components/shared/section";
 
 export const metadata: Metadata = {
   title: "Checkout",
@@ -71,8 +71,9 @@ export default async function CheckoutPage() {
             <p className="text-sm font-semibold">Minimum Order Value Not Met</p>
             <p className="mt-1 text-xs">
               Store policy requires a minimum order subtotal of ৳
-              {checkoutPolicies.minOrderValue.toLocaleString("en-BD")}. Your current cart subtotal is ৳
-              {cart.subtotal.toLocaleString("en-BD")}. Please add more items to your cart before placing an order.
+              {checkoutPolicies.minOrderValue.toLocaleString("en-BD")}. Your current cart subtotal
+              is ৳{cart.subtotal.toLocaleString("en-BD")}. Please add more items to your cart before
+              placing an order.
             </p>
           </div>
         )}

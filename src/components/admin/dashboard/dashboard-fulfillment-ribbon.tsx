@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ArrowRight, CheckCircle2, Clock, PackageCheck, Truck, XCircle } from "lucide-react";
+import Link from "next/link";
 
 interface StatusCount {
   status: string;

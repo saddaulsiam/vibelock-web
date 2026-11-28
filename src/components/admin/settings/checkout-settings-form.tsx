@@ -1,15 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { useFormStatus } from "react-dom";
-import {
-  updateCheckoutSettingsAction,
-  type CheckoutSettingsActionState,
-} from "@/lib/admin/settings/checkout-settings-actions";
-import type { CheckoutSettings } from "@/lib/settings/checkout-settings";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -18,6 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import {
+  updateCheckoutSettingsAction,
+  type CheckoutSettingsActionState,
+} from "@/lib/admin/settings/checkout-settings-actions";
+import type { CheckoutSettings } from "@/lib/settings/checkout-settings";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -27,6 +25,8 @@ import {
   ShieldAlert,
   ShoppingBag,
 } from "lucide-react";
+import { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 const initialState: CheckoutSettingsActionState = { error: null };
 
@@ -78,7 +78,10 @@ function SectionAlert({ error, message }: { error?: string | null; message?: str
 
 export function CheckoutSettingsForm({ initialSettings }: { initialSettings: CheckoutSettings }) {
   const [codState, codAction] = useActionState(updateCheckoutSettingsAction, initialState);
-  const [orderLimitsState, orderLimitsAction] = useActionState(updateCheckoutSettingsAction, initialState);
+  const [orderLimitsState, orderLimitsAction] = useActionState(
+    updateCheckoutSettingsAction,
+    initialState
+  );
   const [ttlState, ttlAction] = useActionState(updateCheckoutSettingsAction, initialState);
 
   // Local state for switches

@@ -1,13 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
 import {
   togglePaymentMethodAction,
   type PaymentSettingActionState,
 } from "@/lib/admin/payments/payment-settings-actions";
-import { AlertTriangle, Check, Loader2, Power } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AlertTriangle, Check, Loader2, Power } from "lucide-react";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 
 const initialState: PaymentSettingActionState = { error: null };
 
@@ -21,7 +21,7 @@ function ToggleSwitch({ isEnabled, code }: { isEnabled: boolean; code: string })
         disabled={pending}
         aria-label={`${isEnabled ? "Disable" : "Enable"} ${code} payment channel`}
         className={cn(
-          "group relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500 focus-visible:ring-offset-2",
+          "group focus-visible:ring-vl-cyan-500 relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
           isEnabled
             ? "bg-emerald-600 hover:bg-emerald-500"
             : "bg-neutral-300 hover:bg-neutral-400 dark:bg-neutral-700",
@@ -31,7 +31,7 @@ function ToggleSwitch({ isEnabled, code }: { isEnabled: boolean; code: string })
         <span
           aria-hidden="true"
           className={cn(
-            "pointer-events-none inline-flex size-5 items-center justify-center transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out",
+            "pointer-events-none inline-flex size-5 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out",
             isEnabled ? "translate-x-5 text-emerald-600" : "translate-x-0 text-neutral-400"
           )}
         >
@@ -47,7 +47,7 @@ function ToggleSwitch({ isEnabled, code }: { isEnabled: boolean; code: string })
 
       <span
         className={cn(
-          "select-none text-xs font-bold tracking-wider uppercase transition-colors",
+          "text-xs font-bold tracking-wider uppercase transition-colors select-none",
           isEnabled ? "text-emerald-700" : "text-neutral-500",
           pending && "opacity-60"
         )}
@@ -90,16 +90,13 @@ export function TogglePaymentMethodForm({
       <ToggleSwitch isEnabled={isEnabled} code={code} />
 
       {state.error ? (
-        <span role="alert" className="text-xs font-semibold text-rose-600 animate-in fade-in">
+        <span role="alert" className="animate-in fade-in text-xs font-semibold text-rose-600">
           {state.error}
         </span>
       ) : null}
 
       {state.message ? (
-        <span
-          role="status"
-          className="text-xs font-semibold text-emerald-700 animate-in fade-in"
-        >
+        <span role="status" className="animate-in fade-in text-xs font-semibold text-emerald-700">
           {state.message}
         </span>
       ) : null}

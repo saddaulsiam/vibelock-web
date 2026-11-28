@@ -1,5 +1,5 @@
-import { getHumanGatewayName } from "@/lib/payment/format";
 import { getDisplayPhoneNumber } from "@/lib/config/contact";
+import { getHumanGatewayName } from "@/lib/payment/format";
 
 export interface PrintableOrderItem {
   id?: string;

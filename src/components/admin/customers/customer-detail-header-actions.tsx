@@ -2,9 +2,9 @@
 
 import { CustomerEditModal } from "@/components/admin/customers/customer-edit-modal";
 import { CustomerSmartCrmActions } from "@/components/admin/customers/customer-smart-crm-actions";
+import { Button } from "@/components/ui/button";
 import { Edit3, Mail, Phone } from "lucide-react";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
 
 interface CustomerDetailHeaderActionsProps {
   customer: {

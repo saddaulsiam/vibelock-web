@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("@/lib/config/env", () => ({
   env: {
@@ -85,9 +85,9 @@ describe("Admin Action: recordManualReturnRefundAction", () => {
     formData.append("refundId", "22222222-2222-4222-a222-222222222222");
     formData.append("transactionReference", "BKASH-TRX-12345");
 
-    await expect(
-      recordManualReturnRefundAction({ error: null }, formData)
-    ).rejects.toThrow("Unauthorized access.");
+    await expect(recordManualReturnRefundAction({ error: null }, formData)).rejects.toThrow(
+      "Unauthorized access."
+    );
   });
 
   test("rejects invalid transaction references (< 3 characters)", async () => {

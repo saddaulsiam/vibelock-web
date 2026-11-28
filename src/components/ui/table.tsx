@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import { cva, type VariantProps } from "class-variance-authority";
+import * as React from "react";
 
 const tableVariants = cva("w-full border-collapse text-left", {
   variants: {
@@ -167,13 +167,13 @@ function TableCaption({ className, ...props }: React.ComponentProps<"caption">) 
 
 export {
   Table,
-  TableHeader,
   TableBody,
+  TableCaption,
+  TableCell,
+  tableContainerVariants,
   TableFooter,
   TableHead,
+  TableHeader,
   TableRow,
-  TableCell,
-  TableCaption,
   tableVariants,
-  tableContainerVariants,
 };

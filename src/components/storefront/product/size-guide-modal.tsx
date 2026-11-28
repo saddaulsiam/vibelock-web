@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Ruler, Sparkles, Check, User, Table as TableIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +7,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Check, Ruler, Sparkles, Table as TableIcon, User } from "lucide-react";
+import { useMemo, useState } from "react";
 
 export type CategoryTab = "tops" | "bottoms" | "panjabi";
 export type Unit = "in" | "cm";

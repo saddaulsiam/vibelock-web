@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, test, expect, beforeEach, vi, afterEach } from "vitest";
 import { NextRequest } from "next/server";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock env
 vi.mock("@/lib/config/env", () => ({
@@ -27,6 +27,7 @@ const { mockPrisma } = vi.hoisted(() => {
   const mock: any = {
     payment: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(async () => null),
       updateMany: vi.fn(),
     },
     order: {
@@ -78,11 +79,11 @@ vi.mock("@/lib/inventory/service", () => ({
   },
 }));
 
-import { PaymentService } from "@/lib/payment/service";
 import {
   GET as bkashCallbackGet,
   POST as bkashCallbackPost,
 } from "@/app/api/payments/bkash/callback/route";
+import { PaymentService } from "@/lib/payment/service";
 
 describe("Phase 2B — bKash Callback & PaymentService Verification", () => {
   let paymentService: PaymentService;

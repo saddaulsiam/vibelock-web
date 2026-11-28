@@ -1,9 +1,9 @@
-import "server-only";
 import prisma from "@/lib/prisma/client";
-import { mapProductSummary, mapProductDetail, mapCategory } from "./mappers";
-import { ProductSummary, ProductDetail, CategorySummary } from "./types";
-import { unstable_cache } from "next/cache";
 import { InventoryTransactionType, ProductStatus } from "@prisma/client";
+import { unstable_cache } from "next/cache";
+import "server-only";
+import { mapCategory, mapProductDetail, mapProductSummary } from "./mappers";
+import { CategorySummary, ProductDetail, ProductSummary } from "./types";
 
 class EmptyPublishedProductsError extends Error {}
 class EmptyCategoriesError extends Error {}
@@ -63,7 +63,8 @@ export const getPublishedProducts = async (options?: {
 
       let mapped = products.map(mapProductSummary);
       try {
-        const { getInventoryReturnSettings } = await import("@/lib/settings/inventory-return-settings");
+        const { getInventoryReturnSettings } =
+          await import("@/lib/settings/inventory-return-settings");
         const { settings } = await getInventoryReturnSettings();
         if (settings.autoHideOutOfStock) {
           mapped = mapped.filter((p) => p.available);
@@ -303,7 +304,8 @@ export const getFeaturedProducts = async (options?: {
 
       let mapped = products.map(mapProductSummary);
       try {
-        const { getInventoryReturnSettings } = await import("@/lib/settings/inventory-return-settings");
+        const { getInventoryReturnSettings } =
+          await import("@/lib/settings/inventory-return-settings");
         const { settings } = await getInventoryReturnSettings();
         if (settings.autoHideOutOfStock) {
           mapped = mapped.filter((p) => p.available);
@@ -374,7 +376,8 @@ export const getRelatedProducts = async (options: {
 
       let mapped = products.map(mapProductSummary);
       try {
-        const { getInventoryReturnSettings } = await import("@/lib/settings/inventory-return-settings");
+        const { getInventoryReturnSettings } =
+          await import("@/lib/settings/inventory-return-settings");
         const { settings } = await getInventoryReturnSettings();
         if (settings.autoHideOutOfStock) {
           mapped = mapped.filter((p) => p.available);

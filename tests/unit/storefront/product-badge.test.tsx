@@ -1,10 +1,9 @@
-import { describe, expect, it } from "vitest";
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { ProductBadge } from "@/components/storefront/catalog/product-badge";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
 import { NewArrivals } from "@/components/storefront/home/new-arrivals";
 import { ProductStatus } from "@prisma/client";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 describe("Option A (Elevated): Streetwear Brutalist ProductBadge with Distinct Colors", () => {
   it("renders Option A brutalist architectural box structure", () => {
@@ -69,7 +68,9 @@ describe("Option A (Elevated): Streetwear Brutalist ProductBadge with Distinct C
       minPrice: 800,
       maxPrice: 1000,
       hasDiscount: true,
-      categories: [{ id: "c1", name: "T-Shirts", slug: "t-shirts", description: null, imageUrl: null }],
+      categories: [
+        { id: "c1", name: "T-Shirts", slug: "t-shirts", description: null, imageUrl: null },
+      ],
       available: true,
     };
 
@@ -121,7 +122,9 @@ describe("Option A (Elevated): Streetwear Brutalist ProductBadge with Distinct C
       minPrice: 1200,
       maxPrice: 1200,
       hasDiscount: false,
-      categories: [{ id: "c1", name: "T-Shirts", slug: "t-shirts", description: null, imageUrl: null }],
+      categories: [
+        { id: "c1", name: "T-Shirts", slug: "t-shirts", description: null, imageUrl: null },
+      ],
       available: false,
     };
 

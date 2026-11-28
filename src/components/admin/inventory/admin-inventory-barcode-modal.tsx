@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
-import { Tag, X, Minus, Plus, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";
 import type { AdminInventoryItem } from "@/lib/admin/inventory/inventory-queries";
+import { Minus, Plus, Printer, Tag, X } from "lucide-react";
+import * as React from "react";
 
 export function BarcodeSvg({ value, height = 28 }: { value: string; height?: number }) {
   const chars = value.split("");

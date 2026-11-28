@@ -1,8 +1,8 @@
-import { describe, test, expect, vi, beforeEach } from "vitest";
+import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
+import type { CartDTO } from "@/lib/cart/types";
 import React from "react";
 import { renderToString } from "react-dom/server";
-import type { CartDTO } from "@/lib/cart/types";
-import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock Next.js navigation hooks
 vi.mock("next/navigation", () => ({

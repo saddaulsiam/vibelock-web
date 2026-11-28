@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { subscribeNewsletterAction } from "@/app/actions/newsletter";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function Newsletter() {
   const [email, setEmail] = useState("");

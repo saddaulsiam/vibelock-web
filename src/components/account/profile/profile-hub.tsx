@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { MapPin, Plus, Check, Lock, ChevronDown, ChevronUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ProfileForm } from "./profile-form";
-import { NotificationPreferencesCard } from "./notification-preferences-card";
-import { AccountSecurityCard } from "./account-security-card";
-import { AddressList, type Address } from "../addresses/address-list";
-import { AddressForm } from "../addresses/address-form";
 import type { NotificationPreferences } from "@/lib/account/notification-types";
+import { Check, ChevronDown, ChevronUp, Lock, MapPin, Plus, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { AddressForm } from "../addresses/address-form";
+import { AddressList, type Address } from "../addresses/address-list";
+import { AccountSecurityCard } from "./account-security-card";
+import { NotificationPreferencesCard } from "./notification-preferences-card";
+import { ProfileForm } from "./profile-form";
 
 interface ProfileHubProps {
   user: {

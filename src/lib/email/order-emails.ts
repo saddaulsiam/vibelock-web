@@ -1,11 +1,11 @@
 import "server-only";
 
-import { env } from "@/lib/config/env";
 import { appConfig } from "@/lib/config/app";
 import { getDisplayPhoneNumber } from "@/lib/config/contact";
-import { Resend } from "resend";
+import { env } from "@/lib/config/env";
 import { maskEmail } from "@/lib/email/client";
-import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
+import { hashSecurityIdentifier, logSecurityAlert } from "@/lib/monitoring/security-logger";
+import { Resend } from "resend";
 
 let resendClient: Resend | null = null;
 if (env.RESEND_API_KEY) {

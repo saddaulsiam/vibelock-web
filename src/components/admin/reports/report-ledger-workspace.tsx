@@ -1,18 +1,18 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { Boxes, Calendar, CreditCard, ExternalLink, Search, ShoppingBag } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ProductProfitabilityDrilldown } from "@/components/admin/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ProductProfitabilityDrilldown } from "@/components/admin/products";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
   getAdminOrderProfitability,
   ProductProfitabilityResult,
   ReportFilters,
 } from "@/lib/admin/reports/report-queries";
+import { cn } from "@/lib/utils";
+import { Boxes, Calendar, CreditCard, ExternalLink, Search, ShoppingBag } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 
 export type AdminOrderProfitabilityResult = Awaited<ReturnType<typeof getAdminOrderProfitability>>;
 export type AdminOrderProfitabilityOrder = AdminOrderProfitabilityResult["orders"][number];
@@ -135,18 +135,12 @@ export function ReportLedgerWorkspace({
             </p>
           </div>
 
-          <TabsList
-            aria-label="Report ledger views"
-            className="h-auto flex-wrap print:hidden"
-          >
+          <TabsList aria-label="Report ledger views" className="h-auto flex-wrap print:hidden">
             {TABS.map((tab) => {
               const Icon = tab.icon;
 
               return (
-                <TabsTrigger
-                  key={tab.key}
-                  value={tab.key}
-                >
+                <TabsTrigger key={tab.key} value={tab.key}>
                   <Icon className="size-3.5" />
                   <span>{tab.label}</span>
                   <span className="py-0.2 rounded bg-neutral-100 px-1.5 font-mono text-[10px] text-neutral-800">

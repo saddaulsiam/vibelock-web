@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
 import {
-  parseProductSpecifications,
   LIFESTYLE_PRESETS,
+  parseProductSpecifications,
   type ProductSpecifications,
 } from "@/lib/catalog/specifications";
+import { describe, expect, it } from "vitest";
 
 describe("Product Specifications - Lifestyle Catalog Engine", () => {
   it("returns null for null, undefined, empty, or invalid input", () => {

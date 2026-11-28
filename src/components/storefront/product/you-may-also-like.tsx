@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
-import type { ProductSummary } from "@/lib/catalog/types";
 import { Button } from "@/components/ui/button";
+import type { ProductSummary } from "@/lib/catalog/types";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface YouMayAlsoLikeProps {
   products: ProductSummary[];

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Ticket, Copy, Check, Sparkles, ArrowRight, ShieldCheck, Tag } from "lucide-react";
-import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ArrowRight, Check, Copy, ShieldCheck, Sparkles, Tag, Ticket } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export interface CustomerCoupon {
   id: string;

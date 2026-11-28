@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DistrictSelect } from "./district-select";
 import { Textarea } from "@/components/ui/textarea";
 import type { CartDTO, CartItemDTO } from "@/lib/cart/types";
 import {
@@ -30,6 +29,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { DistrictSelect } from "./district-select";
 
 interface CheckoutFormProps {
   cart: CartDTO;
@@ -441,7 +441,11 @@ export function CheckoutForm({
     ? (subtotalAfterCoupon * loyaltyInfo.maxCartDiscountPercentage) / 100
     : 0;
   const potentialLoyaltyDiscount = loyaltyInfo
-    ? Math.min(loyaltyInfo.points * loyaltyInfo.pointRedemptionValue, maxLoyaltyDiscount, subtotalAfterCoupon)
+    ? Math.min(
+        loyaltyInfo.points * loyaltyInfo.pointRedemptionValue,
+        maxLoyaltyDiscount,
+        subtotalAfterCoupon
+      )
     : 0;
   const pointsToRedeem =
     loyaltyInfo && potentialLoyaltyDiscount > 0
@@ -1038,59 +1042,63 @@ export function CheckoutForm({
           </div>
 
           {/* Loyalty Points Redemption Box */}
-          {loyaltyInfo && loyaltyInfo.enabled && loyaltyInfo.enableOnline && loyaltyInfo.points > 0 && (
-            <div className="border-border border-t py-3.5">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="size-3.5 text-vl-cyan-600" aria-hidden="true" />
-                  <span className="text-muted-foreground text-compact font-bold tracking-[0.14em] uppercase">
-                    VibeLock Rewards
-                  </span>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="font-mono text-2xs uppercase tracking-wider border-vl-cyan-500/30 text-vl-cyan-700 bg-vl-cyan-50/50"
-                >
-                  {loyaltyInfo.tier}
-                </Badge>
-              </div>
-
-              {loyaltyInfo.isRedemptionEligible ? (
-                <div className="flex items-center justify-between gap-3 rounded-xs border border-vl-cyan-200 bg-vl-cyan-50/30 p-2.5">
-                  <div className="min-w-0">
-                    <p className="text-vl-black text-xs font-semibold">
-                      {loyaltyInfo.points} Points Available
-                    </p>
-                    <p className="text-muted-foreground text-compact">
-                      Redeem {pointsToRedeem} pts for {formatPrice(potentialLoyaltyDiscount)} off
-                    </p>
+          {loyaltyInfo &&
+            loyaltyInfo.enabled &&
+            loyaltyInfo.enableOnline &&
+            loyaltyInfo.points > 0 && (
+              <div className="border-border border-t py-3.5">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="text-vl-cyan-600 size-3.5" aria-hidden="true" />
+                    <span className="text-muted-foreground text-compact font-bold tracking-[0.14em] uppercase">
+                      VibeLock Rewards
+                    </span>
                   </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={redeemLoyalty ? "secondary" : "brand"}
-                    onClick={() => {
-                      const next = !redeemLoyalty;
-                      setRedeemLoyalty(next);
-                      if (next) {
-                        toast.success(`Applied ${pointsToRedeem} loyalty points!`);
-                      } else {
-                        toast.info("Loyalty points removed.");
-                      }
-                    }}
-                    disabled={isPending}
-                    className="h-8 px-3 text-xs"
+                  <Badge
+                    variant="outline"
+                    className="text-2xs border-vl-cyan-500/30 text-vl-cyan-700 bg-vl-cyan-50/50 font-mono tracking-wider uppercase"
                   >
-                    {redeemLoyalty ? "Remove" : "Redeem"}
-                  </Button>
+                    {loyaltyInfo.tier}
+                  </Badge>
                 </div>
-              ) : (
-                <p className="text-muted-foreground text-2xs">
-                  You have {loyaltyInfo.points} pts. (Min. {loyaltyInfo.minPointsToRedeem} pts needed to redeem).
-                </p>
-              )}
-            </div>
-          )}
+
+                {loyaltyInfo.isRedemptionEligible ? (
+                  <div className="border-vl-cyan-200 bg-vl-cyan-50/30 flex items-center justify-between gap-3 rounded-xs border p-2.5">
+                    <div className="min-w-0">
+                      <p className="text-vl-black text-xs font-semibold">
+                        {loyaltyInfo.points} Points Available
+                      </p>
+                      <p className="text-muted-foreground text-compact">
+                        Redeem {pointsToRedeem} pts for {formatPrice(potentialLoyaltyDiscount)} off
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={redeemLoyalty ? "secondary" : "brand"}
+                      onClick={() => {
+                        const next = !redeemLoyalty;
+                        setRedeemLoyalty(next);
+                        if (next) {
+                          toast.success(`Applied ${pointsToRedeem} loyalty points!`);
+                        } else {
+                          toast.info("Loyalty points removed.");
+                        }
+                      }}
+                      disabled={isPending}
+                      className="h-8 px-3 text-xs"
+                    >
+                      {redeemLoyalty ? "Remove" : "Redeem"}
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-2xs">
+                    You have {loyaltyInfo.points} pts. (Min. {loyaltyInfo.minPointsToRedeem} pts
+                    needed to redeem).
+                  </p>
+                )}
+              </div>
+            )}
 
           {/* Pricing Breakdown */}
           <dl className="border-border space-y-2.5 border-t py-3.5 text-xs">
@@ -1117,10 +1125,10 @@ export function CheckoutForm({
             {effectiveLoyaltyDiscount > 0 && (
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-muted-foreground flex items-center gap-1.5">
-                  <Sparkles className="size-3 text-vl-cyan-600" aria-hidden="true" />
+                  <Sparkles className="text-vl-cyan-600 size-3" aria-hidden="true" />
                   <span>Loyalty Discount ({pointsToRedeem} pts)</span>
                 </dt>
-                <dd className="font-bold text-vl-cyan-600">
+                <dd className="text-vl-cyan-600 font-bold">
                   −{formatPrice(effectiveLoyaltyDiscount)}
                 </dd>
               </div>

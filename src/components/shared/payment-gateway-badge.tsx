@@ -1,8 +1,7 @@
-import * as React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Banknote, CreditCard, Layers, QrCode, Smartphone } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { formatSslcommerzChannel } from "@/lib/payment/format";
+import { cn } from "@/lib/utils";
+import { Banknote, CreditCard, Layers, QrCode, Smartphone } from "lucide-react";
 
 export interface PaymentGatewayBadgeProps {
   gateway?: string | null;

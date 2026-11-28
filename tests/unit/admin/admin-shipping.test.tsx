@@ -1,13 +1,13 @@
-import { describe, expect, test, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-import { ShipmentStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
 import { AdminShipmentsTable } from "@/components/admin/shipping";
 import {
+  getShipmentStatusBadgeInfo,
   isShipmentInTransit,
   isShipmentReturnedOrFailed,
-  getShipmentStatusBadgeInfo,
   type AdminShipmentListItem,
 } from "@/lib/admin/shipping";
+import { PaymentMethod, PaymentStatus, ShipmentStatus } from "@prisma/client";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({

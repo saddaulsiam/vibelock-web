@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { Columns3, RotateCcw, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Columns3, RotateCcw, X } from "lucide-react";
+import * as React from "react";
 
 export interface ColumnOption<T extends string = string> {
   key: T;

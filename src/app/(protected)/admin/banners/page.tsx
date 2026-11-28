@@ -1,10 +1,9 @@
-import Link from "next/link";
-import Image from "next/image";
-import { BannerPlacement } from "@prisma/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getAdminBanners } from "@/lib/admin/banners";
-import { deleteBannerAction, toggleBannerAction } from "@/lib/admin/banners";
+import { deleteBannerAction, getAdminBanners, toggleBannerAction } from "@/lib/admin/banners";
+import { BannerPlacement } from "@prisma/client";
+import Image from "next/image";
+import Link from "next/link";
 
 function placementLabel(value: BannerPlacement) {
   return value === "BOTH"

@@ -59,7 +59,10 @@ export function normalizeName(fullName?: string | null): {
     return { firstName: null, lastName: null };
   }
 
-  const cleaned = fullName.trim().toLowerCase().replace(/[^\p{L}\s]/gu, "");
+  const cleaned = fullName
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\s]/gu, "");
   const parts = cleaned.split(/\s+/).filter(Boolean);
 
   if (parts.length === 0) {
@@ -80,7 +83,10 @@ export function normalizeName(fullName?: string | null): {
  */
 export function normalizeCity(city?: string | null): string | null {
   if (!city || typeof city !== "string") return null;
-  const cleaned = city.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+  const cleaned = city
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
   return cleaned || null;
 }
 

@@ -1,5 +1,5 @@
-import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma/client";
+import { Prisma } from "@prisma/client";
 
 export class ShippingPricingError extends Error {
   constructor(message: string) {

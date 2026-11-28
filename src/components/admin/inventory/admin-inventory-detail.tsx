@@ -1,17 +1,17 @@
 "use client";
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
 import type {
   AdminInventoryDetailResult,
   AdminInventoryItem,
 } from "@/lib/admin/inventory/inventory-queries";
-import { AdminInventoryPoModal } from "./admin-inventory-po-modal";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 import { AdminInventoryBarcodeModal } from "./admin-inventory-barcode-modal";
+import { AdminInventoryDetailAdjustModal } from "./admin-inventory-detail-adjust-modal";
 import { AdminInventoryDetailHeader } from "./admin-inventory-detail-header";
 import { AdminInventoryDetailKpi } from "./admin-inventory-detail-kpi";
 import { AdminInventoryDetailLedger } from "./admin-inventory-detail-ledger";
-import { AdminInventoryDetailAdjustModal } from "./admin-inventory-detail-adjust-modal";
+import { AdminInventoryPoModal } from "./admin-inventory-po-modal";
 
 export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResult }) {
   const router = useRouter();

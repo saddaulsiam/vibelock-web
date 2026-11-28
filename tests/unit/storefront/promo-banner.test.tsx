@@ -1,6 +1,6 @@
-import { describe, expect, test } from "vitest";
 import { PromoBanner, PromoBannerCarousel } from "@/components/storefront/catalog/promo-banner";
 import type { PublicPromoBanner } from "@/lib/catalog/banners";
+import { describe, expect, test } from "vitest";
 
 describe("PromoBanner component", () => {
   const baseBanner: PublicPromoBanner = {

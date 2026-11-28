@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma/client";
-import { Prisma, SalesChannel } from "@prisma/client";
 import { getEffectiveReservationTtlSeconds } from "@/lib/settings/checkout-settings";
+import { Prisma, SalesChannel } from "@prisma/client";
 
 export class InsufficientInventoryError extends Error {
   constructor(message: string) {

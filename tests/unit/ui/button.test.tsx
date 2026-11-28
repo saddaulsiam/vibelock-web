@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { Button, buttonVariants, type ButtonProps } from "@/components/ui/button";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 describe("Unified Global Button Component", () => {
   describe("Variants", () => {
@@ -11,7 +11,7 @@ describe("Unified Global Button Component", () => {
       { name: "outline", expectedClass: "border border-border bg-transparent text-foreground" },
       { name: "ghost", expectedClass: "border-transparent bg-transparent hover:bg-muted" },
       { name: "destructive", expectedClass: "bg-destructive/10 text-destructive" },
-      { name: "link", expectedClass: "text-primary underline-offset-4" },
+      { name: "link", expectedClass: "text-vl-dark underline" },
       { name: "danger", expectedClass: "bg-red-500 text-white" },
     ] as const;
 

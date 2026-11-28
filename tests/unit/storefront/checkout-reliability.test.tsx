@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
-import { checkoutSchema } from "@/lib/checkout/validation";
 import type { CartDTO } from "@/lib/cart/types";
+import { checkoutSchema } from "@/lib/checkout/validation";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({

@@ -1,4 +1,4 @@
-import type { PosReceiptData, PosReceiptItem, PosPaymentMethod } from "./pos-types";
+import type { PosPaymentMethod, PosReceiptData, PosReceiptItem } from "./pos-types";
 
 export interface PosOrderSummaryItem {
   id: string;

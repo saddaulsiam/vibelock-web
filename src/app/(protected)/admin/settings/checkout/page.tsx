@@ -1,6 +1,6 @@
+import { CheckoutSettingsForm } from "@/components/admin/settings/checkout-settings-form";
 import { requireRole } from "@/lib/auth/authorization";
 import { getCheckoutSettings } from "@/lib/settings/checkout-settings";
-import { CheckoutSettingsForm } from "@/components/admin/settings/checkout-settings-form";
 
 export const dynamic = "force-dynamic";
 

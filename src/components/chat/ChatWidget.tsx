@@ -1,23 +1,23 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useState, useRef, useEffect } from "react";
 import {
-  X,
-  Send,
-  Bot,
-  Sparkles,
   AlertCircle,
-  RefreshCw,
-  PackageSearch,
-  Shirt,
-  Ruler,
-  Truck,
-  MapPin,
+  Bot,
   BotMessageSquare,
+  MapPin,
   Maximize2,
   Minimize2,
+  PackageSearch,
+  RefreshCw,
+  Ruler,
+  Send,
+  Shirt,
+  Sparkles,
+  Truck,
+  X,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { MarkdownContent } from "./MarkdownContent";
 
 export interface ChatWidgetUser {

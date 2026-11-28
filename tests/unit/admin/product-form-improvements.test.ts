@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
 import {
   LIFESTYLE_SIZE_GROUPS,
   SIZE_OPTIONS,
   calculateProfitMargin,
-  generateSku,
   comboKey,
+  generateSku,
 } from "@/components/admin/products/product-variant-generator";
 import { slugify } from "@/lib/admin/catalog/catalog-action-helpers";
+import { describe, expect, it } from "vitest";
 
 describe("Product Form Improvements & Lifestyle Presets", () => {
   it("provides comprehensive size presets for all lifestyle categories", () => {

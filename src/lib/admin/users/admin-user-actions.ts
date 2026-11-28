@@ -1,11 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { Role } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const updateRoleSchema = z.object({

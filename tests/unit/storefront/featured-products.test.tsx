@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { FeaturedProducts } from "@/components/storefront/home/featured-products";
-import { ProductStatus } from "@prisma/client";
 import type { ProductSummary } from "@/lib/catalog/types";
+import { ProductStatus } from "@prisma/client";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 describe("FeaturedProducts storefront section", () => {
   const mockProducts: ProductSummary[] = [
@@ -23,7 +23,9 @@ describe("FeaturedProducts storefront section", () => {
       minPrice: 2200,
       maxPrice: 2200,
       hasDiscount: false,
-      categories: [{ id: "cat-1", name: "Hoodies", slug: "hoodies", description: null, imageUrl: null }],
+      categories: [
+        { id: "cat-1", name: "Hoodies", slug: "hoodies", description: null, imageUrl: null },
+      ],
       available: true,
       badge: { label: "HYPE DROP", variant: "hot" },
     },
@@ -44,7 +46,9 @@ describe("FeaturedProducts storefront section", () => {
       minPrice: 1100,
       maxPrice: 1500,
       hasDiscount: true,
-      categories: [{ id: "cat-2", name: "T-Shirts", slug: "t-shirts", description: null, imageUrl: null }],
+      categories: [
+        { id: "cat-2", name: "T-Shirts", slug: "t-shirts", description: null, imageUrl: null },
+      ],
       available: true,
     },
   ];

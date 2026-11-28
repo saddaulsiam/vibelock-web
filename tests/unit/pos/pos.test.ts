@@ -1,7 +1,7 @@
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { InventoryService } from "@/lib/inventory/service";
 import { createPosOrderAction } from "@/lib/pos/pos-actions";
 import prisma from "@/lib/prisma/client";
-import { InventoryService } from "@/lib/inventory/service";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock auth
 vi.mock("@/lib/auth/authorization", () => ({
@@ -174,6 +174,7 @@ describe("POS System - createPosOrderAction", () => {
           orderNumber: "VL-POS-TEST-101",
           createdAt: new Date("2026-11-01T15:00:00Z"),
         }),
+        update: vi.fn().mockResolvedValue({ id: "order-pos-101" }),
       },
       payment: {
         create: vi.fn().mockResolvedValue({ id: "pay-1" }),
@@ -186,6 +187,19 @@ describe("POS System - createPosOrderAction", () => {
       },
       auditLog: {
         create: vi.fn().mockResolvedValue({ id: "audit-1" }),
+      },
+      loyaltySetting: {
+        findFirst: vi.fn().mockResolvedValue(null),
+      },
+      loyaltyAccount: {
+        findUnique: vi.fn().mockResolvedValue(null),
+        upsert: vi.fn().mockResolvedValue({ id: "loy-1" }),
+      },
+      loyaltyTransaction: {
+        create: vi.fn().mockResolvedValue({ id: "loy-tx-1" }),
+      },
+      user: {
+        findFirst: vi.fn().mockResolvedValue(null),
       },
     };
 

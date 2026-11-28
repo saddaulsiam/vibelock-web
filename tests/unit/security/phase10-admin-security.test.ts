@@ -1,17 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
-import { Role } from "@prisma/client";
 import { AuthRequiredError, ForbiddenError } from "@/lib/auth/authorization";
+import { Role } from "@prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Hoisted mock state and test fixtures
 // ---------------------------------------------------------------------------
-const {
-  mockState,
-  mockPrisma,
-  mockTx,
-  mockRedirect,
-} = vi.hoisted(() => {
+const { mockState, mockPrisma, mockTx, mockRedirect } = vi.hoisted(() => {
   const mockState = {
     currentUser: null as { id: string; name?: string; email?: string; role: Role } | null,
   };
@@ -196,10 +191,6 @@ vi.mock("@/lib/auth/authorization", async (importOriginal) => {
 });
 
 // Import actions after mocks
-import {
-  updateAdminUserRoleAction,
-  createAdminUserAction,
-} from "@/lib/admin/users/admin-user-actions";
 import { deleteAccountAction } from "@/app/actions/account-deletion";
 import {
   adminGenerateCustomerPasswordResetLinkAction,
@@ -207,11 +198,15 @@ import {
 } from "@/lib/admin/customers/customer-actions";
 import {
   adjustInventoryAction,
-  quickAdjustInventoryAction,
   bulkAdjustInventoryAction,
+  quickAdjustInventoryAction,
   reconcileStocktakeAction,
 } from "@/lib/admin/inventory/inventory-actions";
-import { resetRateLimitMemoryStore, checkRateLimit } from "@/lib/security/rate-limit";
+import {
+  createAdminUserAction,
+  updateAdminUserRoleAction,
+} from "@/lib/admin/users/admin-user-actions";
+import { checkRateLimit, resetRateLimitMemoryStore } from "@/lib/security/rate-limit";
 
 describe("Phase 10: Admin & Insider Threat Protection (SEC-10)", () => {
   const ADMIN_USER = {
@@ -319,17 +314,17 @@ describe("Phase 10: Admin & Insider Threat Protection (SEC-10)", () => {
     test("CUSTOMER cannot generate raw customer password reset links (ADMIN minimum)", async () => {
       mockState.currentUser = CUSTOMER_USER;
 
-      await expect(
-        adminGenerateCustomerPasswordResetLinkAction(TARGET_CUST_ID_1)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(adminGenerateCustomerPasswordResetLinkAction(TARGET_CUST_ID_1)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
 
     test("MANAGER cannot generate raw customer password reset links (ADMIN minimum)", async () => {
       mockState.currentUser = MANAGER_USER;
 
-      await expect(
-        adminGenerateCustomerPasswordResetLinkAction(TARGET_CUST_ID_1)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(adminGenerateCustomerPasswordResetLinkAction(TARGET_CUST_ID_1)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
 
     test("STAFF cannot adjust inventory (requires ADMIN or MANAGER)", async () => {
@@ -340,9 +335,9 @@ describe("Phase 10: Admin & Insider Threat Protection (SEC-10)", () => {
       fd.set("quantity", "10");
       fd.set("reason", "Restock test");
 
-      await expect(
-        adjustInventoryAction({ error: null }, fd)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(adjustInventoryAction({ error: null }, fd)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
   });
 
@@ -609,9 +604,7 @@ describe("Phase 10: Admin & Insider Threat Protection (SEC-10)", () => {
         email: "aborted@vibelock.bd",
         role: "STAFF",
       });
-      mockPrisma.auditLog.create.mockRejectedValueOnce(
-        new Error("Audit log storage volume full")
-      );
+      mockPrisma.auditLog.create.mockRejectedValueOnce(new Error("Audit log storage volume full"));
 
       const result = await createAdminUserAction({
         name: "Aborted Staff",
@@ -820,9 +813,7 @@ describe("Phase 10: Admin & Insider Threat Protection (SEC-10)", () => {
       });
 
       const result = await reconcileStocktakeAction({
-        items: [
-          { variantId: "variant-audit-4", scannedQuantity: 52, expectedQuantity: 50 },
-        ],
+        items: [{ variantId: "variant-audit-4", scannedQuantity: 52, expectedQuantity: 50 }],
         auditNote: "Quarterly physical warehouse audit",
       });
 
@@ -886,9 +877,9 @@ describe("Phase 10: Admin & Insider Threat Protection (SEC-10)", () => {
         ).resolves.toBeUndefined();
       }
 
-      await expect(
-        checkRateLimit("adminRefund", managerId, { skipIp: true })
-      ).rejects.toThrow("RATE_LIMIT_EXCEEDED");
+      await expect(checkRateLimit("adminRefund", managerId, { skipIp: true })).rejects.toThrow(
+        "RATE_LIMIT_EXCEEDED"
+      );
     });
 
     test("adminInventory throttles after 100 inventory adjustments within sliding window", async () => {
@@ -900,9 +891,9 @@ describe("Phase 10: Admin & Insider Threat Protection (SEC-10)", () => {
         ).resolves.toBeUndefined();
       }
 
-      await expect(
-        checkRateLimit("adminInventory", managerId, { skipIp: true })
-      ).rejects.toThrow("RATE_LIMIT_EXCEEDED");
+      await expect(checkRateLimit("adminInventory", managerId, { skipIp: true })).rejects.toThrow(
+        "RATE_LIMIT_EXCEEDED"
+      );
     });
 
     test("IP rotation does not change the authenticated admin's rate-limit bucket when skipIp is true", async () => {
@@ -990,16 +981,16 @@ describe("Phase 10: Admin & Insider Threat Protection (SEC-10)", () => {
 
     test("unauthenticated user cannot call adminGenerateCustomerPasswordResetLinkAction", async () => {
       mockState.currentUser = null;
-      await expect(
-        adminGenerateCustomerPasswordResetLinkAction(TARGET_CUST_ID_1)
-      ).rejects.toThrow("NEXT_REDIRECT:/login");
+      await expect(adminGenerateCustomerPasswordResetLinkAction(TARGET_CUST_ID_1)).rejects.toThrow(
+        "NEXT_REDIRECT:/login"
+      );
     });
 
     test("unauthenticated user cannot call adminSendCustomerPasswordResetEmailAction", async () => {
       mockState.currentUser = null;
-      await expect(
-        adminSendCustomerPasswordResetEmailAction(TARGET_CUST_ID_1)
-      ).rejects.toThrow("NEXT_REDIRECT:/login");
+      await expect(adminSendCustomerPasswordResetEmailAction(TARGET_CUST_ID_1)).rejects.toThrow(
+        "NEXT_REDIRECT:/login"
+      );
     });
 
     test("unauthenticated user cannot call adjustInventoryAction", async () => {
@@ -1009,9 +1000,9 @@ describe("Phase 10: Admin & Insider Threat Protection (SEC-10)", () => {
       fd.set("quantity", "10");
       fd.set("reason", "Restock test");
 
-      await expect(
-        adjustInventoryAction({ error: null }, fd)
-      ).rejects.toThrow("NEXT_REDIRECT:/login");
+      await expect(adjustInventoryAction({ error: null }, fd)).rejects.toThrow(
+        "NEXT_REDIRECT:/login"
+      );
     });
 
     test("unauthenticated user cannot call deleteAccountAction", async () => {

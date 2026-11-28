@@ -1,16 +1,21 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { useFormStatus } from "react-dom";
-import type { InventoryReturnSettings } from "@/lib/settings/inventory-return-settings";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   updateInventoryReturnSettingsAction,
   type InventoryReturnActionState,
 } from "@/lib/admin/settings/inventory-return-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import type { InventoryReturnSettings } from "@/lib/settings/inventory-return-settings";
 import {
   AlertTriangle,
   Boxes,
@@ -21,6 +26,8 @@ import {
   Save,
   ShieldCheck,
 } from "lucide-react";
+import { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 const initialState: InventoryReturnActionState = { error: null };
 
@@ -33,7 +40,7 @@ function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
       disabled={pending}
       variant="primary"
       size="sm"
-      className="gap-2 px-4 shadow-2xs font-semibold"
+      className="gap-2 px-4 font-semibold shadow-2xs"
     >
       {pending ? (
         <>
@@ -250,7 +257,7 @@ export function InventoryReturnForm({
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Low stock triggers, email alerts, backorder policy, and product auto-hiding.
             </p>
@@ -309,7 +316,9 @@ export function InventoryReturnForm({
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
                 <div>
-                  <span className="text-xs font-semibold text-neutral-900">Require Photo Proof</span>
+                  <span className="text-xs font-semibold text-neutral-900">
+                    Require Photo Proof
+                  </span>
                   <p className="text-[11px] text-neutral-500">
                     Require customer photo upload for return requests
                   </p>
@@ -361,7 +370,7 @@ export function InventoryReturnForm({
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Return window eligibility, photo proof verification, and restricted categories.
             </p>
@@ -474,7 +483,7 @@ export function InventoryReturnForm({
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Restocking fees, courier fee deductions, and warehouse return routing.
             </p>

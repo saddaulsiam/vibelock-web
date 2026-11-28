@@ -1,8 +1,8 @@
-import { expect, test, describe, beforeAll, afterAll } from "vitest";
-import prisma from "../../src/lib/prisma/client";
-import { getDiscoveredProducts } from "../../src/lib/catalog/discovery";
-import { createTestProduct, createTestVariant, createTestCategory } from "../factories";
 import { Prisma } from "@prisma/client";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { getDiscoveredProducts } from "../../src/lib/catalog/discovery";
+import prisma from "../../src/lib/prisma/client";
+import { createTestCategory, createTestProduct, createTestVariant } from "../factories";
 
 describe("Phase 3C - Discovery", () => {
   beforeAll(async () => {});

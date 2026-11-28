@@ -1,6 +1,6 @@
-import "server-only";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
+import "server-only";
 import { isCustomerSuspended } from "./suspension";
 
 /**

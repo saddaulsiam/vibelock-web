@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 interface MockSession {
   user?: {
@@ -71,14 +71,14 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
+import { updateSecurityPixelSettingsAction } from "@/lib/admin/settings/security-pixel-actions";
 import {
   SecurityPixelSettingsSchema,
   getDefaultSecurityPixelSettings,
   getSecurityPixelSettings,
-  resolveEffectiveTrackingPixels,
   isIpAllowedForAdmin,
+  resolveEffectiveTrackingPixels,
 } from "@/lib/settings/security-pixel-settings";
-import { updateSecurityPixelSettingsAction } from "@/lib/admin/settings/security-pixel-actions";
 
 describe("Phase 7: VibeLock Analytics, Tracking Pixels & Admin Security Controls", () => {
   beforeEach(() => {
@@ -92,9 +92,11 @@ describe("Phase 7: VibeLock Analytics, Tracking Pixels & Admin Security Controls
       },
     };
 
-    mockPrisma.$transaction.mockImplementation(async (callback: (tx: typeof mockPrisma) => Promise<unknown>) => {
-      return callback(mockPrisma);
-    });
+    mockPrisma.$transaction.mockImplementation(
+      async (callback: (tx: typeof mockPrisma) => Promise<unknown>) => {
+        return callback(mockPrisma);
+      }
+    );
   });
 
   describe("1. Zod Schema Validation & Boundary Rules", () => {
@@ -185,7 +187,9 @@ describe("Phase 7: VibeLock Analytics, Tracking Pixels & Admin Security Controls
         new Error("Connection terminated unexpectedly by database host")
       );
 
-      await expect(getSecurityPixelSettings()).rejects.toThrow("Database error while fetching store setting");
+      await expect(getSecurityPixelSettings()).rejects.toThrow(
+        "Database error while fetching store setting"
+      );
     });
   });
 
@@ -240,9 +244,7 @@ describe("Phase 7: VibeLock Analytics, Tracking Pixels & Admin Security Controls
       const formData = new FormData();
       formData.set("adminSessionTimeoutMinutes", "30");
 
-      await expect(
-        updateSecurityPixelSettingsAction({ error: null }, formData)
-      ).rejects.toThrow();
+      await expect(updateSecurityPixelSettingsAction({ error: null }, formData)).rejects.toThrow();
     });
 
     test("successfully updates settings and writes an immutable audit log", async () => {
@@ -274,7 +276,9 @@ describe("Phase 7: VibeLock Analytics, Tracking Pixels & Admin Security Controls
       const result = await updateSecurityPixelSettingsAction({ error: null }, formData);
 
       expect(result.error).toBeNull();
-      expect(result.message).toContain("Marketing tracking pixels, Google Tag Manager, and admin security controls updated");
+      expect(result.message).toContain(
+        "Marketing tracking pixels, Google Tag Manager, and admin security controls updated"
+      );
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith(
         expect.objectContaining({

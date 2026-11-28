@@ -1,21 +1,31 @@
-import { describe, expect, test, vi, beforeEach } from "vitest";
-import { recordAuditLog, sanitizeAuditMetadata } from "@/lib/audit";
-import { reconcilePaymentCaptureAction } from "@/lib/admin/payments/payment-reconciliation-actions";
-import { saveCouponAction, toggleCouponStatusAction, deleteCouponAction } from "@/lib/admin/coupons/coupon-actions";
-import { toggleProductPublishedAction, deleteProductAction } from "@/lib/admin/catalog/product-actions";
-import { bulkUpdateProductStatusAction } from "@/lib/admin/catalog/product-bulk-actions";
-import { toggleCategoryStatusAction, deleteCategoryAction } from "@/lib/admin/catalog/category-actions";
-import { toggleBannerAction, deleteBannerAction } from "@/lib/admin/banners/banner-actions";
+import { deleteBannerAction, toggleBannerAction } from "@/lib/admin/banners/banner-actions";
 import {
-  saveShippingZoneAction,
-  saveShippingMethodAction,
-  toggleShippingMethodAction,
+  deleteCategoryAction,
+  toggleCategoryStatusAction,
+} from "@/lib/admin/catalog/category-actions";
+import {
+  deleteProductAction,
+  toggleProductPublishedAction,
+} from "@/lib/admin/catalog/product-actions";
+import { bulkUpdateProductStatusAction } from "@/lib/admin/catalog/product-bulk-actions";
+import {
+  deleteCouponAction,
+  saveCouponAction,
+  toggleCouponStatusAction,
+} from "@/lib/admin/coupons/coupon-actions";
+import { reconcilePaymentCaptureAction } from "@/lib/admin/payments/payment-reconciliation-actions";
+import {
   refreshShipmentStatusAction,
+  saveShippingMethodAction,
+  saveShippingZoneAction,
+  toggleShippingMethodAction,
 } from "@/lib/admin/shipping/shipping-actions";
+import { recordAuditLog, sanitizeAuditMetadata } from "@/lib/audit";
+import prisma from "@/lib/prisma/client";
 import { RefundService } from "@/lib/refunds/service";
 import { ShippingService } from "@/lib/shipping/service";
 import { Prisma } from "@prisma/client";
-import prisma from "@/lib/prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("@/lib/auth/authorization", () => ({
   requireRole: vi.fn().mockResolvedValue({ id: "admin-uuid-1", role: "ADMIN" }),
@@ -69,10 +79,7 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
             cookie: "session=abc",
           },
         },
-        arr: [
-          { token: "abc" },
-          { harmless: 100 },
-        ],
+        arr: [{ token: "abc" }, { harmless: 100 }],
       };
 
       const sanitized = sanitizeAuditMetadata(rawMetadata) as Record<string, unknown>;
@@ -203,7 +210,9 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
           entityId: "order-123",
           tx: mockTx,
         })
-      ).rejects.toThrow(/Audit log creation failed for action TEST_CRITICAL_ACTION\. Transaction aborted\./);
+      ).rejects.toThrow(
+        /Audit log creation failed for action TEST_CRITICAL_ACTION\. Transaction aborted\./
+      );
     });
 
     test("demonstrates transactional rollback: mutation does not persist when auditLog.create rejects", async () => {
@@ -245,7 +254,9 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
         }
       });
 
-      await expect(transactionExecutor()).rejects.toThrow(/Audit log creation failed for action COUPON_DELETED/);
+      await expect(transactionExecutor()).rejects.toThrow(
+        /Audit log creation failed for action COUPON_DELETED/
+      );
       expect(mutationCommitted).toBe(false);
     });
 
@@ -265,7 +276,9 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
         tx: mockTx,
       });
 
-      expect((mockTx as unknown as { auditLog: { create: ReturnType<typeof vi.fn> } }).auditLog.create).toHaveBeenCalledWith({
+      expect(
+        (mockTx as unknown as { auditLog: { create: ReturnType<typeof vi.fn> } }).auditLog.create
+      ).toHaveBeenCalledWith({
         data: {
           actorId: "admin-uuid-1",
           action: "PAYMENT_RECONCILED",
@@ -346,7 +359,9 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
       const auditCreateMock = vi.fn().mockResolvedValue({ id: "audit-1" });
       mockDb.auditLog = { create: auditCreateMock };
       mockDb.shippingZone = {
-        create: vi.fn().mockResolvedValue({ id: "zone-1", name: "Chittagong Zone", countries: ["BD"] }),
+        create: vi
+          .fn()
+          .mockResolvedValue({ id: "zone-1", name: "Chittagong Zone", countries: ["BD"] }),
       };
 
       const formData = new FormData();
@@ -404,8 +419,12 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
       const auditCreateMock = vi.fn().mockResolvedValue({ id: "audit-1" });
       mockDb.auditLog = { create: auditCreateMock };
       mockDb.shippingMethod = {
-        findUnique: vi.fn().mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111", isActive: true }),
-        update: vi.fn().mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111", isActive: false }),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111", isActive: true }),
+        update: vi
+          .fn()
+          .mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111", isActive: false }),
       };
 
       const formData = new FormData();
@@ -567,8 +586,12 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
       const auditCreateMock = vi.fn().mockResolvedValue({ id: "audit-1" });
       mockDb.auditLog = { create: auditCreateMock };
       mockDb.product = {
-        findUnique: vi.fn().mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111", status: "PUBLISHED" }),
-        update: vi.fn().mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111", status: "DRAFT" }),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111", status: "PUBLISHED" }),
+        update: vi
+          .fn()
+          .mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111", status: "DRAFT" }),
       };
 
       const formData = new FormData();
@@ -595,7 +618,9 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
       mockDb.product = {
         findUnique: vi.fn().mockResolvedValue({
           id: "11111111-1111-4111-a111-111111111111",
-          variants: [{ _count: { inventoryTransactions: 0, inventoryReservations: 0, cartItems: 0 } }],
+          variants: [
+            { _count: { inventoryTransactions: 0, inventoryReservations: 0, cartItems: 0 } },
+          ],
           _count: { reviews: 0 },
         }),
         delete: vi.fn().mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111" }),
@@ -694,7 +719,9 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
       const auditCreateMock = vi.fn().mockResolvedValue({ id: "audit-1" });
       mockDb.auditLog = { create: auditCreateMock };
       mockDb.banner = {
-        update: vi.fn().mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111", isActive: true }),
+        update: vi
+          .fn()
+          .mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111", isActive: true }),
         delete: vi.fn().mockResolvedValue({ id: "11111111-1111-4111-a111-111111111111" }),
       };
 
@@ -808,7 +835,9 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
             status: "SUCCESS",
             refunds: [{ ...mockRefund, status: "SUCCESS" }],
           }),
-          update: vi.fn().mockResolvedValue({ id: "pay-1", orderId: "order-1", status: "REFUNDED" }),
+          update: vi
+            .fn()
+            .mockResolvedValue({ id: "pay-1", orderId: "order-1", status: "REFUNDED" }),
         },
         order: { update: vi.fn().mockResolvedValue({ id: "order-1" }) },
         $queryRaw: vi.fn().mockResolvedValue([]),
@@ -876,7 +905,9 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
 
     test("markRefundFailed initiates its own transaction when tx is not provided", async () => {
       const auditCreateMock = vi.fn().mockResolvedValue({ id: "audit-1" });
-      const refundUpdateMock = vi.fn().mockResolvedValue({ id: "ref-standalone", status: "FAILED" });
+      const refundUpdateMock = vi
+        .fn()
+        .mockResolvedValue({ id: "ref-standalone", status: "FAILED" });
       const mockRefund = {
         id: "ref-standalone",
         paymentId: "pay-standalone",
@@ -895,7 +926,12 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
       mockDb.$transaction = vi.fn(async (cb: (tx: unknown) => unknown) => cb(mockTx));
 
       const refundService = new RefundService();
-      await refundService.markRefundFailed("ref-standalone", undefined, "admin-uuid-1", "Gateway timeout");
+      await refundService.markRefundFailed(
+        "ref-standalone",
+        undefined,
+        "admin-uuid-1",
+        "Gateway timeout"
+      );
 
       expect(mockDb.$transaction).toHaveBeenCalled();
       expect(refundUpdateMock).toHaveBeenCalledWith({

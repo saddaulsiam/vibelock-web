@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   formatTelegramOrderMessage,
   sendTelegramOrderNotification,
   type TelegramOrderNotificationPayload,
 } from "@/lib/notifications/telegram";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/config/env", () => ({
   env: {
@@ -53,7 +53,9 @@ describe("Telegram Order Notifications", () => {
       expect(message).toContain("👤 <b>Customer:</b> Siam &lt;Tester&gt; &amp; Co.");
       expect(message).toContain("📞 <b>Phone:</b> <code>+8801311333277</code>");
       expect(message).toContain("📍 <b>Destination:</b> Dhaka");
-      expect(message).toContain("• <b>1x</b> Heavyweight Graphic Tee &lt;Limited&gt; (XL / Charcoal Black)");
+      expect(message).toContain(
+        "• <b>1x</b> Heavyweight Graphic Tee &lt;Limited&gt; (XL / Charcoal Black)"
+      );
       expect(message).toContain("href='https://vibelock.bd/admin/orders/VL-20261125-ABCD12'");
     });
 
@@ -68,9 +70,7 @@ describe("Telegram Order Notifications", () => {
         customerPhone: "+8801700000000",
         city: "Chittagong",
         itemCount: 2,
-        items: [
-          { productName: "Cargo Pants", quantity: 2, size: "32" },
-        ],
+        items: [{ productName: "Cargo Pants", quantity: 2, size: "32" }],
       };
 
       const message = formatTelegramOrderMessage(payload);

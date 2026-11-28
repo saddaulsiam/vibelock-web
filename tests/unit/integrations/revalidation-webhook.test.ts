@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { NextRequest } from "next/server";
-import crypto from "node:crypto";
 import { POST } from "@/app/api/webhooks/core-inventory/route";
 import { revalidateTag } from "next/cache";
+import { NextRequest } from "next/server";
+import crypto from "node:crypto";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const TEST_SECRET = "test-revalidation-secret-key-12345";
 

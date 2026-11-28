@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
-import crypto from "node:crypto";
-import prisma from "@/lib/prisma/client";
 import { authConfig, RateLimitError } from "@/auth";
+import * as securityLogger from "@/lib/monitoring/security-logger";
+import prisma from "@/lib/prisma/client";
 import {
   checkOtpRateLimit,
-  clearOtpRateLimit,
   checkOtpSendRateLimit,
-  resetRateLimitMemoryStore,
-  hashForRateLimit,
+  clearOtpRateLimit,
   getIp,
+  hashForRateLimit,
   isPlausibleIp,
+  resetRateLimitMemoryStore,
 } from "@/lib/security/rate-limit";
 import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
-import * as securityLogger from "@/lib/monitoring/security-logger";
+import crypto from "node:crypto";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const TEST_AUTH_SECRET = "mock-secret-for-testing-at-least-32-chars-long";
 
@@ -672,9 +672,7 @@ describe("Phase 12.1: Authentication Security & Monitoring (SEC-12-01 & SEC-12-0
 
       await checkOtpSendRateLimit(phone, "unknown");
 
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("RATE_LIMIT_MISSING_CLIENT_IP")
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("RATE_LIMIT_MISSING_CLIENT_IP"));
 
       // Confirm warning payload does not contain raw phone number
       const warningPayload = warnSpy.mock.calls[0][0] as string;

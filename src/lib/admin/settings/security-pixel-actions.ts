@@ -2,9 +2,9 @@
 
 import { requireRole } from "@/lib/auth/authorization";
 import {
+  getSecurityPixelSettings,
   SecurityPixelSettingsSchema,
   updateSecurityPixelSettings,
-  getSecurityPixelSettings,
 } from "@/lib/settings/security-pixel-settings";
 import { revalidatePath } from "next/cache";
 
@@ -22,7 +22,7 @@ export async function updateSecurityPixelSettingsAction(
   const { settings: current } = await getSecurityPixelSettings();
 
   const rawIps = formData.has("adminIpAllowlist")
-    ? (formData.get("adminIpAllowlist")?.toString()?.trim() || "")
+    ? formData.get("adminIpAllowlist")?.toString()?.trim() || ""
     : current.adminIpAllowlist.join(", ");
   const ipList = rawIps
     .split(",")
@@ -30,7 +30,7 @@ export async function updateSecurityPixelSettingsAction(
     .filter(Boolean);
 
   let metaCapiToken = formData.has("metaCapiAccessToken")
-    ? (formData.get("metaCapiAccessToken")?.toString()?.trim() || "")
+    ? formData.get("metaCapiAccessToken")?.toString()?.trim() || ""
     : current.metaCapiAccessToken;
 
   // If masked placeholder was submitted, retain previously stored token
@@ -39,7 +39,9 @@ export async function updateSecurityPixelSettingsAction(
   }
 
   const raw = {
-    metaPixelId: formData.has("metaPixelId") ? formData.get("metaPixelId")?.toString()?.trim() || "" : current.metaPixelId,
+    metaPixelId: formData.has("metaPixelId")
+      ? formData.get("metaPixelId")?.toString()?.trim() || ""
+      : current.metaPixelId,
     metaCapiAccessToken: metaCapiToken,
     metaTestEventCode: formData.has("metaTestEventCode")
       ? formData.get("metaTestEventCode")?.toString()?.trim() || ""
@@ -99,6 +101,7 @@ export async function updateSecurityPixelSettingsAction(
 
   return {
     error: null,
-    message: "Marketing tracking pixels, Google Tag Manager, and admin security controls updated successfully.",
+    message:
+      "Marketing tracking pixels, Google Tag Manager, and admin security controls updated successfully.",
   };
 }

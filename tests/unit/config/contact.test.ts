@@ -1,10 +1,10 @@
-import { describe, it, expect, afterEach } from "vitest";
 import {
-  getWhatsAppNumber,
-  getDisplayPhoneNumber,
-  getWhatsAppUrl,
   DEFAULT_PHONE_NUMBER,
+  getDisplayPhoneNumber,
+  getWhatsAppNumber,
+  getWhatsAppUrl,
 } from "@/lib/config/contact";
+import { afterEach, describe, expect, it } from "vitest";
 
 describe("Contact & WhatsApp Config Helper", () => {
   const originalEnv = process.env.NEXT_PUBLIC_PHONE_NUMBER;

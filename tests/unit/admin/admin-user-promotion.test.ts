@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { beforeEach, describe, expect, test, vi } from "vitest";
 import { Role } from "@prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const {
   mockState,
@@ -93,11 +93,11 @@ vi.mock("@/lib/auth/authorization", () => ({
   }),
 }));
 
-import { AuthRequiredError, ForbiddenError } from "@/lib/auth/authorization";
 import {
   lookupUserByEmailForPromotionAction,
   promoteExistingUserAction,
 } from "@/lib/admin/users/admin-user-actions";
+import { AuthRequiredError, ForbiddenError } from "@/lib/auth/authorization";
 
 const ADMIN_USER = {
   id: "11111111-1111-4111-8111-111111111111",

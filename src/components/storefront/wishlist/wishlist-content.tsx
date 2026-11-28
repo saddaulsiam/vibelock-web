@@ -1,16 +1,16 @@
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
-import Link from "next/link";
-import { Heart, ArrowRight, Trash2 } from "lucide-react";
-import { ProductSummary } from "@/lib/catalog/types";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ProductSummary } from "@/lib/catalog/types";
+import { ArrowRight, Heart, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useMemo, useSyncExternalStore } from "react";
+import { toast } from "sonner";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { subscribeWishlist, getWishlistSnapshot, getWishlistServerSnapshot } from "@/lib/wishlist";
+import { getWishlistServerSnapshot, getWishlistSnapshot, subscribeWishlist } from "@/lib/wishlist";
 
 interface WishlistContentProps {
   initialProducts: ProductSummary[];

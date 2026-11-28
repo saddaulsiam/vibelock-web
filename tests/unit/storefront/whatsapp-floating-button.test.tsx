@@ -1,7 +1,6 @@
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { WhatsAppFloatingButton } from "@/components/storefront/layout/whatsapp-floating-button";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/product/oversized-black-tee",

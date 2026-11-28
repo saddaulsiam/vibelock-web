@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import type { AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
 import { AdminCouponsMobileCard } from "./admin-coupons-mobile-card";
 

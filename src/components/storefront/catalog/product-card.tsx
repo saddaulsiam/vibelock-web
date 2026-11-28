@@ -8,11 +8,11 @@ import {
   subscribeWishlist,
   toggleWishlistSlug,
 } from "@/lib/wishlist";
+import { motion, type HTMLMotionProps } from "framer-motion";
 import { Heart, ImageOff, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
-import { motion, type HTMLMotionProps } from "framer-motion";
 import { toast } from "sonner";
 import { Price } from "./price";
 import { ProductBadge } from "./product-badge";
@@ -68,8 +68,7 @@ export function toCardProduct(
       name: product.name,
       slug: product.slug,
       price: product.minPrice,
-      originalPrice:
-        product.originalPrice ?? (product.hasDiscount ? product.maxPrice : undefined),
+      originalPrice: product.originalPrice ?? (product.hasDiscount ? product.maxPrice : undefined),
       image: product.primaryImage?.url ?? "",
       secondaryImage,
       category: primaryCategory,
@@ -77,9 +76,7 @@ export function toCardProduct(
       badge:
         overrideBadge ??
         product.badge ??
-        (product.hasDiscount
-          ? { label: "Sale", variant: "sale" as const }
-          : undefined),
+        (product.hasDiscount ? { label: "Sale", variant: "sale" as const } : undefined),
     };
   }
 
@@ -184,7 +181,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
             <ProductBadge
               label="SOLD OUT"
               variant="default"
-              className="border-white/10 bg-vl-dark-900/90 text-vl-white-400 backdrop-blur-xs"
+              className="bg-vl-dark-900/90 text-vl-white-400 border-white/10 backdrop-blur-xs"
             />
           ) : (
             <>
@@ -219,16 +216,16 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
           }
           onClick={handleWishlistToggle}
           className={cn(
-            "absolute top-2 right-2 z-10 flex size-6.5 items-center justify-center rounded-full border p-0 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan active:scale-90",
+            "focus-visible:ring-vl-cyan absolute top-2 right-2 z-10 flex size-6.5 items-center justify-center rounded-full border p-0 transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none active:scale-90",
             isWishlisted
               ? "border-rose-200 bg-white text-rose-500 shadow-2xs"
-              : "border-black/10 bg-white/85 text-vl-dark-900/75 shadow-2xs backdrop-blur-md hover:border-black/20 hover:bg-white hover:text-rose-500 hover:shadow-xs"
+              : "text-vl-dark-900/75 border-black/10 bg-white/85 shadow-2xs backdrop-blur-md hover:border-black/20 hover:bg-white hover:text-rose-500 hover:shadow-xs"
           )}
         >
           <Heart
             className={cn(
               "size-3.5 transition-all duration-200",
-              isWishlisted ? "fill-rose-500 text-rose-500 scale-105" : "stroke-[2.2]"
+              isWishlisted ? "scale-105 fill-rose-500 text-rose-500" : "stroke-[2.2]"
             )}
             aria-hidden="true"
           />

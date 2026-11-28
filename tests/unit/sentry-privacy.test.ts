@@ -1,19 +1,21 @@
-import { describe, it, expect } from "vitest";
 import {
   sanitizePath,
-  sanitizeUrl,
-  sanitizeTransaction,
-  scrubString,
-  sanitizeSentryEvent,
   sanitizeSentryBreadcrumb,
+  sanitizeSentryEvent,
+  sanitizeTransaction,
+  sanitizeUrl,
+  scrubString,
 } from "@/lib/monitoring/sentry-privacy";
-import type { Event, Breadcrumb } from "@sentry/nextjs";
+import type { Breadcrumb, Event } from "@sentry/nextjs";
+import { describe, expect, it } from "vitest";
 
 describe("Sentry Privacy Sanitizer", () => {
   describe("sanitizePath", () => {
     it("preserves static routes and public catalog slugs", () => {
       expect(sanitizePath("/product/[slug]")).toBe("/product/[slug]");
-      expect(sanitizePath("/product/vintage-oversized-hoodie")).toBe("/product/vintage-oversized-hoodie");
+      expect(sanitizePath("/product/vintage-oversized-hoodie")).toBe(
+        "/product/vintage-oversized-hoodie"
+      );
       expect(sanitizePath("/category/[slug]")).toBe("/category/[slug]");
       expect(sanitizePath("/category/streetwear")).toBe("/category/streetwear");
       expect(sanitizePath("/shop")).toBe("/shop");
@@ -94,9 +96,7 @@ describe("Sentry Privacy Sanitizer", () => {
       expect(sanitizeTransaction("GET /account/orders/VL-2026-123")).toBe(
         "GET /account/orders/[ORDER_ID]"
       );
-      expect(sanitizeTransaction("POST /coupons/SECRET_PROMO")).toBe(
-        "POST /coupons/[COUPON_ID]"
-      );
+      expect(sanitizeTransaction("POST /coupons/SECRET_PROMO")).toBe("POST /coupons/[COUPON_ID]");
     });
   });
 

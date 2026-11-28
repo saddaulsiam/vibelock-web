@@ -1,10 +1,10 @@
 "use server";
 
-import prisma from "@/lib/prisma/client";
-import { z } from "zod";
-import crypto from "crypto";
 import { sendEmailVerificationEmail } from "@/lib/email/client";
+import prisma from "@/lib/prisma/client";
 import { checkRateLimit } from "@/lib/security/rate-limit";
+import crypto from "crypto";
+import { z } from "zod";
 
 const verifyEmailSchema = z.object({
   token: z.string().min(1, "Token is required"),

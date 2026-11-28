@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { DialogFooter, DialogHeader, dialogContentVariants } from "@/components/ui/dialog";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DialogHeader, DialogFooter, dialogContentVariants } from "@/components/ui/dialog";
+import { describe, expect, it } from "vitest";
 
 describe("Unified Global Dialog / Modal Component", () => {
   describe("Content Variants", () => {

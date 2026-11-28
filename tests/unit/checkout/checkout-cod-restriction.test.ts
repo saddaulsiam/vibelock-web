@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const { mockPrisma, mockSessionState } = vi.hoisted(() => {
   const mockTx: any = {
@@ -64,8 +64,8 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-import { createOrderAction, isCustomerCodRestricted } from "@/lib/checkout/actions";
 import { getCart } from "@/lib/cart/queries";
+import { createOrderAction, isCustomerCodRestricted } from "@/lib/checkout/actions";
 
 describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row Locking", () => {
   const validCheckoutPayload = {
@@ -83,7 +83,11 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSessionState.user = { id: "cust-uuid-101", email: "customer@vibelock.bd", role: "CUSTOMER" };
+    mockSessionState.user = {
+      id: "cust-uuid-101",
+      email: "customer@vibelock.bd",
+      role: "CUSTOMER",
+    };
     mockIsPaymentMethodEnabled.mockResolvedValue(true);
     mockPrisma.order.findUnique.mockResolvedValue(null);
   });
@@ -123,18 +127,24 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         codBlocked: false,
       });
 
-      await expect(isCustomerCodRestricted("admin-uuid-001")).rejects.toThrow("NON_CUSTOMER_ACCOUNT");
+      await expect(isCustomerCodRestricted("admin-uuid-001")).rejects.toThrow(
+        "NON_CUSTOMER_ACCOUNT"
+      );
     });
 
     test("pre-flight (no tx): throws CUSTOMER_NOT_FOUND when user does not exist", async () => {
       mockPrisma.user.findUnique.mockResolvedValueOnce(null);
 
-      await expect(isCustomerCodRestricted("cust-uuid-missing")).rejects.toThrow("CUSTOMER_NOT_FOUND");
+      await expect(isCustomerCodRestricted("cust-uuid-missing")).rejects.toThrow(
+        "CUSTOMER_NOT_FOUND"
+      );
     });
 
     test("in-transaction (tx provided): executes parameterized SELECT FOR UPDATE row lock on User", async () => {
       const mockCustomTx = {
-        $queryRaw: vi.fn().mockResolvedValueOnce([{ id: "cust-uuid-101", codBlocked: true, role: "CUSTOMER" }]),
+        $queryRaw: vi
+          .fn()
+          .mockResolvedValueOnce([{ id: "cust-uuid-101", codBlocked: true, role: "CUSTOMER" }]),
       };
 
       const result = await isCustomerCodRestricted("cust-uuid-101", mockCustomTx as any);
@@ -143,8 +153,8 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
 
       const call = vi.mocked(mockCustomTx.$queryRaw).mock.calls[0];
       const queryStrings = (call[0] as unknown as string[]).join(" ");
-      expect(queryStrings).toContain("SELECT \"id\", \"codBlocked\"");
-      expect(queryStrings).toContain("FROM \"User\"");
+      expect(queryStrings).toContain('SELECT "id", "codBlocked"');
+      expect(queryStrings).toContain('FROM "User"');
       expect(queryStrings).toContain("'CUSTOMER'::\"Role\"");
       expect(queryStrings).toContain("FOR UPDATE");
     });
@@ -184,10 +194,7 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         codBlocked: true,
       });
 
-      const result = await createOrderAction(
-        validCheckoutPayload,
-        "idempotency-key-blocked-cod"
-      );
+      const result = await createOrderAction(validCheckoutPayload, "idempotency-key-blocked-cod");
 
       expect(result.success).toBe(false);
       expect(result.error).toBe(
@@ -268,12 +275,11 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
     });
 
     test("fails closed if customer COD verification encounters a database error", async () => {
-      mockPrisma.user.findUnique.mockRejectedValueOnce(new Error("Database connection pool timeout"));
-
-      const result = await createOrderAction(
-        validCheckoutPayload,
-        "idempotency-key-db-error"
+      mockPrisma.user.findUnique.mockRejectedValueOnce(
+        new Error("Database connection pool timeout")
       );
+
+      const result = await createOrderAction(validCheckoutPayload, "idempotency-key-db-error");
 
       expect(result.success).toBe(false);
       expect(result.error).toBe(
@@ -348,7 +354,15 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         id: "cart-online",
         totalQuantity: 1,
         subtotal: 100,
-        items: [{ id: "ci-1", variantId: "v-1", quantity: 1, availableQuantity: 5, variant: { available: true } } as any],
+        items: [
+          {
+            id: "ci-1",
+            variantId: "v-1",
+            quantity: 1,
+            availableQuantity: 5,
+            variant: { available: true },
+          } as any,
+        ],
       } as any);
 
       const queryLog: string[] = [];
@@ -388,7 +402,15 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         id: "cart-bkash",
         totalQuantity: 1,
         subtotal: 100,
-        items: [{ id: "ci-1", variantId: "v-1", quantity: 1, availableQuantity: 5, variant: { available: true } } as any],
+        items: [
+          {
+            id: "ci-1",
+            variantId: "v-1",
+            quantity: 1,
+            availableQuantity: 5,
+            variant: { available: true },
+          } as any,
+        ],
       } as any);
 
       const queryLog: string[] = [];
@@ -421,7 +443,15 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         id: "cart-online-blocked",
         totalQuantity: 1,
         subtotal: 100,
-        items: [{ id: "ci-1", variantId: "v-1", quantity: 1, availableQuantity: 5, variant: { available: true } } as any],
+        items: [
+          {
+            id: "ci-1",
+            variantId: "v-1",
+            quantity: 1,
+            availableQuantity: 5,
+            variant: { available: true },
+          } as any,
+        ],
       } as any);
 
       mockPrisma.$queryRaw.mockImplementation(async (query: any) => {
@@ -442,7 +472,9 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         "idempotency-key-online-not-blocked"
       );
 
-      expect(result.error).not.toBe("Cash on delivery is not available for your account. Please choose another payment method.");
+      expect(result.error).not.toBe(
+        "Cash on delivery is not available for your account. Please choose another payment method."
+      );
       expect(result.error).toBe("Your cart is empty.");
     });
 
@@ -452,7 +484,15 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         id: "cart-missing-user",
         totalQuantity: 1,
         subtotal: 100,
-        items: [{ id: "ci-1", variantId: "v-1", quantity: 1, availableQuantity: 5, variant: { available: true } } as any],
+        items: [
+          {
+            id: "ci-1",
+            variantId: "v-1",
+            quantity: 1,
+            availableQuantity: 5,
+            variant: { available: true },
+          } as any,
+        ],
       } as any);
 
       mockPrisma.$queryRaw.mockImplementation(async (query: any) => {

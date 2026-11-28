@@ -1,8 +1,8 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { type ComponentPropsWithoutRef } from "react";
+import { useFormStatus } from "react-dom";
 
 interface SubmitButtonProps extends ComponentPropsWithoutRef<typeof Button> {
   pendingText?: string;

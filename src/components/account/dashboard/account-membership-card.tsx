@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, ShieldAlert, Key, ExternalLink, Laptop, CheckCircle2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { CheckCircle2, ExternalLink, Key, Laptop, ShieldAlert, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 interface AccountMembershipCardProps {
   email: string;

@@ -1,9 +1,9 @@
-import { describe, expect, test, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-import { PosHeader } from "@/components/pos/pos-header";
 import { PosCartPanel } from "@/components/pos/pos-cart-panel";
+import { PosHeader } from "@/components/pos/pos-header";
 import { findLocalVariant } from "@/components/pos/pos-product-scanner";
 import type { PosProductSummary } from "@/lib/pos/pos-types";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 describe("POS Phase 8: Offline Network Guard & Connectivity Resilience", () => {
   const sampleCatalogProducts: PosProductSummary[] = [

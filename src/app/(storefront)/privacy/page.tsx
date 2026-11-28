@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
-import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { SITE_URL } from "@/lib/seo/site";
-import { Lock, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Lock } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",

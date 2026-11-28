@@ -1,12 +1,14 @@
 import { auth } from "@/auth";
-import { OrderPrintAction } from "@/components/storefront/orders/order-print-action";
-import { getCustomerOrderConfirmation } from "@/lib/orders/queries";
-import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
-import { getHumanGatewayName } from "@/lib/payment/format";
+import { MetaPurchaseTracker } from "@/components/storefront/analytics/meta-purchase-tracker";
 import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
+import { OrderPrintAction } from "@/components/storefront/orders/order-print-action";
+import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { RetryPaymentButton } from "@/components/storefront/orders/retry-payment-button";
 import { Button } from "@/components/ui/button";
+import { getDisplayPhoneNumber, getWhatsAppUrl } from "@/lib/config/contact";
+import { getCustomerOrderConfirmation } from "@/lib/orders/queries";
+import { getHumanGatewayName } from "@/lib/payment/format";
 import {
   AlertCircle,
   ArrowLeft,
@@ -26,8 +28,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getDisplayPhoneNumber, getWhatsAppUrl } from "@/lib/config/contact";
-import { MetaPurchaseTracker } from "@/components/storefront/analytics/meta-purchase-tracker";
 
 export const metadata: Metadata = {
   title: "Order Confirmation",

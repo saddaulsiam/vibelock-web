@@ -1,8 +1,7 @@
 "use client";
 
-import * as React from "react";
-import { CheckCircle2, Download, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CheckCircle2, Download, Package } from "lucide-react";
 
 export interface AdminOrdersBulkBarProps {
   selectedCount: number;

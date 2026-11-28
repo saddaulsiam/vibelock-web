@@ -1,15 +1,15 @@
-import { describe, expect, test } from "vitest";
 import {
+  generateOrderNumber,
+  generatePosOrderNumber,
   generateRandom8Digits,
   generateWebsiteOrderNumber,
-  generatePosOrderNumber,
-  generateOrderNumber,
-  isValidWebsiteOrderNumber,
-  isValidPosOrderNumber,
-  isValidOrderNumber,
   isOrderNumberCollision,
+  isValidOrderNumber,
+  isValidPosOrderNumber,
+  isValidWebsiteOrderNumber,
   MAX_ORDER_NUMBER_COLLISION_RETRIES,
 } from "@/lib/orders/order-number";
+import { describe, expect, test } from "vitest";
 
 type PrismaTestError = Error & {
   code?: string;

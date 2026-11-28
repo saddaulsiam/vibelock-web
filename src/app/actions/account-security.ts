@@ -1,7 +1,9 @@
 "use server";
 
-import prisma from "@/lib/prisma/client";
 import { requireUser } from "@/lib/auth/authorization";
+import { sendPasswordResetEmail } from "@/lib/email/client";
+import prisma from "@/lib/prisma/client";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import {
   changePasswordSchema,
   forgotPasswordSchema,
@@ -10,10 +12,8 @@ import {
   type ForgotPasswordInput,
   type ResetPasswordInput,
 } from "@/lib/validations/account";
-import { hash, compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import crypto from "crypto";
-import { checkRateLimit } from "@/lib/security/rate-limit";
-import { sendPasswordResetEmail } from "@/lib/email/client";
 
 // ----------------------------------------------------------------------
 // RATE LIMITING GAP DOCUMENTATION

@@ -1,5 +1,5 @@
+import { sanitizeSentryBreadcrumb, sanitizeSentryEvent } from "@/lib/monitoring/sentry-privacy";
 import * as Sentry from "@sentry/nextjs";
-import { sanitizeSentryEvent, sanitizeSentryBreadcrumb } from "@/lib/monitoring/sentry-privacy";
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,

@@ -1,15 +1,14 @@
-import { Suspense } from "react";
-import { DiscountType } from "@prisma/client";
 import { AdminCouponsTable } from "@/components/admin/coupons/admin-coupons-table";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
-import { AdminPageHeader } from "@/components/admin/shared";
-import prisma from "@/lib/prisma/client";
+import { AdminKpiCard, AdminKpiGrid, AdminPageHeader } from "@/components/admin/shared";
 import {
   getAdminCoupons,
   getAdminCouponsSummaryKPIs,
   type CouponFilter,
 } from "@/lib/admin/coupons";
-import { Tag, Sparkles, ShoppingBag, Clock } from "lucide-react";
+import prisma from "@/lib/prisma/client";
+import { DiscountType } from "@prisma/client";
+import { Clock, ShoppingBag, Sparkles, Tag } from "lucide-react";
+import { Suspense } from "react";
 
 function valueOf(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;

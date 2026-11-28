@@ -1,8 +1,8 @@
 import "server-only";
 
-import { DiscountType, Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { DiscountType, Prisma } from "@prisma/client";
 
 const pageSize = 20;
 

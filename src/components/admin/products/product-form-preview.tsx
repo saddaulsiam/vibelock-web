@@ -1,8 +1,11 @@
 "use client";
 
-import Image from "next/image";
+import {
+  ProductBadge,
+  type ProductBadgeProps,
+} from "@/components/storefront/catalog/product-badge";
 import { Eye, Heart, ImageOff } from "lucide-react";
-import { ProductBadge, type ProductBadgeProps } from "@/components/storefront/catalog/product-badge";
+import Image from "next/image";
 
 export const COLOR_HEX: Record<string, string> = {
   black: "#101114",
@@ -130,7 +133,7 @@ export function ProductFormPreview({
             </div>
 
             {/* ── Wishlist Button Replica (Top-Right: Compact Frosted Glass Pill) ── */}
-            <div className="border-black/10 bg-white/85 text-vl-dark-900/75 absolute top-2 right-2 z-10 flex size-6.5 items-center justify-center rounded-full border p-0 shadow-2xs backdrop-blur-md">
+            <div className="text-vl-dark-900/75 absolute top-2 right-2 z-10 flex size-6.5 items-center justify-center rounded-full border border-black/10 bg-white/85 p-0 shadow-2xs backdrop-blur-md">
               <Heart className="size-3.5 stroke-[2.2]" />
             </div>
           </div>

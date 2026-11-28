@@ -1,11 +1,7 @@
 import "server-only";
 
-import {
-  getStoreSetting,
-  updateStoreSetting,
-  STORE_SETTING_KEYS,
-} from "./store-settings-service";
 import { z } from "zod";
+import { getStoreSetting, STORE_SETTING_KEYS, updateStoreSetting } from "./store-settings-service";
 
 // ============================================================================
 // PHASE 7: ANALYTICS, TRACKING PIXELS & ADMIN SECURITY SCHEMA
@@ -29,9 +25,7 @@ export const SecurityPixelSettingsSchema = z.object({
     .max(1440, "Maximum timeout is 1440 minutes (24 hours)")
     .default(60),
   enforceAdmin2FA: z.boolean().default(false),
-  adminIpAllowlist: z
-    .array(z.string().min(1, "IP address cannot be empty"))
-    .default([]),
+  adminIpAllowlist: z.array(z.string().min(1, "IP address cannot be empty")).default([]),
   notifyFailedAdminLogin: z.boolean().default(true),
   securityContactEmail: z
     .string()
@@ -125,10 +119,8 @@ export async function resolveEffectiveTrackingPixels(): Promise<{
     settings.metaPixelId.trim() || process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim() || "";
   const capiToken =
     settings.metaCapiAccessToken.trim() || process.env.META_CAPI_ACCESS_TOKEN?.trim() || "";
-  const gtmId =
-    settings.googleTagManagerId.trim() || process.env.NEXT_PUBLIC_GTM_ID?.trim() || "";
-  const gaId =
-    settings.googleAnalyticsId.trim() || process.env.NEXT_PUBLIC_GA_ID?.trim() || "";
+  const gtmId = settings.googleTagManagerId.trim() || process.env.NEXT_PUBLIC_GTM_ID?.trim() || "";
+  const gaId = settings.googleAnalyticsId.trim() || process.env.NEXT_PUBLIC_GA_ID?.trim() || "";
   const tiktokId = settings.tiktokPixelId.trim();
 
   return {

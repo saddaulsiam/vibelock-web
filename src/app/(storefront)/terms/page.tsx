@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
-import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { SITE_URL } from "@/lib/seo/site";
-import { ShieldCheck, Scale } from "lucide-react";
+import { Scale, ShieldCheck } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -126,9 +126,9 @@ export default function TermsPage() {
                 <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     We offer Cash on Delivery (COD) across Bangladesh, as well as secure online
-                    payments via PayStation (Cards/MFS) and Direct bKash. Online transactions
-                    are processed through encrypted gateways; VibeLock does not store raw credit
-                    card numbers or banking PINs.
+                    payments via PayStation (Cards/MFS) and Direct bKash. Online transactions are
+                    processed through encrypted gateways; VibeLock does not store raw credit card
+                    numbers or banking PINs.
                   </p>
                   <p>
                     For Cash on Delivery orders, you agree to inspect the parcel exterior and pay

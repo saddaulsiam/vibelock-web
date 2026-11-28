@@ -1,5 +1,5 @@
-import prisma from "../../src/lib/prisma/client";
 import { Prisma } from "@prisma/client";
+import prisma from "../../src/lib/prisma/client";
 
 export async function createTestCategory(
   overrides: Partial<Prisma.CategoryUncheckedCreateInput> = {}

@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
 import { ProductStatus } from "@prisma/client";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 describe("ProductCard Secondary Image Hover Effect", () => {
   it("renders primary and secondary images with cross-fade hover transition classes", () => {
@@ -73,6 +73,6 @@ describe("ProductCard Secondary Image Hover Effect", () => {
     expect(html).toContain("bg-white/85");
     expect(html).toContain("backdrop-blur-md");
     expect(html).toContain("border-black/10");
-    expect(html).toContain("aria-label=\"Add Pitch Black Obsidian Hoodie to wishlist\"");
+    expect(html).toContain('aria-label="Add Pitch Black Obsidian Hoodie to wishlist"');
   });
 });

@@ -28,46 +28,49 @@ vi.mock("@/lib/prisma/client", () => {
         findMany: vi.fn(
           async (query?: { where?: { products?: { some?: { status?: string } } } }) => {
             // If query checks for published products, return only categories with products
-          if (query?.where?.products?.some?.status === "PUBLISHED") {
+            if (query?.where?.products?.some?.status === "PUBLISHED") {
+              return [
+                { slug: "oversized-t-shirts", updatedAt: new Date("2026-11-01") },
+                { slug: "hoodies", updatedAt: new Date("2026-11-01") },
+              ];
+            }
             return [
               { slug: "oversized-t-shirts", updatedAt: new Date("2026-11-01") },
               { slug: "hoodies", updatedAt: new Date("2026-11-01") },
+              { slug: "pants", updatedAt: new Date("2026-11-01") },
+              { slug: "shirts", updatedAt: new Date("2026-11-01") },
+              { slug: "accessories", updatedAt: new Date("2026-11-01") },
             ];
           }
-          return [
-            { slug: "oversized-t-shirts", updatedAt: new Date("2026-11-01") },
-            { slug: "hoodies", updatedAt: new Date("2026-11-01") },
-            { slug: "pants", updatedAt: new Date("2026-11-01") },
-            { slug: "shirts", updatedAt: new Date("2026-11-01") },
-            { slug: "accessories", updatedAt: new Date("2026-11-01") },
-          ];
-        }),
+        ),
+      },
+      storeSetting: {
+        findUnique: vi.fn(async () => null),
       },
     },
   };
 });
 
-import { renderToStaticMarkup } from "react-dom/server";
-import React from "react";
+import nextConfig from "@/../next.config";
+import { generateMetadata as generateProductMetadata } from "@/app/(storefront)/product/[slug]/page";
+import { metadata as rootMetadata } from "@/app/layout";
+import sitemap from "@/app/sitemap";
 import { HeroSection } from "@/components/storefront/home/hero-section";
 import { Footer } from "@/components/storefront/layout/footer";
-import { metadata as rootMetadata } from "@/app/layout";
-import { generateMetadata as generateProductMetadata } from "@/app/(storefront)/product/[slug]/page";
-import sitemap from "@/app/sitemap";
-import nextConfig from "@/../next.config";
+import { renderToStaticMarkup } from "react-dom/server";
 
 import { metadata as aboutMetadata } from "@/app/(storefront)/about/page";
-import { metadata as contactMetadata } from "@/app/(storefront)/contact/page";
-import { metadata as faqMetadata } from "@/app/(storefront)/faq/page";
-import { metadata as privacyMetadata } from "@/app/(storefront)/privacy/page";
-import { metadata as termsMetadata } from "@/app/(storefront)/terms/page";
-import { metadata as shippingMetadata } from "@/app/(storefront)/shipping-policy/page";
-import { metadata as returnMetadata } from "@/app/(storefront)/return-policy/page";
-import { metadata as shopMetadata } from "@/app/(storefront)/shop/page";
 import { metadata as cartMetadata } from "@/app/(storefront)/cart/page";
 import { metadata as checkoutMetadata } from "@/app/(storefront)/checkout/page";
-import { metadata as wishlistMetadata } from "@/app/(storefront)/wishlist/page";
+import { metadata as contactMetadata } from "@/app/(storefront)/contact/page";
+import { metadata as faqMetadata } from "@/app/(storefront)/faq/page";
 import { metadata as orderSuccessMetadata } from "@/app/(storefront)/order-success/[orderNumber]/page";
+import { metadata as privacyMetadata } from "@/app/(storefront)/privacy/page";
+import { metadata as returnMetadata } from "@/app/(storefront)/return-policy/page";
+import { metadata as shippingMetadata } from "@/app/(storefront)/shipping-policy/page";
+import { metadata as shopMetadata } from "@/app/(storefront)/shop/page";
+import { metadata as termsMetadata } from "@/app/(storefront)/terms/page";
+import { metadata as wishlistMetadata } from "@/app/(storefront)/wishlist/page";
 
 vi.mock("@/lib/catalog/queries", () => ({
   getProductBySlug: vi.fn(async (slug: string) => {
@@ -184,8 +187,8 @@ describe("Phase 1 SEO: Sitemap Generation", () => {
 });
 
 describe("Phase 2 SEO: Internal Linking to /about and /contact", () => {
-  it("renders crawlable links to /about and /contact in footer", () => {
-    const html = renderToStaticMarkup(<Footer />);
+  it("renders crawlable links to /about and /contact in footer", async () => {
+    const html = renderToStaticMarkup(await Footer());
 
     expect(html).toContain('href="/about"');
     expect(html).toContain('href="/contact"');

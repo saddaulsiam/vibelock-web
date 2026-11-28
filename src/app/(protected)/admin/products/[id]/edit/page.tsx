@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/products";
 import { getAdminProductFormData } from "@/lib/admin/catalog";
+import { notFound } from "next/navigation";
 
 export default async function EditAdminProductPage({
   params,

@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
 import {
   calculateSummary,
   filterAndSortItems,
   processIntelligenceRow,
-  type RawIntelligenceRow,
   type InventoryIntelligenceItem,
+  type RawIntelligenceRow,
 } from "@/lib/admin/inventory";
+import { describe, expect, it } from "vitest";
 
 describe("Inventory Intelligence Queries & Logic Unit Tests", () => {
   const asOf = new Date("2026-10-26T12:00:00Z");

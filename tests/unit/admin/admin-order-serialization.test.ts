@@ -1,5 +1,5 @@
-import { describe, expect, test } from "vitest";
 import { Prisma } from "@prisma/client";
+import { describe, expect, test } from "vitest";
 
 describe("Admin Order RSC Plain Object Serialization", () => {
   test("guarantees all Decimal objects on Order, OrderItems, Shipment, and Payments are serialized to numbers", () => {

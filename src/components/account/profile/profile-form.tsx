@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { resendVerificationAction } from "@/app/actions/verification";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select-native";
 import { updateProfileAction, uploadAvatarAction } from "@/lib/account/actions";
-import { Check, Loader2, ShieldCheck, ShieldAlert, Camera, Trash2 } from "lucide-react";
+import { Camera, Check, Loader2, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { resendVerificationAction } from "@/app/actions/verification";
 
 interface ProfileFormProps {
   initialName: string;

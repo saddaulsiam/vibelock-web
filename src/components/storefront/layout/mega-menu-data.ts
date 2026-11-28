@@ -61,11 +61,17 @@ export function getCategoryMegaMenuData(
 
     return {
       id: sub.id,
-      name: sub.name.replace(/^\d+[.\s-]+/, "").trim().toUpperCase(),
+      name: sub.name
+        .replace(/^\d+[.\s-]+/, "")
+        .trim()
+        .toUpperCase(),
       slug: sub.slug,
       children: dbChildren.map((ch) => ({
         id: ch.id,
-        name: ch.name.replace(/^\d+[.\s-]+/, "").trim().toUpperCase(),
+        name: ch.name
+          .replace(/^\d+[.\s-]+/, "")
+          .trim()
+          .toUpperCase(),
         slug: ch.slug,
       })),
     };

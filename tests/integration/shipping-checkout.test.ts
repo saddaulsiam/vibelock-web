@@ -1,18 +1,18 @@
-import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import prisma from "../../src/lib/prisma/client";
-import {
-  createTestProduct,
-  createTestVariant,
-  createTestInventory,
-  createTestCoupon,
-  createTestShippingZone,
-  createTestShippingMethod,
-} from "../factories";
-import { createTestUser } from "../factories/user";
-import { addToCart } from "../../src/lib/cart/mutations";
-import { createOrderAction, getShippingMethodsAction } from "../../src/lib/checkout/actions";
 import { Prisma } from "@prisma/client";
 import crypto from "crypto";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { addToCart } from "../../src/lib/cart/mutations";
+import { createOrderAction, getShippingMethodsAction } from "../../src/lib/checkout/actions";
+import prisma from "../../src/lib/prisma/client";
+import {
+  createTestCoupon,
+  createTestInventory,
+  createTestProduct,
+  createTestShippingMethod,
+  createTestShippingZone,
+  createTestVariant,
+} from "../factories";
+import { createTestUser } from "../factories/user";
 
 const mockCookies = new Map<string, { value: string }>();
 let mockSession: unknown = null;

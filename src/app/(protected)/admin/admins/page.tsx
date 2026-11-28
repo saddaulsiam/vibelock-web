@@ -1,8 +1,7 @@
-import { requireRole } from "@/lib/auth/authorization";
-import { AdminPageHeader } from "@/components/admin/shared";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
-import { getAdminUsers, getAdminUserStats } from "@/lib/admin/users";
+import { AdminKpiCard, AdminKpiGrid, AdminPageHeader } from "@/components/admin/shared";
 import { AdminUsersTable } from "@/components/admin/users";
+import { getAdminUsers, getAdminUserStats } from "@/lib/admin/users";
+import { requireRole } from "@/lib/auth/authorization";
 import { Shield, ShieldCheck, UserCheck, Users } from "lucide-react";
 
 export const dynamic = "force-dynamic";

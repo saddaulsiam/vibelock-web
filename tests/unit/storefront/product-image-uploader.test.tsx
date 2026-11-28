@@ -1,6 +1,6 @@
-import { describe, expect, test } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { ProductImageUploader } from "@/components/admin/products";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test } from "vitest";
 
 describe("ProductImageUploader component", () => {
   const sampleImages = [
@@ -11,9 +11,9 @@ describe("ProductImageUploader component", () => {
   test("renders dropzone and toggle button by default", () => {
     const html = renderToStaticMarkup(<ProductImageUploader initialImages={[]} />);
 
-    expect(html).toContain("Product images");
-    expect(html).toContain("Click or drag to upload images");
-    expect(html).toContain("Or use external image URLs");
+    expect(html).toContain("Lookbook Gallery");
+    expect(html).toContain("Click or drag to upload lookbook photos");
+    expect(html).toContain("Use external image URLs");
     expect(html).toContain('type="file"');
     expect(html).toContain('name="imageFiles"');
   });

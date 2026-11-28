@@ -1,10 +1,10 @@
-import "server-only";
-import { getCurrentUser } from "./get-current-user";
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
+import "server-only";
+import { getCurrentUser } from "./get-current-user";
 import { ROLE_HIERARCHY } from "./roles";
 
-export { ROLE_HIERARCHY, hasRequiredRole } from "./roles";
+export { hasRequiredRole, ROLE_HIERARCHY } from "./roles";
 
 export class AuthRequiredError extends Error {
   constructor(message = "Unauthorized") {

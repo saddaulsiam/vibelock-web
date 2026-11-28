@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 interface MockSession {
   user?: {
@@ -77,16 +77,16 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
+import AdminSettingsLayout from "../../src/app/(protected)/admin/settings/layout";
+import AdminPaymentSettingsPage from "../../src/app/(protected)/admin/settings/payments/page";
+import { togglePaymentMethodAction } from "../../src/lib/admin/payments";
 import {
   getPaymentSettingsOverview,
-  isPaymentMethodEnabled,
   getStorefrontPaymentMethods,
+  isPaymentMethodEnabled,
   updatePaymentMethodSetting,
   type PaymentMethodCode,
 } from "../../src/lib/settings/payment-settings";
-import { togglePaymentMethodAction } from "../../src/lib/admin/payments";
-import AdminPaymentSettingsPage from "../../src/app/(protected)/admin/settings/payments/page";
-import AdminSettingsLayout from "../../src/app/(protected)/admin/settings/layout";
 
 describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Validation", () => {
   beforeEach(() => {
@@ -379,18 +379,19 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
       mockEnv.PAYSTATION_PASSWORD = "valid_passwd";
       mockPrisma.paymentMethodSetting.findUnique.mockImplementation(
         async ({ where }: { where: { code?: string } }) => {
-        if (where?.code === "PAYSTATION") {
-          return {
-            id: "ps-1",
-            code: "PAYSTATION",
-            name: "PayStation",
-            isEnabled: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
+          if (where?.code === "PAYSTATION") {
+            return {
+              id: "ps-1",
+              code: "PAYSTATION",
+              name: "PayStation",
+              isEnabled: true,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+          }
+          return null;
         }
-        return null;
-      });
+      );
 
       const options = await getStorefrontPaymentMethods();
       const values = options.map((o) => o.value);

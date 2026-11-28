@@ -1,9 +1,9 @@
 "use client";
 
-import { quickUpdateProductPricesAction } from "@/lib/admin/catalog/catalog-actions";
-import type { AdminProductItem } from "@/lib/admin/catalog/catalog-queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { quickUpdateProductPricesAction } from "@/lib/admin/catalog/catalog-actions";
+import type { AdminProductItem } from "@/lib/admin/catalog/catalog-queries";
 import { Loader2, Tag, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";

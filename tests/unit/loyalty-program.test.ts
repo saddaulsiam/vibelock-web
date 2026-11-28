@@ -1,9 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  calculateTierEarnedPoints,
-  determineLoyaltyTier,
-  TIER_MULTIPLIERS,
-} from "@/lib/settings/loyalty-settings";
+import { calculateTierEarnedPoints, determineLoyaltyTier } from "@/lib/settings/loyalty-settings";
+import { describe, expect, it } from "vitest";
 
 describe("Loyalty Program - Tier Multipliers and Qualification", () => {
   const thresholds = {

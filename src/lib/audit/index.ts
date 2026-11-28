@@ -1,6 +1,6 @@
-import "server-only";
-import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma/client";
+import { Prisma } from "@prisma/client";
+import "server-only";
 
 const SENSITIVE_WORDS = new Set([
   "password",
@@ -97,9 +97,7 @@ export async function recordAuditLog(params: RecordAuditLogParams) {
   const { actorId, action, entityType, entityId, metadata, ipAddress, userAgent, tx } = params;
 
   const validActorId =
-    typeof actorId === "string" && actorId.trim().length > 0
-      ? actorId.trim()
-      : null;
+    typeof actorId === "string" && actorId.trim().length > 0 ? actorId.trim() : null;
 
   const sanitized = metadata ? sanitizeAuditMetadata(metadata) : undefined;
   const db = tx ?? prisma;

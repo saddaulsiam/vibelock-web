@@ -2,9 +2,9 @@
 
 import { requireRole } from "@/lib/auth/authorization";
 import {
+  getNotificationSettings,
   NotificationSettingsSchema,
   updateNotificationSettings,
-  getNotificationSettings,
 } from "@/lib/settings/notification-settings";
 import { revalidatePath } from "next/cache";
 
@@ -22,10 +22,18 @@ export async function updateNotificationSettingsAction(
   const { settings: current } = await getNotificationSettings();
 
   const raw = {
-    smsProvider: formData.has("smsProvider") ? formData.get("smsProvider")?.toString()?.trim() || "BULKSMSBD" : current.smsProvider,
-    senderId: formData.has("senderId") ? formData.get("senderId")?.toString()?.trim() || "VibeLock" : current.senderId,
-    smsApiKey: formData.has("smsApiKey") ? formData.get("smsApiKey")?.toString()?.trim() || "" : current.smsApiKey,
-    smsApiUrl: formData.has("smsApiUrl") ? formData.get("smsApiUrl")?.toString()?.trim() || "" : current.smsApiUrl,
+    smsProvider: formData.has("smsProvider")
+      ? formData.get("smsProvider")?.toString()?.trim() || "BULKSMSBD"
+      : current.smsProvider,
+    senderId: formData.has("senderId")
+      ? formData.get("senderId")?.toString()?.trim() || "VibeLock"
+      : current.senderId,
+    smsApiKey: formData.has("smsApiKey")
+      ? formData.get("smsApiKey")?.toString()?.trim() || ""
+      : current.smsApiKey,
+    smsApiUrl: formData.has("smsApiUrl")
+      ? formData.get("smsApiUrl")?.toString()?.trim() || ""
+      : current.smsApiUrl,
     notifyOnOrderPlaced: formData.has("notifyOnOrderPlaced")
       ? formData.get("notifyOnOrderPlaced") === "true"
       : current.notifyOnOrderPlaced,
@@ -91,6 +99,7 @@ export async function updateNotificationSettingsAction(
 
   return {
     error: null,
-    message: "SMS gateway routing, transactional event switches, and store alerts updated successfully.",
+    message:
+      "SMS gateway routing, transactional event switches, and store alerts updated successfully.",
   };
 }

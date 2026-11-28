@@ -2,9 +2,9 @@
 
 import { requireRole } from "@/lib/auth/authorization";
 import {
+  getLoyaltySettings,
   LoyaltyProgramSettingsSchema,
   updateLoyaltySettings,
-  getLoyaltySettings,
 } from "@/lib/settings/loyalty-settings";
 import { revalidatePath } from "next/cache";
 
@@ -81,7 +81,8 @@ export async function updateLoyaltySettingsAction(
 
     return {
       error: null,
-      message: "Loyalty program rules, points earning rates, and tier thresholds updated successfully.",
+      message:
+        "Loyalty program rules, points earning rates, and tier thresholds updated successfully.",
     };
   } catch (error) {
     return {

@@ -1,8 +1,8 @@
 import "server-only";
 
-import { Prisma, ReturnRequestStatus } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { Prisma, ReturnRequestStatus } from "@prisma/client";
 
 export type ReturnReverseLogistics = {
   provider: string;

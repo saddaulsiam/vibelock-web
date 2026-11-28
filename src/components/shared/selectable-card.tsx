@@ -1,6 +1,6 @@
-import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
+import * as React from "react";
 
 const selectableCardVariants = cva(
   "flex cursor-pointer rounded-xs border transition-all duration-150 select-none outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-vl-cyan has-[:focus-visible]:ring-offset-1",

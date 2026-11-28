@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { SITE_URL } from "@/lib/seo/site";
-import { Truck, CheckCircle2 } from "lucide-react";
 import { getShippingRulesSettings } from "@/lib/settings/shipping-rules-settings";
+import { CheckCircle2, Truck } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Shipping & Delivery Policy",
@@ -136,8 +136,8 @@ export default async function ShippingPolicyPage() {
                   </p>
                   <p>
                     Once your order is picked up from our warehouse, you will receive an SMS and
-                    email with a direct <strong>Consignment Tracking Code</strong> to
-                    monitor your parcel in real time.
+                    email with a direct <strong>Consignment Tracking Code</strong> to monitor your
+                    parcel in real time.
                   </p>
                 </div>
               </div>

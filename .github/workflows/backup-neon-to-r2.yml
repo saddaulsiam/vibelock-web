@@ -3,7 +3,7 @@ name: Neon PostgreSQL to Cloudflare R2 Automated Backup
 on:
   schedule:
     # Daily at 03:00 UTC (09:00 Asia/Dhaka)
-    - cron: '0 3 * * *'
+    - cron: "0 3 * * *"
   workflow_dispatch:
     inputs:
       reason:

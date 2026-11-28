@@ -1,11 +1,11 @@
 import "server-only";
 
-import prisma from "@/lib/prisma/client";
 import { appConfig } from "@/lib/config/app";
 import { getWhatsAppNumber } from "@/lib/config/contact";
+import prisma from "@/lib/prisma/client";
+import type { Prisma } from "@prisma/client";
 import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
-import type { Prisma } from "@prisma/client";
 
 // Key constants for store settings
 export const STORE_SETTING_KEYS = {

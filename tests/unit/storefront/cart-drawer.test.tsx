@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { CartDrawer } from "@/components/storefront/cart/cart-drawer";
 import { CartPageContent } from "@/components/storefront/cart/cart-page-content";
 import type { CartDTO } from "@/lib/cart/types";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 const mockCart: CartDTO = {
   id: "cart-1",

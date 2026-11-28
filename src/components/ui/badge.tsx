@@ -1,9 +1,9 @@
-import * as React from "react";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
-import { X } from "lucide-react";
 import { cn } from "cn";
+import { X } from "lucide-react";
+import * as React from "react";
 
 /**
  * World-Class E-Commerce Badge Variants

@@ -1,16 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { useFormStatus } from "react-dom";
-import {
-  updateLoyaltySettingsAction,
-  type LoyaltySettingsActionState,
-} from "@/lib/admin/settings/loyalty-settings-actions";
-import type { LoyaltyProgramSettings } from "@/lib/settings/loyalty-settings";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -19,6 +10,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import {
+  updateLoyaltySettingsAction,
+  type LoyaltySettingsActionState,
+} from "@/lib/admin/settings/loyalty-settings-actions";
+import type { LoyaltyProgramSettings } from "@/lib/settings/loyalty-settings";
 import {
   AlertTriangle,
   Award,
@@ -31,6 +29,8 @@ import {
   Sparkles,
   Store,
 } from "lucide-react";
+import { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 const initialState: LoyaltySettingsActionState = { error: null };
 
@@ -139,9 +139,12 @@ export function LoyaltySettingsForm({
             {/* Master Toggle */}
             <div className="rounded-brand flex items-center justify-between border border-neutral-200 bg-neutral-50/50 p-3">
               <div className="space-y-0.5">
-                <span className="font-semibold text-neutral-900">Enable Customer Loyalty Program</span>
+                <span className="font-semibold text-neutral-900">
+                  Enable Customer Loyalty Program
+                </span>
                 <p className="text-[11px] text-neutral-500">
-                  When enabled, registered shoppers and verified phone numbers accumulate reward points
+                  When enabled, registered shoppers and verified phone numbers accumulate reward
+                  points
                 </p>
               </div>
               <Switch checked={enabled} onCheckedChange={setEnabled} />
@@ -154,10 +157,16 @@ export function LoyaltySettingsForm({
                   <Store className="size-4 text-neutral-600" />
                   <div>
                     <span className="font-medium text-neutral-900">Physical Store POS</span>
-                    <p className="text-[10px] text-neutral-500">Counter lookup &amp; instant billing redemption</p>
+                    <p className="text-[10px] text-neutral-500">
+                      Counter lookup &amp; instant billing redemption
+                    </p>
                   </div>
                 </div>
-                <Switch checked={enableInPos} onCheckedChange={setEnableInPos} disabled={!enabled} />
+                <Switch
+                  checked={enableInPos}
+                  onCheckedChange={setEnableInPos}
+                  disabled={!enabled}
+                />
               </div>
 
               <div className="rounded-brand flex items-center justify-between border border-neutral-200 p-3">
@@ -165,10 +174,16 @@ export function LoyaltySettingsForm({
                   <Globe className="size-4 text-neutral-600" />
                   <div>
                     <span className="font-medium text-neutral-900">Online Storefront</span>
-                    <p className="text-[10px] text-neutral-500">Customer account portal &amp; checkout redemption</p>
+                    <p className="text-[10px] text-neutral-500">
+                      Customer account portal &amp; checkout redemption
+                    </p>
                   </div>
                 </div>
-                <Switch checked={enableOnline} onCheckedChange={setEnableOnline} disabled={!enabled} />
+                <Switch
+                  checked={enableOnline}
+                  onCheckedChange={setEnableOnline}
+                  disabled={!enabled}
+                />
               </div>
             </div>
           </CardContent>
@@ -207,11 +222,11 @@ export function LoyaltySettingsForm({
           <CardContent className="space-y-4 p-5 text-xs">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="font-semibold text-neutral-800">
-                  Spend Amount per Point (৳)
-                </label>
+                <label className="font-semibold text-neutral-800">Spend Amount per Point (৳)</label>
                 <div className="relative">
-                  <span className="absolute top-2 left-3 font-mono font-bold text-neutral-400">৳</span>
+                  <span className="absolute top-2 left-3 font-mono font-bold text-neutral-400">
+                    ৳
+                  </span>
                   <Input
                     type="number"
                     name="spendAmountPerPoint"
@@ -228,11 +243,11 @@ export function LoyaltySettingsForm({
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-neutral-800">
-                  Point Redemption Value (৳)
-                </label>
+                <label className="font-semibold text-neutral-800">Point Redemption Value (৳)</label>
                 <div className="relative">
-                  <span className="absolute top-2 left-3 font-mono font-bold text-neutral-400">৳</span>
+                  <span className="absolute top-2 left-3 font-mono font-bold text-neutral-400">
+                    ৳
+                  </span>
                   <Input
                     type="number"
                     step="0.1"
@@ -251,11 +266,10 @@ export function LoyaltySettingsForm({
             </div>
 
             {/* Live Calculation Preview Banner */}
-            <div className="rounded-brand border border-vl-cyan-200 bg-vl-cyan-50/50 p-3 text-[11px] text-neutral-700">
-              <span className="font-bold text-neutral-900">Live Reward Example: </span>
-              A purchase of ৳1,000 earns{" "}
-              <strong>{Math.floor(1000 / Math.max(1, spendPerPoint))} points</strong>. When redeemed,
-              these points reduce a future bill by{" "}
+            <div className="rounded-brand border-vl-cyan-200 bg-vl-cyan-50/50 border p-3 text-[11px] text-neutral-700">
+              <span className="font-bold text-neutral-900">Live Reward Example: </span>A purchase of
+              ৳1,000 earns <strong>{Math.floor(1000 / Math.max(1, spendPerPoint))} points</strong>.
+              When redeemed, these points reduce a future bill by{" "}
               <strong>
                 ৳{(Math.floor(1000 / Math.max(1, spendPerPoint)) * pointValue).toFixed(0)}
               </strong>{" "}
@@ -270,9 +284,7 @@ export function LoyaltySettingsForm({
             {/* Redemption Guardrails */}
             <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="font-semibold text-neutral-800">
-                  Minimum Points to Redeem
-                </label>
+                <label className="font-semibold text-neutral-800">Minimum Points to Redeem</label>
                 <Input
                   type="number"
                   name="minPointsToRedeem"
@@ -338,25 +350,39 @@ export function LoyaltySettingsForm({
               {/* Bronze (Baseline) */}
               <div className="rounded-brand border border-neutral-200 bg-neutral-50/50 p-3">
                 <div className="mb-2 flex items-center justify-between">
-                  <Badge variant="outline" className="border-neutral-300 bg-neutral-200/60 font-bold text-neutral-800">
+                  <Badge
+                    variant="outline"
+                    className="border-neutral-300 bg-neutral-200/60 font-bold text-neutral-800"
+                  >
                     BRONZE
                   </Badge>
                   <Award className="size-4 text-neutral-500" />
                 </div>
-                <span className="block text-[11px] font-bold text-neutral-900">Baseline Shoppers</span>
-                <p className="mt-1 font-mono text-xs font-semibold text-neutral-600">৳0 - First Order</p>
-                <p className="mt-1 text-[10px] text-neutral-500">Standard reward point accumulation</p>
+                <span className="block text-[11px] font-bold text-neutral-900">
+                  Baseline Shoppers
+                </span>
+                <p className="mt-1 font-mono text-xs font-semibold text-neutral-600">
+                  ৳0 - First Order
+                </p>
+                <p className="mt-1 text-[10px] text-neutral-500">
+                  Standard reward point accumulation
+                </p>
               </div>
 
               {/* Silver */}
               <div className="rounded-brand border border-slate-200 bg-slate-50/50 p-3">
                 <div className="mb-2 flex items-center justify-between">
-                  <Badge variant="outline" className="border-slate-300 bg-slate-200/70 font-bold text-slate-800">
+                  <Badge
+                    variant="outline"
+                    className="border-slate-300 bg-slate-200/70 font-bold text-slate-800"
+                  >
                     SILVER
                   </Badge>
                   <Award className="size-4 text-slate-600" />
                 </div>
-                <label className="block text-[11px] font-bold text-neutral-900">Min Lifetime Spend (৳)</label>
+                <label className="block text-[11px] font-bold text-neutral-900">
+                  Min Lifetime Spend (৳)
+                </label>
                 <Input
                   type="number"
                   name="silverThreshold"
@@ -364,18 +390,25 @@ export function LoyaltySettingsForm({
                   defaultValue={initialSettings.silverThreshold}
                   className="mt-1.5 h-8 bg-white font-mono text-xs font-semibold"
                 />
-                <p className="mt-1 text-[10px] text-neutral-500">Qualifies for Silver tier privileges</p>
+                <p className="mt-1 text-[10px] text-neutral-500">
+                  Qualifies for Silver tier privileges
+                </p>
               </div>
 
               {/* Gold */}
               <div className="rounded-brand border border-amber-200 bg-amber-50/40 p-3">
                 <div className="mb-2 flex items-center justify-between">
-                  <Badge variant="outline" className="border-amber-300 bg-amber-200/80 font-bold text-amber-900">
+                  <Badge
+                    variant="outline"
+                    className="border-amber-300 bg-amber-200/80 font-bold text-amber-900"
+                  >
                     GOLD
                   </Badge>
                   <Crown className="size-4 text-amber-600" />
                 </div>
-                <label className="block text-[11px] font-bold text-neutral-900">Min Lifetime Spend (৳)</label>
+                <label className="block text-[11px] font-bold text-neutral-900">
+                  Min Lifetime Spend (৳)
+                </label>
                 <Input
                   type="number"
                   name="goldThreshold"
@@ -383,18 +416,25 @@ export function LoyaltySettingsForm({
                   defaultValue={initialSettings.goldThreshold}
                   className="mt-1.5 h-8 bg-white font-mono text-xs font-semibold"
                 />
-                <p className="mt-1 text-[10px] text-neutral-500">High-value frequent store shopper</p>
+                <p className="mt-1 text-[10px] text-neutral-500">
+                  High-value frequent store shopper
+                </p>
               </div>
 
               {/* Platinum */}
-              <div className="rounded-brand border border-vl-cyan-200 bg-vl-cyan-50/30 p-3">
+              <div className="rounded-brand border-vl-cyan-200 bg-vl-cyan-50/30 border p-3">
                 <div className="mb-2 flex items-center justify-between">
-                  <Badge variant="outline" className="border-vl-cyan-300 bg-vl-cyan-200/90 font-bold text-neutral-900">
+                  <Badge
+                    variant="outline"
+                    className="border-vl-cyan-300 bg-vl-cyan-200/90 font-bold text-neutral-900"
+                  >
                     PLATINUM
                   </Badge>
                   <Crown className="text-vl-cyan-600 size-4" />
                 </div>
-                <label className="block text-[11px] font-bold text-neutral-900">Min Lifetime Spend (৳)</label>
+                <label className="block text-[11px] font-bold text-neutral-900">
+                  Min Lifetime Spend (৳)
+                </label>
                 <Input
                   type="number"
                   name="platinumThreshold"

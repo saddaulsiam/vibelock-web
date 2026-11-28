@@ -1,4 +1,3 @@
-export * from "./shared";
 export * from "./banners";
 export * from "./categories";
 export * from "./coupons";
@@ -9,5 +8,6 @@ export * from "./payments";
 export * from "./products";
 export * from "./reports";
 export * from "./returns";
+export * from "./shared";
 export * from "./shipping";
 export * from "./users";

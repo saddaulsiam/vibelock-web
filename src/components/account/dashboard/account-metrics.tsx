@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { subscribeWishlist, getWishlistSnapshot, getWishlistServerSnapshot } from "@/lib/wishlist";
+import { getWishlistServerSnapshot, getWishlistSnapshot, subscribeWishlist } from "@/lib/wishlist";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { useMemo, useSyncExternalStore } from "react";
 
 interface AccountMetricsProps {
   orderCount: number;
@@ -78,7 +78,7 @@ export function AccountMetrics({
   return (
     /* Unified, Architectural Metrics Surface (No separate SaaS widget boxes) */
     <Card variant="brand" className="overflow-hidden p-0">
-      <div className="divide-vl-dark-900/6 grid grid-cols-2 divide-x divide-y sm:grid-cols-3 lg:grid-cols-5 sm:divide-y-0">
+      <div className="divide-vl-dark-900/6 grid grid-cols-2 divide-x divide-y sm:grid-cols-3 sm:divide-y-0 lg:grid-cols-5">
         {metrics.map((metric) => (
           <div
             key={metric.label}

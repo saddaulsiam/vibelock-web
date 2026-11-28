@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { SITE_URL } from "@/lib/seo/site";
-import { RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 import { getInventoryReturnSettings } from "@/lib/settings/inventory-return-settings";
+import { ArrowRight, CheckCircle2, RotateCcw } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Return & Exchange Policy",
@@ -21,9 +21,10 @@ export default async function ReturnPolicyPage() {
   const { settings } = await getInventoryReturnSettings();
   const lastUpdated = "November 1, 2026";
   const returnWindowDays = settings.returnWindowDays;
-  const nonReturnableList = settings.nonReturnableCategories.length > 0
-    ? settings.nonReturnableCategories.join(", ")
-    : "innerwear, socks, and clearance items";
+  const nonReturnableList =
+    settings.nonReturnableCategories.length > 0
+      ? settings.nonReturnableCategories.join(", ")
+      : "innerwear, socks, and clearance items";
 
   return (
     <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
@@ -47,8 +48,8 @@ export default async function ReturnPolicyPage() {
             Return &amp; Exchange Policy
           </h1>
           <p className="text-vl-white-300/70 mt-3 max-w-xl text-sm leading-relaxed sm:text-base">
-            Streetwear should fit right. If the fit isn&apos;t what you envisioned, our {returnWindowDays}-day
-            exchange policy has you covered nationwide.
+            Streetwear should fit right. If the fit isn&apos;t what you envisioned, our{" "}
+            {returnWindowDays}-day exchange policy has you covered nationwide.
           </p>
           <div className="text-vl-white-300/50 mt-6 flex items-center gap-4 text-xs">
             <span>Last Updated: {lastUpdated}</span>
@@ -73,9 +74,9 @@ export default async function ReturnPolicyPage() {
                       {returnWindowDays}-Day Exchange Guarantee
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-emerald-800">
-                      You have <strong>{returnWindowDays} calendar days</strong> from the delivery timestamp to
-                      initiate a return or size exchange for any unworn, unwashed VibeLock garment
-                      with its original tags intact.
+                      You have <strong>{returnWindowDays} calendar days</strong> from the delivery
+                      timestamp to initiate a return or size exchange for any unworn, unwashed
+                      VibeLock garment with its original tags intact.
                     </p>
                   </div>
                 </div>
@@ -101,7 +102,8 @@ export default async function ReturnPolicyPage() {
                   <div className="mt-4 rounded-xs border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
                     <p className="font-semibold">⚠️ Non-Returnable Items:</p>
                     <p className="mt-1">
-                      For hygiene reasons, {nonReturnableList} cannot be returned unless a manufacturing defect is proven upon unboxing.
+                      For hygiene reasons, {nonReturnableList} cannot be returned unless a
+                      manufacturing defect is proven upon unboxing.
                     </p>
                   </div>
                 </div>
@@ -199,8 +201,8 @@ export default async function ReturnPolicyPage() {
                       no expiry date.
                     </li>
                     <li>
-                      <strong>Mobile Financial Service (bKash):</strong> Credited back to
-                      your account within <strong>3 to 5 business days</strong>.
+                      <strong>Mobile Financial Service (bKash):</strong> Credited back to your
+                      account within <strong>3 to 5 business days</strong>.
                     </li>
                     <li>
                       <strong>Card / Net Banking:</strong> Dispatched through PayStation gateway

@@ -1,11 +1,11 @@
-import { describe, expect, test, vi, beforeEach } from "vitest";
 import {
+  closeRegisterShiftAction,
   getCurrentShiftAction,
   openRegisterShiftAction,
   recordCashDropAction,
-  closeRegisterShiftAction,
 } from "@/lib/pos/pos-shift-actions";
 import prisma from "@/lib/prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock authorization
 vi.mock("@/lib/auth/authorization", () => ({

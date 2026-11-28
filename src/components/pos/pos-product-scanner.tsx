@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Barcode, Loader2, Volume2, VolumeX, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { searchPosProductByBarcodeOrSku } from "@/lib/pos/pos-queries";
+import { Input } from "@/components/ui/input";
 import { usePosSoundMuted } from "@/lib/pos";
+import { searchPosProductByBarcodeOrSku } from "@/lib/pos/pos-queries";
 import type { PosProductSummary, PosProductVariant } from "@/lib/pos/pos-types";
+import { Barcode, Loader2, Volume2, VolumeX, X } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface PosProductScannerProps {

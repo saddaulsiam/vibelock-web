@@ -1,8 +1,8 @@
 import "server-only";
 
-import { Prisma, type InventoryTransactionType } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { Prisma, type InventoryTransactionType } from "@prisma/client";
 
 const pageSize = 20;
 

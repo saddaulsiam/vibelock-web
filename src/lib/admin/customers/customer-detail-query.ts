@@ -1,9 +1,14 @@
 import "server-only";
 
-import type { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import { getCustomerRiskProfile, type CombinedCustomerRiskProfile } from "./customer-risk";
+import type { Prisma } from "@prisma/client";
+import {
+  buildCustomerTimeline,
+  calculateCustomerPreferences,
+  mapCustomerAbandonedCart,
+  normalizePage,
+} from "./customer-detail-helpers";
 import type {
   AdminCustomerDetailOrder,
   AdminCustomerDetailResult,
@@ -11,12 +16,7 @@ import type {
   AdminCustomerReviewItem,
   AdminCustomerStaffNote,
 } from "./customer-query-types";
-import {
-  buildCustomerTimeline,
-  calculateCustomerPreferences,
-  mapCustomerAbandonedCart,
-  normalizePage,
-} from "./customer-detail-helpers";
+import { getCustomerRiskProfile, type CombinedCustomerRiskProfile } from "./customer-risk";
 
 const DEFAULT_PAGE_SIZE = 20;
 const paidStatuses = ["SUCCESS", "PARTIALLY_REFUNDED", "REFUNDED"] as const;

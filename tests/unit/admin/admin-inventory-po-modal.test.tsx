@@ -1,7 +1,7 @@
-import { describe, expect, test, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { AdminInventoryPoModal } from "@/components/admin/inventory/admin-inventory-po-modal";
 import type { AdminInventoryItem } from "@/lib/admin/inventory";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 // Mock server action
 vi.mock("@/lib/admin/inventory", () => ({

@@ -1,6 +1,6 @@
-import { requireRole } from "@/lib/auth/authorization";
-import { AdminPageHeader } from "@/components/admin/shared";
 import { SettingsNavTabs } from "@/components/admin/settings/settings-nav-tabs";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { requireRole } from "@/lib/auth/authorization";
 import { ShieldCheck } from "lucide-react";
 
 export default async function AdminSettingsLayout({ children }: { children: React.ReactNode }) {

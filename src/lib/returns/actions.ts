@@ -1,13 +1,13 @@
 "use server";
 
-import { z } from "zod";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma/client";
-import { revalidatePath } from "next/cache";
-import { ReturnService } from "./service";
-import { getInventoryReturnSettings } from "@/lib/settings/inventory-return-settings";
 import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
 import { validateImageFile } from "@/lib/media/validation";
+import prisma from "@/lib/prisma/client";
+import { getInventoryReturnSettings } from "@/lib/settings/inventory-return-settings";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { ReturnService } from "./service";
 import { serializeReturnReason } from "./utils";
 
 export const ReturnRequestSchema = z.object({
@@ -84,8 +84,7 @@ export async function uploadReturnProofAction(
 export async function createReturnRequestAction(
   data: z.input<typeof ReturnRequestSchema>
 ): Promise<
-  | { success: true; returnRequestId: string; message: string }
-  | { success: false; error: string }
+  { success: true; returnRequestId: string; message: string } | { success: false; error: string }
 > {
   const session = await auth();
   if (!session?.user?.id) {
@@ -196,12 +195,16 @@ export async function createReturnRequestAction(
       if (!returnPolicies.allowPartialReturns) {
         const totalReturnableItems = Object.keys(returnableMap).length;
         if (items.length < totalReturnableItems) {
-          throw new Error("Partial returns are not allowed by store policy. All eligible items from this order must be returned together.");
+          throw new Error(
+            "Partial returns are not allowed by store policy. All eligible items from this order must be returned together."
+          );
         }
         for (const item of items) {
           const available = returnableMap[item.orderItemId] || 0;
           if (item.quantity < available) {
-            throw new Error("Partial returns are not allowed by store policy. Full quantity of each item must be returned.");
+            throw new Error(
+              "Partial returns are not allowed by store policy. Full quantity of each item must be returned."
+            );
           }
         }
       }

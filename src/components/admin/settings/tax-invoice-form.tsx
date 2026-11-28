@@ -1,16 +1,21 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { useFormStatus } from "react-dom";
-import type { TaxInvoiceSettings } from "@/lib/settings/tax-invoice-settings";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   updateTaxInvoiceSettingsAction,
   type TaxInvoiceActionState,
 } from "@/lib/admin/settings/tax-invoice-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import type { TaxInvoiceSettings } from "@/lib/settings/tax-invoice-settings";
 import {
   AlertTriangle,
   Building2,
@@ -20,6 +25,8 @@ import {
   Receipt,
   Save,
 } from "lucide-react";
+import { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 const initialState: TaxInvoiceActionState = { error: null };
 
@@ -32,7 +39,7 @@ function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
       disabled={pending}
       variant="primary"
       size="sm"
-      className="gap-2 px-4 shadow-2xs font-semibold"
+      className="gap-2 px-4 font-semibold shadow-2xs"
     >
       {pending ? (
         <>
@@ -70,9 +77,18 @@ function SectionAlert({ error, message }: { error?: string | null; message?: str
 }
 
 export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoiceSettings }) {
-  const [taxRulesState, taxRulesAction] = useActionState(updateTaxInvoiceSettingsAction, initialState);
-  const [taxIdentityState, taxIdentityAction] = useActionState(updateTaxInvoiceSettingsAction, initialState);
-  const [invoiceLayoutState, invoiceLayoutAction] = useActionState(updateTaxInvoiceSettingsAction, initialState);
+  const [taxRulesState, taxRulesAction] = useActionState(
+    updateTaxInvoiceSettingsAction,
+    initialState
+  );
+  const [taxIdentityState, taxIdentityAction] = useActionState(
+    updateTaxInvoiceSettingsAction,
+    initialState
+  );
+  const [invoiceLayoutState, invoiceLayoutAction] = useActionState(
+    updateTaxInvoiceSettingsAction,
+    initialState
+  );
 
   const [enableTax, setEnableTax] = useState(initialSettings.enableTax);
   const [applyShippingTax, setApplyShippingTax] = useState(initialSettings.applyTaxToShipping);
@@ -183,7 +199,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Configure Bangladesh VAT rate, inclusive/exclusive pricing, and delivery tax rules.
             </p>
@@ -302,7 +318,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Official NBR Business Identification Number (BIN) and registered office details.
             </p>
@@ -412,7 +428,8 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
                 htmlFor="invoiceFooterNote"
                 className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
               >
-                Invoice Footer Notice & Statutory Declaration <span className="text-rose-500">*</span>
+                Invoice Footer Notice & Statutory Declaration{" "}
+                <span className="text-rose-500">*</span>
               </label>
               <textarea
                 id="invoiceFooterNote"
@@ -426,9 +443,10 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
-              Mushak 6.3 layout settings, invoice prefix, digital verification seal, and footer declarations.
+              Mushak 6.3 layout settings, invoice prefix, digital verification seal, and footer
+              declarations.
             </p>
             <SectionSubmitButton label="Save Invoice Layout" />
           </CardFooter>

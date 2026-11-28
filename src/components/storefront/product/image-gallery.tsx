@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef } from "react";
-import Image from "next/image";
-import { ImageOff } from "lucide-react";
 import type { ProductImageSummary } from "@/lib/catalog/types";
 import { cn } from "@/lib/utils";
+import { ImageOff } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface ImageGalleryProps {
   images: ProductImageSummary[];

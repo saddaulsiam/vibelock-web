@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { Prisma } from "@prisma/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Hoist mock env
 const { mockEnv } = vi.hoisted(() => ({
@@ -103,18 +103,18 @@ vi.mock("@/lib/inventory/service", () => ({
   },
 }));
 
-import { PaymentService } from "@/lib/payment/service";
 import { InventoryService } from "@/lib/inventory/service";
+import {
+  APPROVED_METADATA_KEYS,
+  APPROVED_SECURITY_EVENTS,
+  sanitizeSecurityMetadata,
+} from "@/lib/monitoring/security-logger";
+import { PaymentService } from "@/lib/payment/service";
 import {
   checkPaymentInitiationRateLimit,
   clearPaymentInitiationRateLimit,
   resetRateLimitMemoryStore,
 } from "@/lib/security/rate-limit";
-import {
-  APPROVED_SECURITY_EVENTS,
-  APPROVED_METADATA_KEYS,
-  sanitizeSecurityMetadata,
-} from "@/lib/monitoring/security-logger";
 
 describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
   let paymentService: PaymentService;
@@ -806,9 +806,9 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       }
 
       // 11th attempt throws RATE_LIMIT_EXCEEDED
-      await expect(
-        checkPaymentInitiationRateLimit(customerUserId, "103.1.2.3")
-      ).rejects.toThrow("RATE_LIMIT_EXCEEDED");
+      await expect(checkPaymentInitiationRateLimit(customerUserId, "103.1.2.3")).rejects.toThrow(
+        "RATE_LIMIT_EXCEEDED"
+      );
     });
 
     it("enforces IP ceiling of 30 attempts per 15 minutes per IP", async () => {
@@ -822,9 +822,9 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       }
 
       // 31st attempt on same IP is blocked by IP ceiling
-      await expect(
-        checkPaymentInitiationRateLimit("cust-user-999", testIp)
-      ).rejects.toThrow("RATE_LIMIT_EXCEEDED");
+      await expect(checkPaymentInitiationRateLimit("cust-user-999", testIp)).rejects.toThrow(
+        "RATE_LIMIT_EXCEEDED"
+      );
     });
 
     it("safely bypasses global IP ceiling when client IP is missing or untrusted without grouping into a shared bucket", async () => {
@@ -835,9 +835,7 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
         checkPaymentInitiationRateLimit("cust-user-no-ip-1", undefined)
       ).resolves.not.toThrow();
 
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("RATE_LIMIT_MISSING_CLIENT_IP")
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("RATE_LIMIT_MISSING_CLIENT_IP"));
       warnSpy.mockRestore();
     });
 
@@ -849,9 +847,9 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       }
 
       // Blocked at 10
-      await expect(
-        checkPaymentInitiationRateLimit(customerUserId, "10.0.0.1")
-      ).rejects.toThrow("RATE_LIMIT_EXCEEDED");
+      await expect(checkPaymentInitiationRateLimit(customerUserId, "10.0.0.1")).rejects.toThrow(
+        "RATE_LIMIT_EXCEEDED"
+      );
 
       // Reset customer counter
       await clearPaymentInitiationRateLimit(customerUserId);
@@ -989,7 +987,9 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       });
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain("Switching payment methods is blocked until the existing transaction is confirmed");
+      expect(response.error).toContain(
+        "Switching payment methods is blocked until the existing transaction is confirmed"
+      );
     });
 
     it("blocks same-gateway initiation if previous attempt is unresolved and has no cached redirectUrl to prevent blind duplicate sessions", async () => {
@@ -1102,12 +1102,14 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
 
       mockPrisma.payment.findUnique.mockResolvedValueOnce(mockPayment);
       mockPrisma.payment.updateMany.mockResolvedValueOnce({ count: 1 });
-      mockPrisma.order.findUnique
-        .mockResolvedValueOnce(mockOrder)
-        .mockResolvedValueOnce(mockOrder);
-      mockPrisma.productVariant.findMany.mockResolvedValueOnce([{ id: "var-1", sku: "SKU-IMMUNE-1" }]);
+      mockPrisma.order.findUnique.mockResolvedValueOnce(mockOrder).mockResolvedValueOnce(mockOrder);
+      mockPrisma.productVariant.findMany.mockResolvedValueOnce([
+        { id: "var-1", sku: "SKU-IMMUNE-1" },
+      ]);
       mockPrisma.inventoryTransaction.findMany.mockResolvedValueOnce([]);
-      mockPrisma.inventoryReservation.findMany.mockResolvedValueOnce([{ id: "res-1", status: "RESERVED" }]);
+      mockPrisma.inventoryReservation.findMany.mockResolvedValueOnce([
+        { id: "res-1", status: "RESERVED" },
+      ]);
 
       const mockProvider = {
         verifyPayment: vi.fn(async () => ({

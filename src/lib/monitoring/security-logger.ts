@@ -1,8 +1,8 @@
-import "server-only";
-import crypto from "node:crypto";
-import * as Sentry from "@sentry/nextjs";
-import { scrubString } from "@/lib/monitoring/sentry-privacy";
 import { env } from "@/lib/config/env";
+import { scrubString } from "@/lib/monitoring/sentry-privacy";
+import * as Sentry from "@sentry/nextjs";
+import crypto from "node:crypto";
+import "server-only";
 
 /**
  * Strict allowlist of approved security event names.
@@ -122,7 +122,8 @@ export function maskIpAddress(ip: unknown): string {
 }
 
 // Prohibited field name patterns (defense-in-depth)
-const PROHIBITED_KEY_PATTERN = /(?:password|secret|token|cookie|auth|credential|card|cvv|otp|session)/i;
+const PROHIBITED_KEY_PATTERN =
+  /(?:password|secret|token|cookie|auth|credential|card|cvv|otp|session)/i;
 
 // Prohibited raw value patterns (emails, Bangladeshi phones, bcrypt hashes, JWTs)
 const RAW_EMAIL_PATTERN = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;

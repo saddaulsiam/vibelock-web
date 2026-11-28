@@ -3,8 +3,7 @@ import { NextRequest } from "next/server";
 export const MAX_REQUEST_PAYLOAD_BYTES = 64 * 1024; // 64 KB
 
 export type BoundedBodyResult =
-  | { tooLarge: true; text?: never }
-  | { tooLarge: false; text: string };
+  { tooLarge: true; text?: never } | { tooLarge: false; text: string };
 
 /**
  * Reads a request body as a bounded UTF-8 text string using a ReadableStream reader.

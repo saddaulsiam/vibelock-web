@@ -1,9 +1,11 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { AdminSaveForm } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select-native";
+import { Textarea } from "@/components/ui/textarea";
+import { saveCategoryAction } from "@/lib/admin/catalog/catalog-actions";
 import {
   ArrowLeft,
   Copy,
@@ -20,15 +22,13 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 import { toast } from "sonner";
-import { AdminSaveForm } from "@/components/admin/shared";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select-native";
-import { Textarea } from "@/components/ui/textarea";
-import { CategorySearchableSelect } from "./category-select";
 import { CategoryFormPreview } from "./category-form-preview";
-import { saveCategoryAction } from "@/lib/admin/catalog/catalog-actions";
+import { CategorySearchableSelect } from "./category-select";
 
 export const slugify = (value: string) =>
   value

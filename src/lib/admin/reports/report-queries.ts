@@ -1,8 +1,8 @@
 import "server-only";
 
-import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { Prisma } from "@prisma/client";
 
 export type ReportRange =
   "today" | "yesterday" | "7d" | "30d" | "this-month" | "last-month" | "custom";
@@ -138,7 +138,8 @@ function formatReportSummary(row: SummaryRow | undefined, priorRow?: SummaryRow 
     priorSoldUnits > 0 ? Number(((priorReturnedUnits / priorSoldUnits) * 100).toFixed(2)) : 0;
 
   const netSalesDelta = priorNetSales !== null ? computeDelta(netSales, priorNetSales) : null;
-  const grossProfitDelta = priorGrossProfit !== null ? computeDelta(grossProfit, priorGrossProfit) : null;
+  const grossProfitDelta =
+    priorGrossProfit !== null ? computeDelta(grossProfit, priorGrossProfit) : null;
   const ordersDelta = priorOrders !== null ? computeDelta(orders, priorOrders) : null;
   const returnRateDelta = priorRow ? Number((returnRate - priorReturnRate).toFixed(1)) : null;
 

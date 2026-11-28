@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
-import { z } from "zod";
-import { revalidatePath } from "next/cache";
-import { ShipmentStatus } from "@prisma/client";
 import { env } from "@/lib/config/env";
-import prisma from "@/lib/prisma/client";
-import { ShippingService } from "@/lib/shipping/service";
-import { SteadfastCourierProvider } from "@/lib/shipping/providers/steadfast";
-import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
 import { logSecurityAlert, maskIpAddress } from "@/lib/monitoring/security-logger";
+import prisma from "@/lib/prisma/client";
+import { MAX_REQUEST_PAYLOAD_BYTES, readBoundedBodyText } from "@/lib/security/request-boundary";
+import { SteadfastCourierProvider } from "@/lib/shipping/providers/steadfast";
+import { ShippingService } from "@/lib/shipping/service";
+import { ShipmentStatus } from "@prisma/client";
+import crypto from "crypto";
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 const statusMap: Record<string, ShipmentStatus> = {
   pending: "CREATED",
@@ -55,10 +55,7 @@ function verifyAuth(req: NextRequest, rawBody: string, secret?: string): boolean
     const token = authHeader.slice(7).trim();
     const tokenBuf = Buffer.from(token);
     const secretBuf = Buffer.from(secret);
-    if (
-      tokenBuf.length === secretBuf.length &&
-      crypto.timingSafeEqual(tokenBuf, secretBuf)
-    ) {
+    if (tokenBuf.length === secretBuf.length && crypto.timingSafeEqual(tokenBuf, secretBuf)) {
       return true;
     }
   }

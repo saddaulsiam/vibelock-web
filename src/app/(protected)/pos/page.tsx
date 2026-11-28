@@ -1,7 +1,7 @@
-import { requireRole } from "@/lib/auth/authorization";
-import { getPosCategories, getPosCatalog } from "@/lib/pos/pos-queries";
-import { getCurrentShiftAction } from "@/lib/pos/pos-shift-actions";
 import { PosView } from "@/components/pos/pos-view";
+import { requireRole } from "@/lib/auth/authorization";
+import { getPosCatalog, getPosCategories } from "@/lib/pos/pos-queries";
+import { getCurrentShiftAction } from "@/lib/pos/pos-shift-actions";
 
 export const dynamic = "force-dynamic";
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Search, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export function MobileSearch() {
   const [isOpen, setIsOpen] = useState(false);

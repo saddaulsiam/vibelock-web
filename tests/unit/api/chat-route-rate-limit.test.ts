@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { NextRequest } from "next/server";
 import { POST as chatPost } from "@/app/api/chat/route";
 import { resetRateLimitMemoryStore } from "@/lib/security/rate-limit";
+import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock auth
 vi.mock("@/auth", () => ({
@@ -61,7 +61,9 @@ describe("Chat Route Rate Limiting (15 req/min)", () => {
           "x-real-ip": clientIp,
           "content-type": "application/json",
         },
-        body: JSON.stringify({ messages: [{ id: "1", role: "user", parts: [{ type: "text", text: "hello" }] }] }),
+        body: JSON.stringify({
+          messages: [{ id: "1", role: "user", parts: [{ type: "text", text: "hello" }] }],
+        }),
       });
       const res = await chatPost(req);
       expect(res.status).toBe(200);
@@ -74,7 +76,9 @@ describe("Chat Route Rate Limiting (15 req/min)", () => {
         "x-real-ip": clientIp,
         "content-type": "application/json",
       },
-      body: JSON.stringify({ messages: [{ id: "2", role: "user", parts: [{ type: "text", text: "hello again" }] }] }),
+      body: JSON.stringify({
+        messages: [{ id: "2", role: "user", parts: [{ type: "text", text: "hello again" }] }],
+      }),
     });
     const throttledRes = await chatPost(throttledReq);
     expect(throttledRes.status).toBe(429);

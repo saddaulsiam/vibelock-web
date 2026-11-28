@@ -1,10 +1,10 @@
-import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import prisma from "@/lib/prisma/client";
 import {
+  getPaymentSettingsOverview,
   isPaymentMethodEnabled,
   updatePaymentMethodSetting,
-  getPaymentSettingsOverview,
 } from "@/lib/settings/payment-settings";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
 describe("VibeLock Stage 3 — Live Database Persistence Verification on localhost:5432/vibelock_test", () => {
   let baselinePmsCount = 0;

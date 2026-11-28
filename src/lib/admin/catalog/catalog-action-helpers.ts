@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { updateTag } from "next/cache";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 
 export type AdminActionState = { error: string | null; message?: string };

@@ -1,19 +1,18 @@
 "use server";
 
-import { Prisma, InventoryTransactionType } from "@prisma/client";
-import { updateTag } from "next/cache";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import { checkRateLimit } from "@/lib/security/rate-limit";
-import { getAdminInventory, type InventoryFilter } from "./inventory-queries";
+import { InventoryTransactionType, Prisma } from "@prisma/client";
+import { revalidatePath, updateTag } from "next/cache";
+import { z } from "zod";
 import {
   getAdminInventoryIntelligence,
-  type InventoryIntelligenceWindow,
-  type InventoryIntelligenceStatusFilter,
   type InventoryIntelligenceSort,
+  type InventoryIntelligenceStatusFilter,
+  type InventoryIntelligenceWindow,
 } from "./inventory-intelligence-queries";
+import { getAdminInventory, type InventoryFilter } from "./inventory-queries";
 
 const adjustmentSchema = z.object({
   variantId: z.string().uuid(),

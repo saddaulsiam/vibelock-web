@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
-import prisma from "@/lib/prisma/client";
-import { isCustomerSuspended } from "@/lib/auth/suspension";
-import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { authConfig } from "@/auth";
+import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { isCustomerSuspended } from "@/lib/auth/suspension";
+import prisma from "@/lib/prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const { mockAuth, mockCompare } = vi.hoisted(() => ({
   mockAuth: vi.fn(),
@@ -82,7 +82,9 @@ describe("Phase 4A: Authentication Security Remediation", () => {
 
     test("fails closed (returns true) if database lookup throws an error", async () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      vi.spyOn(prisma.auditLog, "findFirst").mockRejectedValueOnce(new Error("DB connection timeout"));
+      vi.spyOn(prisma.auditLog, "findFirst").mockRejectedValueOnce(
+        new Error("DB connection timeout")
+      );
 
       const result = await isCustomerSuspended("user-err");
       expect(result).toBe(true);
@@ -131,7 +133,9 @@ describe("Phase 4A: Authentication Security Remediation", () => {
         },
       });
 
-      vi.spyOn(prisma.user, "findUnique").mockRejectedValueOnce(new Error("Database connection lost"));
+      vi.spyOn(prisma.user, "findUnique").mockRejectedValueOnce(
+        new Error("Database connection lost")
+      );
 
       const user = await getCurrentUser();
       expect(user).toBeNull();

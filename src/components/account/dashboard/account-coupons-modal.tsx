@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { Ticket, Copy, Check, Sparkles } from "lucide-react";
-import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Check, Copy, Sparkles, Ticket } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export interface CouponItem {
   id: string;

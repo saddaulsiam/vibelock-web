@@ -1,13 +1,13 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
-import { SlidersHorizontal, X, Loader2 } from "lucide-react";
-import type { InventoryTransactionType } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { quickAdjustInventoryAction } from "@/lib/admin/inventory/inventory-actions";
 import type { AdminInventoryItem } from "@/lib/admin/inventory/inventory-queries";
+import type { InventoryTransactionType } from "@prisma/client";
+import { Loader2, SlidersHorizontal, X } from "lucide-react";
+import Image from "next/image";
+import * as React from "react";
 
 export const COMMON_REASONS: Record<InventoryTransactionType, string[]> = {
   RESTOCK: [

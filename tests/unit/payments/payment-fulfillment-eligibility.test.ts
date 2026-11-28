@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
 import { checkOnlinePaymentFulfillmentEligibility } from "@/lib/payment/fulfillment";
 import { CaptureReconciliationStatus } from "@/lib/payment/types";
+import { describe, expect, it } from "vitest";
 
 describe("Payment Fulfillment Eligibility (checkOnlinePaymentFulfillmentEligibility)", () => {
   describe("COD and Payment Method Boundary", () => {
@@ -61,10 +61,7 @@ describe("Payment Fulfillment Eligibility (checkOnlinePaymentFulfillmentEligibil
       const result = checkOnlinePaymentFulfillmentEligibility({
         paymentMethod: "ONLINE",
         paymentStatus: "SUCCESS",
-        payments: [
-          { status: "INITIATED" },
-          { status: "FAILED" },
-        ],
+        payments: [{ status: "INITIATED" }, { status: "FAILED" }],
       });
       expect(result.eligible).toBe(false);
       expect(result.error).toBe(

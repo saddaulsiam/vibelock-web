@@ -1,14 +1,14 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { ArrowRight, Loader2, Truck } from "lucide-react";
-import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
+import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { Button } from "@/components/ui/button";
+import { formatOrderDate } from "@/lib/format";
 import { getCustomerOrdersAction } from "@/lib/orders/actions";
 import type { OrderSummary } from "@/lib/orders/types";
-import { formatOrderDate } from "@/lib/format";
+import { ArrowRight, Loader2, Truck } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 
 interface OrdersInfiniteListProps {
   initialOrders: OrderSummary[];

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const { mockPrismaTx, mockManagerUser } = vi.hoisted(() => {
   const mockPrismaTx = {
@@ -94,16 +94,16 @@ vi.mock("@/lib/prisma/client", () => {
   };
 });
 
-import prisma from "@/lib/prisma/client";
 import {
+  addCustomerStaffNoteAction,
   adminGenerateCustomerPasswordResetLinkAction,
-  updateAdminCustomerAction,
+  adminSendCustomerPasswordResetEmailAction,
   deleteAdminCustomerAction,
   toggleCustomerAccountSuspensionAction,
-  adminSendCustomerPasswordResetEmailAction,
   toggleCustomerCodBlockAction,
-  addCustomerStaffNoteAction,
+  updateAdminCustomerAction,
 } from "@/lib/admin/customers/customer-actions";
+import prisma from "@/lib/prisma/client";
 
 describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () => {
   beforeEach(() => {
@@ -111,7 +111,10 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
   });
 
   // Reusable helper to configure user lookup response based on role query
-  function setupMockUserLookup(targetId: string, role: "CUSTOMER" | "STAFF" | "MANAGER" | "ADMIN" | null) {
+  function setupMockUserLookup(
+    targetId: string,
+    role: "CUSTOMER" | "STAFF" | "MANAGER" | "ADMIN" | null
+  ) {
     // Mock row-level lock $queryRaw
     (mockPrismaTx.$queryRaw as any).mockImplementation(async () => {
       if (role === "CUSTOMER") {
@@ -201,7 +204,9 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
       async (rejectedRole) => {
         setupMockUserLookup(`user-${rejectedRole.toLowerCase()}-1`, rejectedRole);
 
-        const result = await adminGenerateCustomerPasswordResetLinkAction(`user-${rejectedRole.toLowerCase()}-1`);
+        const result = await adminGenerateCustomerPasswordResetLinkAction(
+          `user-${rejectedRole.toLowerCase()}-1`
+        );
 
         expect(result.success).toBe(false);
         expect(result.error).toBe("Customer profile not found.");
@@ -320,7 +325,9 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
       expect(prisma.user.deleteMany).toHaveBeenCalledWith({
         where: { id: "cust-delete-1", role: "CUSTOMER" },
       });
-      expect(prisma.session.deleteMany).toHaveBeenCalledWith({ where: { userId: "cust-delete-1" } });
+      expect(prisma.session.deleteMany).toHaveBeenCalledWith({
+        where: { userId: "cust-delete-1" },
+      });
       expect(prisma.auditLog.create).toHaveBeenCalledTimes(1);
     });
 
@@ -382,20 +389,30 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
     test("MANAGER suspends a valid CUSTOMER account", async () => {
       setupMockUserLookup("cust-suspend-1", "CUSTOMER");
 
-      const result = await toggleCustomerAccountSuspensionAction("cust-suspend-1", true, "Fraud check");
+      const result = await toggleCustomerAccountSuspensionAction(
+        "cust-suspend-1",
+        true,
+        "Fraud check"
+      );
 
       expect(result.success).toBe(true);
       expect(prisma.auditLog.create).toHaveBeenCalledTimes(1);
       const auditArg = vi.mocked(prisma.auditLog.create).mock.calls[0][0].data;
       expect(auditArg.action).toBe("CUSTOMER_ACCOUNT_SUSPENDED");
       expect(auditArg.entityId).toBe("cust-suspend-1");
-      expect(prisma.session.deleteMany).toHaveBeenCalledWith({ where: { userId: "cust-suspend-1" } });
+      expect(prisma.session.deleteMany).toHaveBeenCalledWith({
+        where: { userId: "cust-suspend-1" },
+      });
     });
 
     test("MANAGER activates a suspended CUSTOMER account", async () => {
       setupMockUserLookup("cust-activate-1", "CUSTOMER");
 
-      const result = await toggleCustomerAccountSuspensionAction("cust-activate-1", false, "Cleared review");
+      const result = await toggleCustomerAccountSuspensionAction(
+        "cust-activate-1",
+        false,
+        "Cleared review"
+      );
 
       expect(result.success).toBe(true);
       expect(prisma.auditLog.create).toHaveBeenCalledTimes(1);
@@ -465,7 +482,10 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
       expect(result.success).toBe(true);
       expect(prisma.passwordResetToken.create).toHaveBeenCalledTimes(1);
       const { sendPasswordResetEmail } = await import("@/lib/email/client");
-      expect(sendPasswordResetEmail).toHaveBeenCalledWith("target-customer@example.com", expect.any(String));
+      expect(sendPasswordResetEmail).toHaveBeenCalledWith(
+        "target-customer@example.com",
+        expect.any(String)
+      );
     });
 
     test("locks target CUSTOMER row using FOR UPDATE and reads recipient email directly from locked row", async () => {
@@ -477,7 +497,9 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
           role: "CUSTOMER",
         },
       ]);
-      vi.mocked(prisma.passwordResetToken.create).mockResolvedValue({ id: "token-email-lock" } as any);
+      vi.mocked(prisma.passwordResetToken.create).mockResolvedValue({
+        id: "token-email-lock",
+      } as any);
       const { sendPasswordResetEmail } = await import("@/lib/email/client");
 
       const result = await adminSendCustomerPasswordResetEmailAction("cust-locked-email");
@@ -488,7 +510,10 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
       const queryStrings = (call[0] as unknown as string[]).join(" ");
       expect(queryStrings).toContain("FOR UPDATE");
       expect(queryStrings).toContain("'CUSTOMER'::\"Role\"");
-      expect(sendPasswordResetEmail).toHaveBeenCalledWith("locked.recipient@example.com", expect.any(String));
+      expect(sendPasswordResetEmail).toHaveBeenCalledWith(
+        "locked.recipient@example.com",
+        expect.any(String)
+      );
     });
 
     test.each(["STAFF", "MANAGER", "ADMIN"] as const)(
@@ -496,7 +521,9 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
       async (rejectedRole) => {
         setupMockUserLookup(`user-${rejectedRole.toLowerCase()}-email`, rejectedRole);
 
-        const result = await adminSendCustomerPasswordResetEmailAction(`user-${rejectedRole.toLowerCase()}-email`);
+        const result = await adminSendCustomerPasswordResetEmailAction(
+          `user-${rejectedRole.toLowerCase()}-email`
+        );
 
         expect(result.success).toBe(false);
         expect(result.error).toBe("Customer profile not found.");
@@ -601,7 +628,10 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
       async (rejectedRole) => {
         setupMockUserLookup(`user-${rejectedRole.toLowerCase()}-cod`, rejectedRole);
 
-        const result = await toggleCustomerCodBlockAction(`user-${rejectedRole.toLowerCase()}-cod`, true);
+        const result = await toggleCustomerCodBlockAction(
+          `user-${rejectedRole.toLowerCase()}-cod`,
+          true
+        );
 
         expect(result.success).toBe(false);
         expect(result.error).toBe("Customer profile not found.");
@@ -635,7 +665,10 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
     test("MANAGER adds note for a valid CUSTOMER", async () => {
       setupMockUserLookup("cust-note-1", "CUSTOMER");
 
-      const result = await addCustomerStaffNoteAction("cust-note-1", "Preferred delivery time after 5 PM");
+      const result = await addCustomerStaffNoteAction(
+        "cust-note-1",
+        "Preferred delivery time after 5 PM"
+      );
 
       expect(result.success).toBe(true);
       expect(prisma.auditLog.create).toHaveBeenCalledTimes(1);
@@ -648,7 +681,10 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
     test("locks target CUSTOMER row using FOR UPDATE before note audit log creation", async () => {
       setupMockUserLookup("cust-note-lock", "CUSTOMER");
 
-      const result = await addCustomerStaffNoteAction("cust-note-lock", "Internal fraud warning note");
+      const result = await addCustomerStaffNoteAction(
+        "cust-note-lock",
+        "Internal fraud warning note"
+      );
 
       expect(result.success).toBe(true);
       expect(mockPrismaTx.$queryRaw).toHaveBeenCalledTimes(1);
@@ -663,7 +699,10 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
       async (rejectedRole) => {
         setupMockUserLookup(`user-${rejectedRole.toLowerCase()}-note`, rejectedRole);
 
-        const result = await addCustomerStaffNoteAction(`user-${rejectedRole.toLowerCase()}-note`, "Internal review");
+        const result = await addCustomerStaffNoteAction(
+          `user-${rejectedRole.toLowerCase()}-note`,
+          "Internal review"
+        );
 
         expect(result.success).toBe(false);
         expect(result.error).toBe("Customer profile not found.");

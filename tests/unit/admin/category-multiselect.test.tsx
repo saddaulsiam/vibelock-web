@@ -1,6 +1,6 @@
-import { describe, expect, test } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { CategoryMultiSelect, type CategoryOption } from "@/components/admin/categories";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test } from "vitest";
 
 describe("CategoryMultiSelect component", () => {
   const sampleCategories: CategoryOption[] = [

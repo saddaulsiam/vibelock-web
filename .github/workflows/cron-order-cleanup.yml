@@ -3,7 +3,7 @@ name: Production Order Cleanup Scheduler
 on:
   schedule:
     # Trigger every 15 minutes
-    - cron: '*/15 * * * *'
+    - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       reason:

@@ -1,11 +1,11 @@
-import prisma from "@/lib/prisma/client";
-import { ShipmentStatus } from "@prisma/client";
-import { ShippingProvider } from "./types";
 import { recordAuditLog } from "@/lib/audit";
 import {
   checkOnlinePaymentFulfillmentEligibility,
   type PaymentFulfillmentCheckTarget,
 } from "@/lib/payment/fulfillment";
+import prisma from "@/lib/prisma/client";
+import { ShipmentStatus } from "@prisma/client";
+import { ShippingProvider } from "./types";
 
 let isPaymentCaptureTableAvailable: boolean | null = null;
 
@@ -62,12 +62,14 @@ export class ShippingService {
         if (currentOrder.paymentStatus !== "SUCCESS") {
           throw new Error("Online orders must be fully paid before shipping");
         }
-        const onlinePayments = (typeof tx.payment?.findMany === "function"
-          ? await tx.payment.findMany({
-              where: { orderId: currentOrder.id },
-              ...(hasCaptureTable ? { include: { captures: true } } : {}),
-            })
-          : []) as PaymentFulfillmentCheckTarget[];
+        const onlinePayments = (
+          typeof tx.payment?.findMany === "function"
+            ? await tx.payment.findMany({
+                where: { orderId: currentOrder.id },
+                ...(hasCaptureTable ? { include: { captures: true } } : {}),
+              })
+            : []
+        ) as PaymentFulfillmentCheckTarget[];
         const eligibility = checkOnlinePaymentFulfillmentEligibility({
           paymentMethod: currentOrder.paymentMethod,
           paymentStatus: currentOrder.paymentStatus,
@@ -168,12 +170,14 @@ export class ShippingService {
         if (currentOrder.paymentStatus !== "SUCCESS") {
           eligibilityError = "Online orders must be fully paid before shipping";
         } else {
-          const onlinePayments = (typeof tx.payment?.findMany === "function"
-            ? await tx.payment.findMany({
-                where: { orderId: currentOrder.id },
-                ...(hasCaptureTable ? { include: { captures: true } } : {}),
-              })
-            : []) as PaymentFulfillmentCheckTarget[];
+          const onlinePayments = (
+            typeof tx.payment?.findMany === "function"
+              ? await tx.payment.findMany({
+                  where: { orderId: currentOrder.id },
+                  ...(hasCaptureTable ? { include: { captures: true } } : {}),
+                })
+              : []
+          ) as PaymentFulfillmentCheckTarget[];
           const eligibility = checkOnlinePaymentFulfillmentEligibility({
             paymentMethod: currentOrder.paymentMethod,
             paymentStatus: currentOrder.paymentStatus,
@@ -241,10 +245,7 @@ export class ShippingService {
     if (result.needsProviderCancel && result.error) {
       // Attempt provider cancellation OUTSIDE of database transaction / row lock
       let providerCancelled = false;
-      if (
-        typeof this.provider.cancelShipment === "function" &&
-        providerRes.providerShipmentId
-      ) {
+      if (typeof this.provider.cancelShipment === "function" && providerRes.providerShipmentId) {
         try {
           const cancelRes = await this.provider.cancelShipment({
             shipmentId: localShipment.id,
@@ -391,12 +392,14 @@ export class ShippingService {
 
       if (advancesToShipped || advancesToDelivered) {
         if (currentOrder.paymentMethod === "ONLINE") {
-          const onlinePayments = (typeof tx.payment?.findMany === "function"
-            ? await tx.payment.findMany({
-                where: { orderId: currentOrder.id },
-                ...(hasCaptureTable ? { include: { captures: true } } : {}),
-              })
-            : []) as PaymentFulfillmentCheckTarget[];
+          const onlinePayments = (
+            typeof tx.payment?.findMany === "function"
+              ? await tx.payment.findMany({
+                  where: { orderId: currentOrder.id },
+                  ...(hasCaptureTable ? { include: { captures: true } } : {}),
+                })
+              : []
+          ) as PaymentFulfillmentCheckTarget[];
 
           const eligibility = checkOnlinePaymentFulfillmentEligibility({
             paymentMethod: currentOrder.paymentMethod,

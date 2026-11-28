@@ -1,8 +1,7 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import type { AdminInventoryDetailResult } from "@/lib/admin/inventory/inventory-queries";
 import {
   ArrowLeft,
   Barcode,
@@ -13,9 +12,10 @@ import {
   Package,
   SlidersHorizontal,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import * as React from "react";
 import { BarcodeSvg } from "./admin-inventory-barcode-modal";
-import { Button } from "@/components/ui/button";
-import type { AdminInventoryDetailResult } from "@/lib/admin/inventory/inventory-queries";
 
 function currency(value: number) {
   return `৳${Number(value || 0).toLocaleString("en-BD", {

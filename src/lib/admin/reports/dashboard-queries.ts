@@ -1,11 +1,11 @@
 import "server-only";
 
-import { OrderStatus, PaymentStatus, ProductStatus, Role } from "@prisma/client";
-import prisma from "@/lib/prisma/client";
-import { getAdminReport } from "./report-queries";
 import { requireRole } from "@/lib/auth/authorization";
 import { hasRequiredRole } from "@/lib/auth/roles";
+import prisma from "@/lib/prisma/client";
 import { getEffectiveLowStockThreshold } from "@/lib/settings/inventory-return-settings";
+import { OrderStatus, PaymentStatus, ProductStatus, Role } from "@prisma/client";
+import { getAdminReport } from "./report-queries";
 
 export type DashboardFilters = {
   range?: string;

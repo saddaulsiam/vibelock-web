@@ -37,7 +37,10 @@ let rawDatabaseUrl = "";
 for (const line of content.split("\n")) {
   const trimmed = line.trim();
   if (trimmed.startsWith("DATABASE_URL=")) {
-    rawDatabaseUrl = trimmed.slice("DATABASE_URL=".length).trim().replace(/^['"]|['"]$/g, "");
+    rawDatabaseUrl = trimmed
+      .slice("DATABASE_URL=".length)
+      .trim()
+      .replace(/^['"]|['"]$/g, "");
     break;
   }
 }
@@ -52,35 +55,49 @@ let parsedUrl;
 try {
   parsedUrl = new URL(rawDatabaseUrl);
 } catch {
-  console.error("[Concurrency Runner] SAFETY HALT: Failed to parse DATABASE_URL from .env.test. Invalid URL format.");
+  console.error(
+    "[Concurrency Runner] SAFETY HALT: Failed to parse DATABASE_URL from .env.test. Invalid URL format."
+  );
   process.exit(1);
 }
 
 // 3. Validate protocol
 if (parsedUrl.protocol !== "postgres:" && parsedUrl.protocol !== "postgresql:") {
-  console.error(`[Concurrency Runner] SAFETY HALT: Invalid database protocol '${parsedUrl.protocol}'. Must be postgres: or postgresql:.`);
+  console.error(
+    `[Concurrency Runner] SAFETY HALT: Invalid database protocol '${parsedUrl.protocol}'. Must be postgres: or postgresql:.`
+  );
   process.exit(1);
 }
 
 // 4. Strictly reject every non-local database host (Neon, external clouds, remote IPs)
 const rawHost = parsedUrl.hostname.toLowerCase().replace(/^\[|\]$/g, "");
-const isLocal = rawHost === "localhost" || rawHost === "127.0.0.1" || rawHost === "::1" || rawHost === "0:0:0:0:0:0:0:1";
+const isLocal =
+  rawHost === "localhost" ||
+  rawHost === "127.0.0.1" ||
+  rawHost === "::1" ||
+  rawHost === "0:0:0:0:0:0:0:1";
 if (!isLocal) {
-  console.error(`[Concurrency Runner] SAFETY HALT: Non-local database host '${parsedUrl.hostname}' rejected. Concurrency tests are strictly forbidden against remote hosts.`);
+  console.error(
+    `[Concurrency Runner] SAFETY HALT: Non-local database host '${parsedUrl.hostname}' rejected. Concurrency tests are strictly forbidden against remote hosts.`
+  );
   process.exit(1);
 }
 
 // 5. Require exact dedicated database name 'vibelock_concurrency_test'
 const requestedDb = parsedUrl.pathname.replace(/^\//, "").split("?")[0];
 if (requestedDb !== "vibelock_concurrency_test" && requestedDb !== "vibelock_test") {
-  console.error(`[Concurrency Runner] SAFETY HALT: Database '${requestedDb}' rejected. Concurrency test runner requires dedicated test database 'vibelock_concurrency_test'.`);
+  console.error(
+    `[Concurrency Runner] SAFETY HALT: Database '${requestedDb}' rejected. Concurrency test runner requires dedicated test database 'vibelock_concurrency_test'.`
+  );
   process.exit(1);
 }
 
 // Enforce target database is vibelock_concurrency_test
 parsedUrl.pathname = "/vibelock_concurrency_test";
 if (parsedUrl.pathname !== "/vibelock_concurrency_test") {
-  console.error("[Concurrency Runner] SAFETY HALT: Database pathname must be '/vibelock_concurrency_test'.");
+  console.error(
+    "[Concurrency Runner] SAFETY HALT: Database pathname must be '/vibelock_concurrency_test'."
+  );
   process.exit(1);
 }
 
@@ -106,15 +123,9 @@ childEnv.DIRECT_URL = concurrencyDbUrl;
 // 8. Execute Vitest child process
 const extraArgs = process.argv.slice(2);
 const targetTests =
-  extraArgs.length > 0
-    ? extraArgs
-    : ["tests/integration/payment-lifecycle-concurrency.test.ts"];
+  extraArgs.length > 0 ? extraArgs : ["tests/integration/payment-lifecycle-concurrency.test.ts"];
 
-const vitestArgs = [
-  "vitest",
-  "run",
-  ...targetTests,
-];
+const vitestArgs = ["vitest", "run", ...targetTests];
 
 const result = spawnSync("npx", vitestArgs, {
   cwd: process.cwd(),

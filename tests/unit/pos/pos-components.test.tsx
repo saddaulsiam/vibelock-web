@@ -1,5 +1,5 @@
-import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 // Mock Radix UI dialog for renderToStaticMarkup SSR testing
 vi.mock("@/components/ui/dialog", () => ({
@@ -13,11 +13,11 @@ vi.mock("@/components/ui/dialog", () => ({
   DialogDescription: ({ children }: { children?: React.ReactNode }) => <p>{children}</p>,
 }));
 
-import { PosHeader } from "@/components/pos/pos-header";
 import { PosCartPanel } from "@/components/pos/pos-cart-panel";
-import { PosThermalReceipt } from "@/components/pos/pos-thermal-receipt";
-import { PosProductScanner } from "@/components/pos/pos-product-scanner";
+import { PosHeader } from "@/components/pos/pos-header";
 import { PosProductGrid } from "@/components/pos/pos-product-grid";
+import { PosProductScanner } from "@/components/pos/pos-product-scanner";
+import { PosThermalReceipt } from "@/components/pos/pos-thermal-receipt";
 import type {
   PosCartItem,
   PosCategory,

@@ -30,10 +30,7 @@ export async function backfillCustomerCodRestrictions(
         in: ["CUSTOMER_COD_RESTRICTED", "CUSTOMER_COD_ALLOWED"],
       },
     },
-    orderBy: [
-      { createdAt: "desc" },
-      { id: "desc" },
-    ],
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     select: {
       id: true,
       entityId: true,
@@ -87,4 +84,3 @@ export async function backfillCustomerCodRestrictions(
 
   return { updatedCount, blockedCount, unblockedCount };
 }
-

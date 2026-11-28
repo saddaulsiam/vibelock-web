@@ -1,6 +1,6 @@
-import { describe, expect, test, vi, beforeEach } from "vitest";
 import { saveProductAction } from "@/lib/admin/catalog/product-actions";
 import prisma from "@/lib/prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("@/lib/auth/authorization", () => ({
   requireRole: vi.fn().mockResolvedValue(undefined),

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("@/lib/config/env", () => ({
   env: {
@@ -49,8 +49,8 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-import { toggleCustomerCodBlockAction } from "@/lib/admin/customers/customer-actions";
 import { backfillCustomerCodRestrictions } from "@/lib/admin/customers/cod-migration";
+import { toggleCustomerCodBlockAction } from "@/lib/admin/customers/customer-actions";
 
 describe("Phase 5B-2 — Dedicated Customer COD State & Migration Tests", () => {
   beforeEach(() => {
@@ -71,8 +71,8 @@ describe("Phase 5B-2 — Dedicated Customer COD State & Migration Tests", () => 
       expect(mockPrismaTx.$queryRaw).toHaveBeenCalledTimes(1);
       const call = vi.mocked(mockPrismaTx.$queryRaw).mock.calls[0];
       const queryStrings = (call[0] as unknown as string[]).join(" ");
-      expect(queryStrings).toContain("SELECT \"id\"");
-      expect(queryStrings).toContain("FROM \"User\"");
+      expect(queryStrings).toContain('SELECT "id"');
+      expect(queryStrings).toContain('FROM "User"');
       expect(queryStrings).toContain("'CUSTOMER'::\"Role\"");
       expect(queryStrings).toContain("FOR UPDATE");
 
@@ -106,7 +106,11 @@ describe("Phase 5B-2 — Dedicated Customer COD State & Migration Tests", () => 
       mockPrismaTx.user.update.mockResolvedValueOnce({ id: "cust-cod-2", codBlocked: false });
       mockPrismaTx.auditLog.create.mockResolvedValueOnce({ id: "audit-2" });
 
-      const result = await toggleCustomerCodBlockAction("cust-cod-2", false, "VIP customer restored");
+      const result = await toggleCustomerCodBlockAction(
+        "cust-cod-2",
+        false,
+        "VIP customer restored"
+      );
 
       expect(result.success).toBe(true);
 

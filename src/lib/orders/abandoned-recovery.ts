@@ -1,10 +1,10 @@
 import "server-only";
 
-import prisma from "@/lib/prisma/client";
-import { sendSmsNotification, maskPhoneNumber } from "@/lib/sms/client";
-import { sendAbandonedCartEmail } from "@/lib/email/abandoned-cart-email";
-import { SITE_URL } from "@/lib/seo/site";
 import { getDisplayPhoneNumber } from "@/lib/config/contact";
+import { sendAbandonedCartEmail } from "@/lib/email/abandoned-cart-email";
+import prisma from "@/lib/prisma/client";
+import { SITE_URL } from "@/lib/seo/site";
+import { maskPhoneNumber, sendSmsNotification } from "@/lib/sms/client";
 
 export const DEFAULT_CHECKOUT_REMINDER_MINUTES = 8; // Prior to 15m stock reservation expiry
 export const DEFAULT_CART_REMINDER_MINUTES = 30; // Unlocked active cart items
@@ -114,9 +114,7 @@ export async function processAbandonedReminders(
   );
   const cartOlderThanMinutes = Math.max(
     5,
-    options?.cartOlderThanMinutes ??
-      options?.olderThanMinutes ??
-      DEFAULT_CART_REMINDER_MINUTES
+    options?.cartOlderThanMinutes ?? options?.olderThanMinutes ?? DEFAULT_CART_REMINDER_MINUTES
   );
   const batchSize = Math.min(
     100,
@@ -127,15 +125,9 @@ export async function processAbandonedReminders(
   const now = new Date();
   const quietHoursActive = !options?.ignoreQuietHours && isBtrcQuietHours(now);
 
-  const orderCutoffTime = new Date(
-    now.getTime() - checkoutOlderThanMinutes * 60 * 1000
-  );
-  const cartCutoffTime = new Date(
-    now.getTime() - cartOlderThanMinutes * 60 * 1000
-  );
-  const oldestCutoffTime = new Date(
-    now.getTime() - MAX_REMINDER_LOOKBACK_HOURS * 60 * 60 * 1000
-  );
+  const orderCutoffTime = new Date(now.getTime() - checkoutOlderThanMinutes * 60 * 1000);
+  const cartCutoffTime = new Date(now.getTime() - cartOlderThanMinutes * 60 * 1000);
+  const oldestCutoffTime = new Date(now.getTime() - MAX_REMINDER_LOOKBACK_HOURS * 60 * 60 * 1000);
 
   const result: AbandonedReminderResult = {
     scannedOrders: 0,
@@ -275,11 +267,7 @@ export async function processAbandonedReminders(
               `[processAbandonedReminders] Order #${order.orderNumber} deferred for daytime dispatch (BTRC Quiet Hours active and no email sent).`
             );
           } else {
-            const smsStatus = smsSent
-              ? "OK"
-              : smsSkipReason
-                ? `SKIP_${smsSkipReason}`
-                : "SKIP";
+            const smsStatus = smsSent ? "OK" : smsSkipReason ? `SKIP_${smsSkipReason}` : "SKIP";
 
             await prisma.orderHistory.create({
               data: {
@@ -360,10 +348,7 @@ export async function processAbandonedReminders(
         // Check if user already placed a confirmed order in the last 24 hours (by userId or phone)
         const recentOrder = await prisma.order.findFirst({
           where: {
-            OR: [
-              { userId },
-              ...(cart.user.phone ? [{ customerPhone: cart.user.phone }] : []),
-            ],
+            OR: [{ userId }, ...(cart.user.phone ? [{ customerPhone: cart.user.phone }] : [])],
             createdAt: { gte: oldestCutoffTime },
             status: { not: "CANCELLED" },
           },
@@ -582,11 +567,7 @@ export async function sendManualAbandonedOrderReminder(
     });
   }
 
-  const smsStatus = smsSent
-    ? "OK"
-    : smsSkippedDueToQuietHours
-      ? "SKIP_BTRC_QUIET_HOURS"
-      : "SKIP";
+  const smsStatus = smsSent ? "OK" : smsSkippedDueToQuietHours ? "SKIP_BTRC_QUIET_HOURS" : "SKIP";
 
   await prisma.orderHistory.create({
     data: {

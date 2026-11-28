@@ -1,26 +1,25 @@
 "use server";
 
-import fs from "node:fs/promises";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
-import { Prisma, ProductStatus } from "@prisma/client";
-import { updateTag } from "next/cache";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { recordAuditLog } from "@/lib/audit";
 import { requireRole } from "@/lib/auth/authorization";
 import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
 import prisma from "@/lib/prisma/client";
-import { recordAuditLog } from "@/lib/audit";
-import { getAdminProducts, type AdminProductsQueryOptions } from "./catalog-queries";
+import { Prisma, ProductStatus } from "@prisma/client";
+import { revalidatePath, updateTag } from "next/cache";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { z } from "zod";
 import {
-  type AdminActionState,
-  ok,
-  nameField,
-  slugify,
-  slugFromForm,
   duplicateMessage,
+  nameField,
+  ok,
   refreshCatalog,
+  slugFromForm,
+  slugify,
+  type AdminActionState,
 } from "./catalog-action-helpers";
+import { getAdminProducts, type AdminProductsQueryOptions } from "./catalog-queries";
 
 const productSchema = z.object({
   id: z.string().uuid().optional(),
@@ -83,8 +82,7 @@ async function parseProduct(formData: FormData) {
     return { error: "A product can have at most 30 categories." } as const;
   }
   const rawIsFeatured = formData.get("isFeatured");
-  const isFeatured =
-    rawIsFeatured === "true" || rawIsFeatured === "on" || rawIsFeatured === "1";
+  const isFeatured = rawIsFeatured === "true" || rawIsFeatured === "on" || rawIsFeatured === "1";
   const rawBadgeLabel = String(formData.get("badgeLabel") ?? "").trim() || null;
   const rawBadgeVariant = String(formData.get("badgeVariant") ?? "").trim() || null;
   const parsed = productSchema.safeParse({

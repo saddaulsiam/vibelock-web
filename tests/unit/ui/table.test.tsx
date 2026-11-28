@@ -1,16 +1,16 @@
-import { describe, expect, it } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import {
   Table,
-  TableHeader,
   TableBody,
-  TableRow,
-  TableHead,
+  TableCaption,
   TableCell,
   TableFooter,
-  TableCaption,
+  TableHead,
+  TableHeader,
+  TableRow,
   tableVariants,
 } from "@/components/ui/table";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 describe("Unified Global Table Component", () => {
   describe("Variants & Density", () => {

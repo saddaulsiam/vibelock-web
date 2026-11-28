@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function AccountNotFound() {
   return (

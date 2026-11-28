@@ -1,12 +1,12 @@
+import { env } from "@/lib/config/env";
+import { publicEnv } from "@/lib/config/public-env";
+import { PaymentStatus } from "@prisma/client";
 import {
   PaymentInitiationRequest,
   PaymentInitiationResponse,
   PaymentProvider,
   PaymentVerificationResult,
 } from "../../types";
-import { PaymentStatus } from "@prisma/client";
-import { env } from "@/lib/config/env";
-import { publicEnv } from "@/lib/config/public-env";
 
 export interface PaystationInitiationApiResponse {
   status_code?: string | number;
@@ -104,18 +104,21 @@ export class PaystationProvider implements PaymentProvider {
     body.append("reference", request.orderNumber);
 
     try {
-      console.log(`🚀 [PayStation Initiate: Step 2] Sending POST ${this.baseUrl}/initiate-payment:`, {
-        merchantId: this.merchantId,
-        invoice_number: invoiceNumber,
-        currency: "BDT",
-        payment_amount: String(request.amount),
-        pay_with_charge: "0",
-        cust_name: request.customerName,
-        cust_phone: request.customerPhone,
-        cust_email: request.customerEmail,
-        callback_url: callbackUrl.toString(),
-        reference: request.orderNumber,
-      });
+      console.log(
+        `🚀 [PayStation Initiate: Step 2] Sending POST ${this.baseUrl}/initiate-payment:`,
+        {
+          merchantId: this.merchantId,
+          invoice_number: invoiceNumber,
+          currency: "BDT",
+          payment_amount: String(request.amount),
+          pay_with_charge: "0",
+          cust_name: request.customerName,
+          cust_phone: request.customerPhone,
+          cust_email: request.customerEmail,
+          callback_url: callbackUrl.toString(),
+          reference: request.orderNumber,
+        }
+      );
 
       const response = await fetch(`${this.baseUrl}/initiate-payment`, {
         method: "POST",
@@ -126,7 +129,9 @@ export class PaystationProvider implements PaymentProvider {
         signal: AbortSignal.timeout(10000),
       });
 
-      console.log(`📥 [PayStation Initiate: Step 3] Gateway HTTP status: ${response.status} (ok: ${response.ok})`);
+      console.log(
+        `📥 [PayStation Initiate: Step 3] Gateway HTTP status: ${response.status} (ok: ${response.ok})`
+      );
 
       if (!response.ok) {
         console.error(
@@ -226,10 +231,13 @@ export class PaystationProvider implements PaymentProvider {
         };
       }
 
-      console.log("🔗 [PayStation Initiate: Step 4] Success! Redirecting customer to PayStation checkout:", {
-        redirectUrl: result.payment_url,
-        invoiceNumber,
-      });
+      console.log(
+        "🔗 [PayStation Initiate: Step 4] Success! Redirecting customer to PayStation checkout:",
+        {
+          redirectUrl: result.payment_url,
+          invoiceNumber,
+        }
+      );
 
       console.info(
         "[PayStation][Initiate]",
@@ -347,7 +355,9 @@ export class PaystationProvider implements PaymentProvider {
       const formBody = new URLSearchParams();
       formBody.append("invoice_number", invoiceNumber);
 
-      console.log(`🚀 [PayStation Verify: Step 2] Querying POST ${this.baseUrl}/transaction-status for invoice: ${invoiceNumber}`);
+      console.log(
+        `🚀 [PayStation Verify: Step 2] Querying POST ${this.baseUrl}/transaction-status for invoice: ${invoiceNumber}`
+      );
 
       const response = await fetch(`${this.baseUrl}/transaction-status`, {
         method: "POST",
@@ -359,7 +369,9 @@ export class PaystationProvider implements PaymentProvider {
         signal: AbortSignal.timeout(10000),
       });
 
-      console.log(`📥 [PayStation Verify: Step 3] Transaction-status query HTTP status: ${response.status}`);
+      console.log(
+        `📥 [PayStation Verify: Step 3] Transaction-status query HTTP status: ${response.status}`
+      );
 
       if (!response.ok) {
         const isUpstreamUnavailable = response.status >= 500 || response.status === 429;

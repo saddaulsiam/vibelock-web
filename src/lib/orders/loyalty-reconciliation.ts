@@ -31,10 +31,7 @@ export async function reconcileCancelledOrderLoyalty(
       const normalizedPhone = normalizeBdPhoneNumber(order.customerPhone);
       account = await tx.loyaltyAccount.findFirst({
         where: {
-          OR: [
-            { phone: normalizedPhone },
-            ...(order.userId ? [{ userId: order.userId }] : []),
-          ],
+          OR: [{ phone: normalizedPhone }, ...(order.userId ? [{ userId: order.userId }] : [])],
         },
       });
     } else if (order.userId) {

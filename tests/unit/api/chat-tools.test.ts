@@ -1,8 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { NextRequest } from "next/server";
-import { POST as chatPost, resetOrderFailuresStore, getSafeRecentMessages } from "@/app/api/chat/route";
+import {
+  POST as chatPost,
+  getSafeRecentMessages,
+  resetOrderFailuresStore,
+} from "@/app/api/chat/route";
 import { resetRateLimitMemoryStore } from "@/lib/security/rate-limit";
 import type { UIMessage } from "ai";
+import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockFindFirstOrder = vi.fn();
 const mockFindManyProduct = vi.fn();
@@ -105,7 +109,9 @@ describe("Chat Route Tools & Enhancements", () => {
     const req = new NextRequest("http://localhost:3000/api/chat", {
       method: "POST",
       headers: { "x-real-ip": "103.1.2.99", "content-type": "application/json" },
-      body: JSON.stringify({ messages: [{ id: "1", role: "user", parts: [{ type: "text", text: "test" }] }] }),
+      body: JSON.stringify({
+        messages: [{ id: "1", role: "user", parts: [{ type: "text", text: "test" }] }],
+      }),
     });
     await chatPost(req);
   }
@@ -220,7 +226,9 @@ describe("Chat Route Tools & Enhancements", () => {
         orderNumber: "VL-ATTACK-001",
         phoneLast4: "0006",
       });
-      expect(res6.error).toContain("নিরাপত্তাজনিত কারণে এই অর্ডারের তথ্য অনুসন্ধান সাময়িকভাবে স্থগিত রয়েছে");
+      expect(res6.error).toContain(
+        "নিরাপত্তাজনিত কারণে এই অর্ডারের তথ্য অনুসন্ধান সাময়িকভাবে স্থগিত রয়েছে"
+      );
       expect(mockFindFirstOrder).not.toHaveBeenCalled();
     });
   });

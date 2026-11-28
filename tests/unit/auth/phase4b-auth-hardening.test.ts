@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
-import prisma from "@/lib/prisma/client";
+import { loginAction } from "@/app/actions/auth";
+import { GET as authGetHandler, POST as authPostHandler } from "@/app/api/auth/[...nextauth]/route";
 import { authConfig, RateLimitError } from "@/auth";
-import { CredentialsSignin } from "next-auth";
+import prisma from "@/lib/prisma/client";
 import {
   checkLoginRateLimit,
-  clearLoginRateLimit,
-  resetRateLimitMemoryStore,
-  getIp,
   checkRateLimit,
+  clearLoginRateLimit,
+  getIp,
+  resetRateLimitMemoryStore,
 } from "@/lib/security/rate-limit";
-import { loginAction } from "@/app/actions/auth";
-import { POST as authPostHandler, GET as authGetHandler } from "@/app/api/auth/[...nextauth]/route";
+import { CredentialsSignin } from "next-auth";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const { mockCompare, mockHeaders, mockSignIn } = vi.hoisted(() => ({
   mockCompare: vi.fn(),
@@ -183,7 +183,9 @@ describe("Phase 4B: Authentication Hardening & Post-Audit Remediation", () => {
 
       // Attacker tests 30 different accounts with 1 attempt each from the same IP
       for (let i = 0; i < 30; i++) {
-        await expect(checkLoginRateLimit(`sprayed-${i}@example.com`, singleIp)).resolves.toBeUndefined();
+        await expect(
+          checkLoginRateLimit(`sprayed-${i}@example.com`, singleIp)
+        ).resolves.toBeUndefined();
       }
 
       // 31st attempt from this IP must be blocked regardless of account
@@ -246,7 +248,9 @@ describe("Phase 4B: Authentication Hardening & Post-Audit Remediation", () => {
       const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       // Simulate rate limiting where in-memory fallback is active
-      await expect(checkRateLimit("loginIp", "10.0.0.1", { skipIp: true })).resolves.toBeUndefined();
+      await expect(
+        checkRateLimit("loginIp", "10.0.0.1", { skipIp: true })
+      ).resolves.toBeUndefined();
 
       consoleWarnSpy.mockRestore();
     });

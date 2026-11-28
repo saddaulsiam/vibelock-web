@@ -1,8 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { Bell, CheckCheck, ExternalLink, ShoppingBag, Volume2, VolumeX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +8,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { Bell, CheckCheck, ExternalLink, ShoppingBag, Volume2, VolumeX } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface OrderNotificationItem {
   id: string;
@@ -183,16 +183,14 @@ export function AdminNotificationBell() {
     } catch {}
   };
 
-  const unreadCount = orders.filter(
-    (o) => new Date(o.createdAt).getTime() > lastSeenTs
-  ).length;
+  const unreadCount = orders.filter((o) => new Date(o.createdAt).getTime() > lastSeenTs).length;
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger
         className={cn(
           "relative flex size-9 items-center justify-center rounded-xl transition-colors outline-none",
-          "border border-vl-dark-900/10 bg-white hover:bg-vl-dark-50 text-vl-dark-900",
+          "border-vl-dark-900/10 hover:bg-vl-dark-50 text-vl-dark-900 border bg-white",
           isOpen && "bg-vl-dark-50 border-vl-dark-900/20"
         )}
         title="Admin Notifications"
@@ -200,7 +198,7 @@ export function AdminNotificationBell() {
       >
         <Bell className="size-4" />
         {unreadCount > 0 && (
-          <span className="bg-vl-cyan text-vl-dark-900 shadow-2xs font-mono absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-black">
+          <span className="bg-vl-cyan text-vl-dark-900 absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 font-mono text-[10px] font-black shadow-2xs">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -209,7 +207,7 @@ export function AdminNotificationBell() {
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="border-vl-dark-900/10 bg-white text-vl-dark-900 w-80 sm:w-96 rounded-xl border p-0 shadow-xl"
+        className="border-vl-dark-900/10 text-vl-dark-900 w-80 rounded-xl border bg-white p-0 shadow-xl sm:w-96"
       >
         {/* Header */}
         <div className="border-vl-dark-900/10 flex items-center justify-between border-b px-3.5 py-2.5">
@@ -238,7 +236,11 @@ export function AdminNotificationBell() {
               title={soundEnabled ? "Mute notification sound" : "Unmute notification sound"}
               aria-label={soundEnabled ? "Mute notification sound" : "Unmute notification sound"}
             >
-              {soundEnabled ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5 text-red-500" />}
+              {soundEnabled ? (
+                <Volume2 className="size-3.5" />
+              ) : (
+                <VolumeX className="size-3.5 text-red-500" />
+              )}
             </Button>
 
             {unreadCount > 0 && (
@@ -250,7 +252,7 @@ export function AdminNotificationBell() {
                 onClick={markAllAsRead}
                 title="Mark all as read"
               >
-                <CheckCheck className="size-3.5 mr-1" />
+                <CheckCheck className="mr-1 size-3.5" />
                 <span>Mark read</span>
               </Button>
             )}
@@ -258,11 +260,13 @@ export function AdminNotificationBell() {
         </div>
 
         {/* Order List */}
-        <div className="max-h-80 overflow-y-auto divide-y divide-vl-dark-900/5">
+        <div className="divide-vl-dark-900/5 max-h-80 divide-y overflow-y-auto">
           {orders.length === 0 ? (
             <div className="p-6 text-center">
               <ShoppingBag className="text-vl-dark-300 mx-auto size-7 stroke-1" />
-              <p className="text-vl-dark-500 mt-2 text-xs font-medium">No recent orders in last 48 hours</p>
+              <p className="text-vl-dark-500 mt-2 text-xs font-medium">
+                No recent orders in last 48 hours
+              </p>
             </div>
           ) : (
             orders.map((order) => {
@@ -273,36 +277,42 @@ export function AdminNotificationBell() {
                   href={`/admin/orders/${order.id}`}
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "block p-3 transition-colors hover:bg-vl-dark-50/80 text-left",
-                    isUnread && "bg-vl-cyan-50/60 border-l-2 border-vl-cyan"
+                    "hover:bg-vl-dark-50/80 block p-3 text-left transition-colors",
+                    isUnread && "bg-vl-cyan-50/60 border-vl-cyan border-l-2"
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-xs font-bold text-vl-dark-900">
+                        <span className="text-vl-dark-900 font-mono text-xs font-bold">
                           #{order.orderNumber}
                         </span>
                         {order.paymentMethod === "COD" ? (
-                          <Badge variant="outline" className="h-3.5 px-1 font-mono text-[8px] font-bold">
+                          <Badge
+                            variant="outline"
+                            className="h-3.5 px-1 font-mono text-[8px] font-bold"
+                          >
                             COD
                           </Badge>
                         ) : (
-                          <Badge variant="cyan" className="h-3.5 px-1 font-mono text-[8px] font-bold">
+                          <Badge
+                            variant="cyan"
+                            className="h-3.5 px-1 font-mono text-[8px] font-bold"
+                          >
                             PAID
                           </Badge>
                         )}
                       </div>
-                      <p className="text-vl-dark-500 truncate text-[11px] font-medium mt-0.5">
+                      <p className="text-vl-dark-500 mt-0.5 truncate text-[11px] font-medium">
                         {order.customerName} &bull; {order.city}
                       </p>
                     </div>
 
-                    <div className="text-right shrink-0">
+                    <div className="shrink-0 text-right">
                       <span className="text-vl-dark-900 font-mono text-xs font-bold">
                         ৳{Number(order.total).toLocaleString("en-BD")}
                       </span>
-                      <p className="text-vl-dark-400 text-[10px] mt-0.5">
+                      <p className="text-vl-dark-400 mt-0.5 text-[10px]">
                         {formatRelativeTime(order.createdAt)}
                       </p>
                     </div>

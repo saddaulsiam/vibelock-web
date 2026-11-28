@@ -1,15 +1,15 @@
-import { headers } from "next/headers";
-import { Header } from "@/components/storefront/layout/header";
-import { Footer } from "@/components/storefront/layout/footer";
-import { AnnouncementBar } from "@/components/storefront/layout/announcement-bar";
-import { MetaPixelProvider } from "@/components/storefront/analytics/meta-pixel-provider";
 import { ChatWidget } from "@/components/chat/ChatWidget";
+import { MetaPixelProvider } from "@/components/storefront/analytics/meta-pixel-provider";
+import { AnnouncementBar } from "@/components/storefront/layout/announcement-bar";
+import { Footer } from "@/components/storefront/layout/footer";
+import { Header } from "@/components/storefront/layout/header";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
-import { getGeneralStoreSettings } from "@/lib/settings/store-settings-service";
-import { getShippingRulesSettings } from "@/lib/settings/shipping-rules-settings";
 import { resolveEffectiveTrackingPixels } from "@/lib/settings/security-pixel-settings";
-import { SlidersHorizontal } from "lucide-react";
+import { getShippingRulesSettings } from "@/lib/settings/shipping-rules-settings";
+import { getGeneralStoreSettings } from "@/lib/settings/store-settings-service";
 import { cn } from "@/lib/utils";
+import { SlidersHorizontal } from "lucide-react";
+import { headers } from "next/headers";
 
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
@@ -28,12 +28,14 @@ export default async function StorefrontLayout({ children }: { children: React.R
       user && (user.role === "ADMIN" || user.role === "STAFF" || user.role === "MANAGER");
     if (!isStaffOrAdmin || !generalSettings.maintenanceMode.allowAdminBypass) {
       return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-vl-black p-6 text-center text-vl-white">
+        <div className="bg-vl-black text-vl-white flex min-h-screen flex-col items-center justify-center p-6 text-center">
           <div className="border-vl-cyan/20 bg-vl-dark-900/80 max-w-lg rounded-2xl border p-8 shadow-2xl backdrop-blur-xl">
             <div className="bg-vl-cyan/10 text-vl-cyan mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl">
               <SlidersHorizontal className="size-7" />
             </div>
-            <h1 className="font-heading text-2xl font-bold">{generalSettings.maintenanceMode.noticeTitle}</h1>
+            <h1 className="font-heading text-2xl font-bold">
+              {generalSettings.maintenanceMode.noticeTitle}
+            </h1>
             <p className="text-vl-dark-300 mt-3 text-sm leading-relaxed">
               {generalSettings.maintenanceMode.noticeMessage}
             </p>
@@ -52,8 +54,12 @@ export default async function StorefrontLayout({ children }: { children: React.R
     (shippingSettings.enableFreeShipping && shippingSettings.freeShippingBannerText) ? (
       <AnnouncementBar
         maintenanceBypass={isBypassingMaintenance}
-        holidayBanner={generalSettings.holidayMode.enabled ? generalSettings.holidayMode.bannerText : null}
-        shippingBanner={shippingSettings.enableFreeShipping ? shippingSettings.freeShippingBannerText : null}
+        holidayBanner={
+          generalSettings.holidayMode.enabled ? generalSettings.holidayMode.bannerText : null
+        }
+        shippingBanner={
+          shippingSettings.enableFreeShipping ? shippingSettings.freeShippingBannerText : null
+        }
       />
     ) : null;
 

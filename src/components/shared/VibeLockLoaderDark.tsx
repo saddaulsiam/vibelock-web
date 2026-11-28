@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import * as React from "react";
 
 export interface LoaderStage {
   id: string;
@@ -271,18 +271,18 @@ export default function VibeLockLoaderDark({
           {/* Animated Glow Halo */}
           <div
             aria-hidden="true"
-            className="vl-glow-dark border-vl-cyan-500/40 bg-vl-cyan-950/30 absolute -inset-3 sm:-inset-3.5 rounded-full border shadow-[0_0_28px_rgba(0,217,255,0.25)]"
+            className="vl-glow-dark border-vl-cyan-500/40 bg-vl-cyan-950/30 absolute -inset-3 rounded-full border shadow-[0_0_28px_rgba(0,217,255,0.25)] sm:-inset-3.5"
           />
 
           {/* Precision Badge Container */}
-          <div className="border-vl-cyan-500 bg-vl-dark-800 relative flex size-20 sm:size-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_32px_rgba(0,217,255,0.45)]">
+          <div className="border-vl-cyan-500 bg-vl-dark-800 relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_32px_rgba(0,217,255,0.45)] sm:size-24">
             <Image
               src="/logo/icon/vibelock_icon_dark.svg"
               alt="VibeLock"
               width={56}
               height={56}
               priority
-              className="vl-breathe-dark size-12 sm:size-14 object-contain"
+              className="vl-breathe-dark size-12 object-contain sm:size-14"
             />
           </div>
         </div>

@@ -1,29 +1,29 @@
 "use client";
 
-import { useState, useEffect, useRef, useTransition } from "react";
-import Image from "next/image";
-import {
-  Trash2,
-  Plus,
-  Minus,
-  User,
-  Phone,
-  Tag,
-  ShoppingCart,
-  PauseCircle,
-  Crown,
-  Sparkles,
-  Loader2,
-  Package,
-  X,
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import type { PosCartItem } from "@/lib/pos/pos-types";
 import { lookupPosCustomerByPhoneAction } from "@/lib/pos/pos-customer-actions";
 import type { PosCustomerProfile } from "@/lib/pos/pos-customer-types";
+import type { PosCartItem } from "@/lib/pos/pos-types";
+import {
+  Crown,
+  Loader2,
+  Minus,
+  Package,
+  PauseCircle,
+  Phone,
+  Plus,
+  ShoppingCart,
+  Sparkles,
+  Tag,
+  Trash2,
+  User,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface PosCartPanelProps {

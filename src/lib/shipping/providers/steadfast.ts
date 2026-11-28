@@ -1,3 +1,5 @@
+import { env } from "@/lib/config/env";
+import { maskPhoneNumber } from "@/lib/sms/client";
 import { ShipmentStatus } from "@prisma/client";
 import {
   CancelShipmentRequest,
@@ -7,8 +9,6 @@ import {
   ShipmentStatusResult,
   ShippingProvider,
 } from "../types";
-import { env } from "@/lib/config/env";
-import { maskPhoneNumber } from "@/lib/sms/client";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -110,9 +110,16 @@ export class SteadfastCourierProvider implements ShippingProvider {
       });
     } catch (err) {
       const sanitizedPath = path.includes("/fraud_check/")
-        ? path.replace(/\/fraud_check\/([^/?#]+)/, (_, phone) => `/fraud_check/${maskPhoneNumber(decodeURIComponent(phone))}`)
+        ? path.replace(
+            /\/fraud_check\/([^/?#]+)/,
+            (_, phone) => `/fraud_check/${maskPhoneNumber(decodeURIComponent(phone))}`
+          )
         : path;
-      console.error("[SteadfastProvider] Request failed to URL:", `${this.baseUrl}${sanitizedPath}`, err);
+      console.error(
+        "[SteadfastProvider] Request failed to URL:",
+        `${this.baseUrl}${sanitizedPath}`,
+        err
+      );
       throw new Error("Steadfast request failed.");
     }
 

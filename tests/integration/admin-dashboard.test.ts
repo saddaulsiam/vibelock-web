@@ -1,10 +1,9 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Prisma } from "@prisma/client";
-import prisma from "../../src/lib/prisma/client";
-import { getAdminDashboardData } from "../../src/lib/admin/reports";
-import { getAdminReport } from "../../src/lib/admin/reports";
-import AdminPage from "../../src/app/(protected)/admin/page";
 import crypto from "crypto";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import AdminPage from "../../src/app/(protected)/admin/page";
+import { getAdminDashboardData, getAdminReport } from "../../src/lib/admin/reports";
+import prisma from "../../src/lib/prisma/client";
 
 let mockSession: unknown = null;
 vi.mock("../../src/auth", () => ({

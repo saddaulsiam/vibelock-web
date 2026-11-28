@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
 import { resetPasswordAction } from "@/app/actions/account-security";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import {
-  Lock,
-  ArrowRight,
-  RefreshCw,
   AlertCircle,
-  ChevronLeft,
+  ArrowRight,
   CheckCircle2,
+  ChevronLeft,
   Eye,
   EyeOff,
+  Lock,
+  RefreshCw,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 function ResetPasswordForm() {
   const router = useRouter();

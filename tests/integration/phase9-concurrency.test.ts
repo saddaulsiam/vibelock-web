@@ -1,12 +1,12 @@
-import { describe, test, expect, beforeAll, afterAll, vi } from "vitest";
-import path from "path";
-import fs from "fs";
-import { PrismaClient, Prisma, Role } from "@prisma/client";
-import { lockCustomerUser } from "@/lib/checkout/actions";
 import { deleteAccountAction } from "@/app/actions/account-deletion";
-import { createReturnRequestAction } from "@/lib/returns/actions";
+import { lockCustomerUser } from "@/lib/checkout/actions";
 import { RefundService } from "@/lib/refunds/service";
+import { createReturnRequestAction } from "@/lib/returns/actions";
+import { Prisma, PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
+import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 
 let mockSessionUser: { id: string; email: string; name?: string; role: Role } | null = null;
 
@@ -34,7 +34,10 @@ if (!testDbUrl) {
   for (const line of content.split("\n")) {
     const trimmed = line.trim();
     if (trimmed.startsWith("DATABASE_URL=")) {
-      testDbUrl = trimmed.slice("DATABASE_URL=".length).trim().replace(/^['"]|['"]$/g, "");
+      testDbUrl = trimmed
+        .slice("DATABASE_URL=".length)
+        .trim()
+        .replace(/^['"]|['"]$/g, "");
       break;
     }
   }
@@ -114,8 +117,12 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
     pid2 = q2[0].pid;
 
     console.log(`[Phase 9 Concurrency Suite] Isolated DB: ${dbInfo[0].current_database}`);
-    console.log(`[Phase 9 Concurrency Suite] PostgreSQL Version: ${dbInfo[0].version.split(",")[0]}`);
-    console.log(`[Phase 9 Concurrency Suite] Independent Backend PIDs: Conn1=${pid1}, Conn2=${pid2}`);
+    console.log(
+      `[Phase 9 Concurrency Suite] PostgreSQL Version: ${dbInfo[0].version.split(",")[0]}`
+    );
+    console.log(
+      `[Phase 9 Concurrency Suite] Independent Backend PIDs: Conn1=${pid1}, Conn2=${pid2}`
+    );
 
     expect(pid1).toBeGreaterThan(0);
     expect(pid2).toBeGreaterThan(0);
@@ -125,11 +132,17 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
   afterAll(async () => {
     try {
       if (createdOrderIds.length > 0) {
-        await isolatedPrisma.orderItem.deleteMany({ where: { orderId: { in: createdOrderIds } } }).catch(() => {});
-        await isolatedPrisma.order.deleteMany({ where: { id: { in: createdOrderIds } } }).catch(() => {});
+        await isolatedPrisma.orderItem
+          .deleteMany({ where: { orderId: { in: createdOrderIds } } })
+          .catch(() => {});
+        await isolatedPrisma.order
+          .deleteMany({ where: { id: { in: createdOrderIds } } })
+          .catch(() => {});
       }
       if (createdUserIds.length > 0) {
-        await isolatedPrisma.user.deleteMany({ where: { id: { in: createdUserIds } } }).catch(() => {});
+        await isolatedPrisma.user
+          .deleteMany({ where: { id: { in: createdUserIds } } })
+          .catch(() => {});
       }
     } finally {
       await prismaConn1.$disconnect();
@@ -265,16 +278,18 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
 
     // Transaction 2: Online checkout attempts to lock customer User row
     let checkoutError: Error | null = null;
-    const checkoutTxPromise = prismaConn2.$transaction(async (tx2) => {
-      const startTime = Date.now();
-      try {
-        await lockCustomerUser(testUser.id, tx2);
-      } catch (err) {
-        checkoutError = err as Error;
-        conn2CheckoutBlockedDurationMs = Date.now() - startTime;
-        throw err;
-      }
-    }).catch(() => {});
+    const checkoutTxPromise = prismaConn2
+      .$transaction(async (tx2) => {
+        const startTime = Date.now();
+        try {
+          await lockCustomerUser(testUser.id, tx2);
+        } catch (err) {
+          checkoutError = err as Error;
+          conn2CheckoutBlockedDurationMs = Date.now() - startTime;
+          throw err;
+        }
+      })
+      .catch(() => {});
 
     await Promise.all([deleteTxPromise, checkoutTxPromise]);
 
@@ -333,7 +348,10 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
       deletionLockAcquired = true;
       // Check active returns guard (finds none — none were created yet)
       const activeReturns = await tx1.returnRequest.count({
-        where: { order: { userId: testUser.id }, status: { in: ["PENDING", "APPROVED", "RECEIVED"] } },
+        where: {
+          order: { userId: testUser.id },
+          status: { in: ["PENDING", "APPROVED", "RECEIVED"] },
+        },
       });
       expect(activeReturns).toBe(0); // Guard passes correctly
       // Hold lock 150ms to let return creation attempt to run concurrently
@@ -437,19 +455,24 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
 
     // Transaction 2: Account deletion also acquires User lock first — must block
     let deleteSeenActiveReturns = 0;
-    const deleteTxPromise = prismaConn2.$transaction(async (tx2) => {
-      const startTime = Date.now();
-      // Blocks here until Conn1 commits
-      await tx2.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
-      deletionBlockedDurationMs = Date.now() - startTime;
+    const deleteTxPromise = prismaConn2
+      .$transaction(async (tx2) => {
+        const startTime = Date.now();
+        // Blocks here until Conn1 commits
+        await tx2.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+        deletionBlockedDurationMs = Date.now() - startTime;
 
-      // After return commits, the guard must see the new PENDING return
-      deleteSeenActiveReturns = await tx2.returnRequest.count({
-        where: { order: { userId: testUser.id }, status: { in: ["PENDING", "APPROVED", "RECEIVED"] } },
-      });
-      // Deletion must NOT proceed — rollback by throwing
-      throw new Error("DELETION_BLOCKED_BY_ACTIVE_RETURN");
-    }).catch(() => {});
+        // After return commits, the guard must see the new PENDING return
+        deleteSeenActiveReturns = await tx2.returnRequest.count({
+          where: {
+            order: { userId: testUser.id },
+            status: { in: ["PENDING", "APPROVED", "RECEIVED"] },
+          },
+        });
+        // Deletion must NOT proceed — rollback by throwing
+        throw new Error("DELETION_BLOCKED_BY_ACTIVE_RETURN");
+      })
+      .catch(() => {});
 
     await Promise.all([returnTxPromise, deleteTxPromise]);
 
@@ -550,7 +573,10 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
           await tx2.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${uid} FOR UPDATE`;
           refundBlockedDurationMs = Date.now() - startTime;
           // After deletion commits, User no longer exists — guard against ghost refund
-          const userStillExists = await tx2.user.findUnique({ where: { id: uid }, select: { id: true } });
+          const userStillExists = await tx2.user.findUnique({
+            where: { id: uid },
+            select: { id: true },
+          });
           if (!userStillExists) throw new Error("Payment not found");
         }
         await tx2.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${p.orderId} FOR UPDATE`;
@@ -660,7 +686,10 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
 
         // Guard: must detect the PENDING refund created by the concurrent refund tx
         deletionSeenActiveRefunds = await tx2.refund.count({
-          where: { payment: { order: { userId: testUser.id } }, status: { in: ["PENDING", "PROCESSING"] } },
+          where: {
+            payment: { order: { userId: testUser.id } },
+            status: { in: ["PENDING", "PROCESSING"] },
+          },
         });
         // Deletion must NOT proceed
         throw new Error("DELETION_BLOCKED_BY_ACTIVE_REFUND");
@@ -815,7 +844,11 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
       const refundPromise = (async () => {
         const startTime = Date.now();
         try {
-          await refundService.initiateRefund(payment.id, new Prisma.Decimal("500"), "App Concurrency Refund");
+          await refundService.initiateRefund(
+            payment.id,
+            new Prisma.Decimal("500"),
+            "App Concurrency Refund"
+          );
         } catch (err) {
           refundBlockedDurationMs = Date.now() - startTime;
           refundError = err as Error;
@@ -888,7 +921,11 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
 
       // 1. Invoke actual RefundService.initiateRefund method
       const refundService = new RefundService();
-      const refund = await refundService.initiateRefund(payment.id, new Prisma.Decimal("200"), "Customer Return Refund");
+      const refund = await refundService.initiateRefund(
+        payment.id,
+        new Prisma.Decimal("200"),
+        "Customer Return Refund"
+      );
       expect(refund.id).toBeDefined();
       expect(refund.status).toBe("PENDING");
 
@@ -1017,7 +1054,9 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
       });
 
       // Verify NO return request was created in PostgreSQL
-      const returns = await isolatedPrisma.returnRequest.findMany({ where: { orderId: deliveredOrder.id } });
+      const returns = await isolatedPrisma.returnRequest.findMany({
+        where: { orderId: deliveredOrder.id },
+      });
       expect(returns).toHaveLength(0);
 
       // Clean up variant & product
@@ -1117,8 +1156,12 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
 
       // Clean up return, variant, product
       if (returnResult.success && "returnRequestId" in returnResult) {
-        await isolatedPrisma.returnItem.deleteMany({ where: { returnRequestId: returnResult.returnRequestId } }).catch(() => {});
-        await isolatedPrisma.returnRequest.delete({ where: { id: returnResult.returnRequestId } }).catch(() => {});
+        await isolatedPrisma.returnItem
+          .deleteMany({ where: { returnRequestId: returnResult.returnRequestId } })
+          .catch(() => {});
+        await isolatedPrisma.returnRequest
+          .delete({ where: { id: returnResult.returnRequestId } })
+          .catch(() => {});
       }
       await isolatedPrisma.productVariant.delete({ where: { id: variant.id } }).catch(() => {});
       await isolatedPrisma.product.delete({ where: { id: product.id } }).catch(() => {});
@@ -1161,7 +1204,11 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
 
       // Call actual RefundService.initiateRefund method on guest order
       const refundService = new RefundService();
-      const refund = await refundService.initiateRefund(payment.id, new Prisma.Decimal("300"), "Guest Order Refund");
+      const refund = await refundService.initiateRefund(
+        payment.id,
+        new Prisma.Decimal("300"),
+        "Guest Order Refund"
+      );
 
       expect(refund.id).toBeDefined();
       expect(refund.status).toBe("PENDING");
@@ -1247,11 +1294,17 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
       });
 
       // Verify atomic rollback in PostgreSQL:
-      const userAfterRollback = await isolatedPrisma.user.findUnique({ where: { id: testUser.id } });
+      const userAfterRollback = await isolatedPrisma.user.findUnique({
+        where: { id: testUser.id },
+      });
       expect(userAfterRollback).not.toBeNull();
-      const cartAfterRollback = await isolatedPrisma.cart.findUnique({ where: { userId: testUser.id } });
+      const cartAfterRollback = await isolatedPrisma.cart.findUnique({
+        where: { userId: testUser.id },
+      });
       expect(cartAfterRollback).not.toBeNull();
-      const sessionsAfterRollback = await isolatedPrisma.session.findMany({ where: { userId: testUser.id } });
+      const sessionsAfterRollback = await isolatedPrisma.session.findMany({
+        where: { userId: testUser.id },
+      });
       expect(sessionsAfterRollback).toHaveLength(1);
       const auditLogsAfterRollback = await isolatedPrisma.auditLog.count({
         where: { actorId: testUser.id, action: "CUSTOMER_SELF_DELETED" },

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { NextRequest } from "next/server";
 import { GET as searchGet } from "@/app/api/search/route";
 import { resetRateLimitMemoryStore } from "@/lib/security/rate-limit";
+import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockFindManyProducts } = vi.hoisted(() => ({
   mockFindManyProducts: vi.fn(),
@@ -101,9 +101,7 @@ describe("Search Route Rate Limiting & IP Trust Boundary (SEC-12-01 / Phase 12.1
       expect(res.status).toBe(200);
 
       // Missing trusted IP logged; fail-open for anonymous
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("RATE_LIMIT_MISSING_CLIENT_IP")
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("RATE_LIMIT_MISSING_CLIENT_IP"));
       warnSpy.mockRestore();
     });
 
@@ -118,9 +116,7 @@ describe("Search Route Rate Limiting & IP Trust Boundary (SEC-12-01 / Phase 12.1
       const res = await searchGet(req);
       expect(res.status).toBe(200);
 
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("RATE_LIMIT_MISSING_CLIENT_IP")
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("RATE_LIMIT_MISSING_CLIENT_IP"));
       warnSpy.mockRestore();
     });
 
@@ -317,9 +313,7 @@ describe("Search Route Rate Limiting & IP Trust Boundary (SEC-12-01 / Phase 12.1
       expect(res.status).toBe(200);
 
       // Emits structured warning with policy: fail_open
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("RATE_LIMIT_MISSING_CLIENT_IP")
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("RATE_LIMIT_MISSING_CLIENT_IP"));
       const warnPayload = warnSpy.mock.calls[0][0] as string;
       const parsed = JSON.parse(warnPayload);
       expect(parsed.policy).toBe("fail_open");

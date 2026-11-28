@@ -1,9 +1,8 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export const DASHBOARD_RANGE_PRESETS = [
   { key: "today", label: "Today" },
@@ -38,7 +37,7 @@ export function DashboardRangeTabs({ currentRange, className }: DashboardRangeTa
               className="px-3.5"
             >
               {preset.key === "today" && currentRange === "today" && (
-                <span className="size-1.5 animate-pulse rounded-full bg-emerald-500 mr-1.5" />
+                <span className="mr-1.5 size-1.5 animate-pulse rounded-full bg-emerald-500" />
               )}
               {preset.label}
             </TabsTrigger>

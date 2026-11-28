@@ -1,8 +1,8 @@
 import "server-only";
 
-import { z } from "zod";
-import { getStoreSetting, updateStoreSetting, STORE_SETTING_KEYS } from "./store-settings-service";
 import { isDhakaCity } from "@/lib/shipping/pricing";
+import { z } from "zod";
+import { getStoreSetting, STORE_SETTING_KEYS, updateStoreSetting } from "./store-settings-service";
 
 export const ShippingRulesSettingsSchema = z.object({
   enableFreeShipping: z.boolean().default(true),
@@ -14,7 +14,10 @@ export const ShippingRulesSettingsSchema = z.object({
   freeShippingBannerText: z
     .string()
     .default("Free standard delivery on all nationwide orders above ৳2,500!"),
-  pickupHubName: z.string().min(1, "Pickup hub name is required").default("VibeLock Central Fulfillment Hub"),
+  pickupHubName: z
+    .string()
+    .min(1, "Pickup hub name is required")
+    .default("VibeLock Central Fulfillment Hub"),
   pickupAddress: z
     .string()
     .min(1, "Pickup address is required")
@@ -60,7 +63,11 @@ export async function getShippingRulesSettings(): Promise<{
   hasStore: boolean;
 }> {
   const fallback = getDefaultShippingRulesSettings();
-  const res = await getStoreSetting(STORE_SETTING_KEYS.SHIPPING, ShippingRulesSettingsSchema, fallback);
+  const res = await getStoreSetting(
+    STORE_SETTING_KEYS.SHIPPING,
+    ShippingRulesSettingsSchema,
+    fallback
+  );
   return {
     settings: res.data,
     isPersisted: res.isPersisted,
@@ -139,7 +146,10 @@ export async function calculateEffectiveShippingFee(params: {
       reason: "Free delivery applied!",
     };
   } catch (err) {
-    console.error("[ShippingRules] Error calculating free shipping, falling back to standard rate:", err);
+    console.error(
+      "[ShippingRules] Error calculating free shipping, falling back to standard rate:",
+      err
+    );
     return {
       cost: params.standardCost,
       isFree: false,

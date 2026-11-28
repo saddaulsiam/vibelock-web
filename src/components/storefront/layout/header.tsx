@@ -3,13 +3,13 @@ import { getCart } from "@/lib/cart/queries";
 import { getCategories } from "@/lib/catalog/queries";
 import Image from "next/image";
 import Link from "next/link";
+import { CartDrawer } from "../cart/cart-drawer";
 import { AccountPopover } from "./account-popover";
 import { CategoriesDrawer } from "./categories-drawer";
 import { DesktopNav } from "./desktop-nav";
 import { HeaderSearch } from "./header-search";
 import { HeaderShell } from "./header-shell";
 import { HeaderWishlist } from "./header-wishlist";
-import { CartDrawer } from "../cart/cart-drawer";
 
 export async function Header({
   announcement,

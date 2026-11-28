@@ -13,8 +13,8 @@ vi.mock("@/lib/admin/orders", () => ({
   updateOrderStatusAction: vi.fn(),
 }));
 
-import { renderToStaticMarkup } from "react-dom/server";
 import { CANCELLATION_REASONS, OrderCancelModal } from "@/components/admin/orders";
+import { renderToStaticMarkup } from "react-dom/server";
 
 describe("Structured Order Cancellation and Inventory Restock", () => {
   test("defines comprehensive structured cancellation reasons for BD D2C streetwear", () => {

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import {
   ArrowDownRight,
   CircleDollarSign,
@@ -9,7 +10,6 @@ import {
   Truck,
   Warehouse,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export interface ReportFinancialSummary {
   orders: number;
@@ -52,8 +52,11 @@ interface ReportFinancialHeroProps {
 
 export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHeroProps) {
   return (
-    <section aria-labelledby="financial-summary-heading" className="space-y-4 print:space-y-3 print:break-inside-avoid">
-      <div className="border-neutral-200/90 rounded-sm border bg-white shadow-xs print:shadow-none print:border-neutral-300">
+    <section
+      aria-labelledby="financial-summary-heading"
+      className="space-y-4 print:break-inside-avoid print:space-y-3"
+    >
+      <div className="rounded-sm border border-neutral-200/90 bg-white shadow-xs print:border-neutral-300 print:shadow-none">
         {/* ── TOP PRIMARY P&L ROW: NET SALES, GROSS PROFIT, MARGIN, COGS ── */}
         <div className="border-b border-neutral-100 p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100/90 pb-3">
@@ -67,13 +70,13 @@ export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHero
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="border border-neutral-200/80 bg-neutral-50 px-2.5 py-0.5 rounded font-mono text-[11px] font-medium text-neutral-700 shadow-2xs">
+              <span className="rounded border border-neutral-200/80 bg-neutral-50 px-2.5 py-0.5 font-mono text-[11px] font-medium text-neutral-700 shadow-2xs">
                 {summary.orders.toLocaleString("en-BD")} realized orders
               </span>
               {summary.ordersDelta !== null && summary.ordersDelta !== undefined && (
                 <span
                   className={cn(
-                    "font-mono text-[10px] font-bold px-2 py-0.5 rounded-full border",
+                    "rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold",
                     summary.ordersDelta >= 0
                       ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                       : "border-rose-200 bg-rose-50 text-rose-800"
@@ -100,7 +103,7 @@ export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHero
                 {summary.netSalesDelta !== null && summary.netSalesDelta !== undefined && (
                   <span
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-xs font-bold border shadow-2xs",
+                      "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-mono text-xs font-bold shadow-2xs",
                       summary.netSalesDelta >= 0
                         ? "border-emerald-300 bg-emerald-50 text-emerald-800"
                         : "border-rose-300 bg-rose-50 text-rose-800"
@@ -119,7 +122,7 @@ export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHero
 
             {/* Core Profitability Badges: COGS -> Profit -> Margin */}
             <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
-              <div className="border-amber-200/70 bg-amber-50/50 rounded-sm border p-3">
+              <div className="rounded-sm border border-amber-200/70 bg-amber-50/50 p-3">
                 <div className="flex items-center gap-1 text-[11px] font-bold text-amber-800 uppercase">
                   <Warehouse className="size-3.5 text-amber-600" />
                   <span>Total COGS</span>
@@ -130,7 +133,7 @@ export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHero
                 <span className="text-[10px] text-amber-700/80">Historical Item Cost</span>
               </div>
 
-              <div className="border-emerald-200/70 bg-emerald-50/50 rounded-sm border p-3">
+              <div className="rounded-sm border border-emerald-200/70 bg-emerald-50/50 p-3">
                 <div className="flex items-center justify-between text-[11px] font-bold text-emerald-800 uppercase">
                   <div className="flex items-center gap-1">
                     <TrendingUp className="size-3.5 text-emerald-600" />
@@ -155,7 +158,7 @@ export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHero
                 <span className="text-[10px] text-emerald-700/80">Net Sales – COGS</span>
               </div>
 
-              <div className="border-cyan-200/70 bg-cyan-50/50 rounded-sm border p-3">
+              <div className="rounded-sm border border-cyan-200/70 bg-cyan-50/50 p-3">
                 <div className="flex items-center gap-1 text-[11px] font-bold text-cyan-800 uppercase">
                   <Percent className="size-3.5 text-cyan-600" />
                   <span>Gross Margin</span>
@@ -173,16 +176,18 @@ export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHero
         <div className="border-b border-neutral-100 bg-neutral-50/70 px-5 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
-              <span className="font-heading font-bold uppercase tracking-wider text-[11px] text-neutral-700">
+              <span className="font-heading text-[11px] font-bold tracking-wider text-neutral-700 uppercase">
                 Operational Contribution Bridge
               </span>
-              <span className="text-[10px] text-muted-foreground font-mono">
+              <span className="text-muted-foreground font-mono text-[10px]">
                 (Merchandise Gross Profit − Est. Gateway Fees)
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-4 font-mono text-xs">
               <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground text-[11px]">Est. Processing Fees (~2%):</span>
+                <span className="text-muted-foreground text-[11px]">
+                  Est. Processing Fees (~2%):
+                </span>
                 <span className="font-bold text-amber-900">
                   -{formatBdt(summary.netSales * 0.02)}
                 </span>
@@ -192,10 +197,13 @@ export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHero
                 <span className="font-extrabold text-emerald-900">
                   {formatBdt(Math.max(summary.grossProfit - summary.netSales * 0.02, 0))}
                 </span>
-                <span className="text-[10px] text-neutral-500 font-sans font-medium">
+                <span className="font-sans text-[10px] font-medium text-neutral-500">
                   (
                   {summary.netSales > 0
-                    ? (((summary.grossProfit - summary.netSales * 0.02) / summary.netSales) * 100).toFixed(1)
+                    ? (
+                        ((summary.grossProfit - summary.netSales * 0.02) / summary.netSales) *
+                        100
+                      ).toFixed(1)
                     : 0}
                   %)
                 </span>
@@ -205,16 +213,18 @@ export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHero
         </div>
 
         {/* ── SECONDARY FINANCIAL PULSE GRID (6 TILES) ── */}
-        <div className="bg-neutral-50/50 grid grid-cols-2 divide-x divide-y divide-neutral-200/80 sm:grid-cols-3 lg:grid-cols-6 sm:divide-y-0">
+        <div className="grid grid-cols-2 divide-x divide-y divide-neutral-200/80 bg-neutral-50/50 sm:grid-cols-3 sm:divide-y-0 lg:grid-cols-6">
           <div className="space-y-0.5 p-3.5 sm:p-4">
             <span className="text-muted-foreground flex items-center gap-1 text-[11px] font-semibold uppercase">
               <CircleDollarSign className="size-3 text-neutral-500" />
               Gross GMV
             </span>
-            <p className="font-mono text-sm font-bold text-vl-dark-900 sm:text-base">
+            <p className="text-vl-dark-900 font-mono text-sm font-bold sm:text-base">
               {formatBdt(summary.grossSales)}
             </p>
-            <span className="text-muted-foreground block text-[10px]">Pre-discount merchandise</span>
+            <span className="text-muted-foreground block text-[10px]">
+              Pre-discount merchandise
+            </span>
           </div>
 
           <div className="space-y-0.5 p-3.5 sm:p-4">
@@ -244,7 +254,7 @@ export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHero
               <Package className="size-3 text-blue-600" />
               Avg Order Value
             </span>
-            <p className="font-mono text-sm font-bold text-vl-dark-900 sm:text-base">
+            <p className="text-vl-dark-900 font-mono text-sm font-bold sm:text-base">
               {formatBdt(summary.averageOrderValue)}
             </p>
             <span className="text-muted-foreground block text-[10px]">Basket realization</span>
@@ -255,7 +265,7 @@ export function ReportFinancialHero({ summary, rangeLabel }: ReportFinancialHero
               <Truck className="size-3 text-cyan-700" />
               Shipping Charged
             </span>
-            <p className="font-mono text-sm font-bold text-vl-dark-900 sm:text-base">
+            <p className="text-vl-dark-900 font-mono text-sm font-bold sm:text-base">
               {formatBdt(summary.shippingCharged)}
             </p>
             <span className="text-muted-foreground block text-[10px]">Customer delivery fees</span>

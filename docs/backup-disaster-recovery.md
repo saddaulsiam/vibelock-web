@@ -13,19 +13,19 @@
 
 ### 1.1 Infrastructure Context
 
-| Component | Production Configuration | Operational Role & Constraints |
-| :--- | :--- | :--- |
-| **Database Engine** | PostgreSQL 18.7 on Neon Serverless | Cloud-native serverless architecture with compute-storage separation. |
-| **Cloud Region** | AWS Singapore (`ap-southeast-1`) | Database compute and storage endpoints located in Singapore. |
-| **Database Plan** | **Neon Free Plan ($0/month)** | Shared compute, subject to inactivity scale-to-zero. |
-| **Neon PITR / Branching** | **Plan-Dependent (Requires Neon Dashboard Verification)** | Continuous WAL history retention and point-in-time restore capability depend on the active Neon tier and project history settings. Do not assume a fixed retention limit without dashboard verification. |
-| **Connections** | Pooled (`DATABASE_URL`, port 5432) & Direct (`DIRECT_URL`, port 5432) | `DATABASE_URL` connects via PgBouncer (used by Vercel serverless runtime for pooled app queries); `DIRECT_URL` connects unpooled directly to compute (used for Prisma migrations and GitHub Actions `pg_dump` backups). |
-| **Hosting Platform** | Vercel (Edge & Serverless Node.js runtime) | Next.js App Router connected via environment secrets. |
-| **ORM / Data Access** | Prisma ORM | Schema in `prisma/schema.prisma`; migrations via `prisma migrate deploy`. |
-| **Offsite Backup Storage** | **Cloudflare R2 (`vibelock-db-backups`)** | Private S3-compatible object storage located in APAC region. |
-| **Backup Trigger** | GitHub Actions (`backup-neon-to-r2.yml`) | **MANUAL ONLY (`workflow_dispatch`) during initial rollout.** Daily automated scheduling (`03:00 UTC` / `09:00 Asia/Dhaka`) is intentionally disabled and will be enabled via follow-up PR after successful backup and staging restore verification. |
-| **Encryption Tool** | `age` (Actually Good Encryption) | Client-side public-key encryption before upload; private key preserved offline. |
-| **Media Storage** | Cloudinary | Product images, customer return evidence, and avatars stored offsite. |
+| Component                  | Production Configuration                                              | Operational Role & Constraints                                                                                                                                                                                                                       |
+| :------------------------- | :-------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Database Engine**        | PostgreSQL 18.7 on Neon Serverless                                    | Cloud-native serverless architecture with compute-storage separation.                                                                                                                                                                                |
+| **Cloud Region**           | AWS Singapore (`ap-southeast-1`)                                      | Database compute and storage endpoints located in Singapore.                                                                                                                                                                                         |
+| **Database Plan**          | **Neon Free Plan ($0/month)**                                         | Shared compute, subject to inactivity scale-to-zero.                                                                                                                                                                                                 |
+| **Neon PITR / Branching**  | **Plan-Dependent (Requires Neon Dashboard Verification)**             | Continuous WAL history retention and point-in-time restore capability depend on the active Neon tier and project history settings. Do not assume a fixed retention limit without dashboard verification.                                             |
+| **Connections**            | Pooled (`DATABASE_URL`, port 5432) & Direct (`DIRECT_URL`, port 5432) | `DATABASE_URL` connects via PgBouncer (used by Vercel serverless runtime for pooled app queries); `DIRECT_URL` connects unpooled directly to compute (used for Prisma migrations and GitHub Actions `pg_dump` backups).                              |
+| **Hosting Platform**       | Vercel (Edge & Serverless Node.js runtime)                            | Next.js App Router connected via environment secrets.                                                                                                                                                                                                |
+| **ORM / Data Access**      | Prisma ORM                                                            | Schema in `prisma/schema.prisma`; migrations via `prisma migrate deploy`.                                                                                                                                                                            |
+| **Offsite Backup Storage** | **Cloudflare R2 (`vibelock-db-backups`)**                             | Private S3-compatible object storage located in APAC region.                                                                                                                                                                                         |
+| **Backup Trigger**         | GitHub Actions (`backup-neon-to-r2.yml`)                              | **MANUAL ONLY (`workflow_dispatch`) during initial rollout.** Daily automated scheduling (`03:00 UTC` / `09:00 Asia/Dhaka`) is intentionally disabled and will be enabled via follow-up PR after successful backup and staging restore verification. |
+| **Encryption Tool**        | `age` (Actually Good Encryption)                                      | Client-side public-key encryption before upload; private key preserved offline.                                                                                                                                                                      |
+| **Media Storage**          | Cloudinary                                                            | Product images, customer return evidence, and avatars stored offsite.                                                                                                                                                                                |
 
 > [!IMPORTANT]
 > **Production Safety Rule:** Under no circumstances should production data, production database branches, or production connection strings be modified or targeted during disaster recovery drills. All restore drills and verification routines must run against isolated recovery branches or separate staging databases.
@@ -85,16 +85,16 @@ flowchart TD
 
 The offsite backup bucket has been provisioned under the owner's Cloudflare account:
 
-| Setting | Value | Security / Operational Purpose |
-| :--- | :--- | :--- |
-| **Bucket Name** | `vibelock-db-backups` | Dedicated storage container for VibeLock database backups. |
-| **Storage Class** | Standard | High durability, low latency access for restore drills. |
-| **Location Hint** | APAC | Proximity to VibeLock Singapore database infrastructure. |
-| **Public URL** | **Disabled** | Bucket is completely private; no public web access. |
-| **Custom Domains** | **None** | No external domain routing; accessed strictly via S3 credentials. |
-| **Lifecycle Rule 1** | **Delete objects after 7 days (Intended — Pending Verification)** | Intended specification to automatically prune dumps older than 7 days; requires verification in Cloudflare Dashboard. |
-| **Lifecycle Rule 2** | **Abort incomplete multipart uploads after 7 days (Intended — Pending Verification)** | Intended specification to automatically clean up partial uploads; requires verification in Cloudflare Dashboard. |
-| **API Token** | `vibelock-backup-automation` | Scoped token with **Object Read & Write** permissions restricted strictly to `vibelock-db-backups`. |
+| Setting              | Value                                                                                 | Security / Operational Purpose                                                                                        |
+| :------------------- | :------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- |
+| **Bucket Name**      | `vibelock-db-backups`                                                                 | Dedicated storage container for VibeLock database backups.                                                            |
+| **Storage Class**    | Standard                                                                              | High durability, low latency access for restore drills.                                                               |
+| **Location Hint**    | APAC                                                                                  | Proximity to VibeLock Singapore database infrastructure.                                                              |
+| **Public URL**       | **Disabled**                                                                          | Bucket is completely private; no public web access.                                                                   |
+| **Custom Domains**   | **None**                                                                              | No external domain routing; accessed strictly via S3 credentials.                                                     |
+| **Lifecycle Rule 1** | **Delete objects after 7 days (Intended — Pending Verification)**                     | Intended specification to automatically prune dumps older than 7 days; requires verification in Cloudflare Dashboard. |
+| **Lifecycle Rule 2** | **Abort incomplete multipart uploads after 7 days (Intended — Pending Verification)** | Intended specification to automatically clean up partial uploads; requires verification in Cloudflare Dashboard.      |
+| **API Token**        | `vibelock-backup-automation`                                                          | Scoped token with **Object Read & Write** permissions restricted strictly to `vibelock-db-backups`.                   |
 
 ---
 
@@ -115,17 +115,17 @@ The offsite backup bucket has been provisioned under the owner's Cloudflare acco
 
 ### 2.4 Coverage and Exclusions Boundary
 
-| System Asset | Covered by Automated Backup? | Recovery Strategy / Responsible Layer |
-| :--- | :---: | :--- |
-| **PostgreSQL Schema & Tables** | **YES** | Restored via `pg_restore` from `.dump.age` artifact into target PostgreSQL instance. |
-| **Relational Data & Records** | **YES** | Restored via `pg_restore` (Users, Orders, Payments, Inventory, Audit Logs). |
-| **PostgreSQL Cluster Roles & Privileges** | **NO** | `pg_dump` targets database `neondb`. Global cluster roles, database creation DDL, and server-level permissions must be maintained via infrastructure setup. |
-| **Cloudinary Media Assets** | **NO** | **Critical Distinction:** The database stores only image metadata and CDN URLs (`ProductImage.url`, `User.image`, `Banner.imageUrl`, `ReturnRequest` attachments). If Cloudinary assets are deleted, database restoration will point to missing 404 URLs. Cloudinary requires independent backup (e.g., Cloudinary automatic backup to an S3/R2 bucket or periodic asset sync). |
-| **Application Source Code** | **NO** | Maintained under Git version control in GitHub (`saddaulsiam/vibelock-web`). Immutable commit history. |
-| **Vercel Runtime Configuration** | **NO** | Deployment builds, edge routing, and environment variables stored in Vercel project settings. |
-| **Environment Secrets & API Keys** | **NO** | Secret keys (`AUTH_SECRET`, `SSLCOMMERZ_*`, `CLOUDINARY_*`, `RESEND_API_KEY`) must be backed up securely in an encrypted team vault (e.g., 1Password or Bitwarden). |
-| **Payment Gateway Configuration** | **NO** | SSLCOMMERZ store ID, secret keys, IPN webhooks, and merchant credentials reside in provider portals. |
-| **Courier / Shipping Configuration** | **NO** | Pathao, Steadfast, and Paperfly API credentials and webhook registrations reside in courier partner portals. |
+| System Asset                              | Covered by Automated Backup? | Recovery Strategy / Responsible Layer                                                                                                                                                                                                                                                                                                                                           |
+| :---------------------------------------- | :--------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **PostgreSQL Schema & Tables**            |           **YES**            | Restored via `pg_restore` from `.dump.age` artifact into target PostgreSQL instance.                                                                                                                                                                                                                                                                                            |
+| **Relational Data & Records**             |           **YES**            | Restored via `pg_restore` (Users, Orders, Payments, Inventory, Audit Logs).                                                                                                                                                                                                                                                                                                     |
+| **PostgreSQL Cluster Roles & Privileges** |            **NO**            | `pg_dump` targets database `neondb`. Global cluster roles, database creation DDL, and server-level permissions must be maintained via infrastructure setup.                                                                                                                                                                                                                     |
+| **Cloudinary Media Assets**               |            **NO**            | **Critical Distinction:** The database stores only image metadata and CDN URLs (`ProductImage.url`, `User.image`, `Banner.imageUrl`, `ReturnRequest` attachments). If Cloudinary assets are deleted, database restoration will point to missing 404 URLs. Cloudinary requires independent backup (e.g., Cloudinary automatic backup to an S3/R2 bucket or periodic asset sync). |
+| **Application Source Code**               |            **NO**            | Maintained under Git version control in GitHub (`saddaulsiam/vibelock-web`). Immutable commit history.                                                                                                                                                                                                                                                                          |
+| **Vercel Runtime Configuration**          |            **NO**            | Deployment builds, edge routing, and environment variables stored in Vercel project settings.                                                                                                                                                                                                                                                                                   |
+| **Environment Secrets & API Keys**        |            **NO**            | Secret keys (`AUTH_SECRET`, `SSLCOMMERZ_*`, `CLOUDINARY_*`, `RESEND_API_KEY`) must be backed up securely in an encrypted team vault (e.g., 1Password or Bitwarden).                                                                                                                                                                                                             |
+| **Payment Gateway Configuration**         |            **NO**            | SSLCOMMERZ store ID, secret keys, IPN webhooks, and merchant credentials reside in provider portals.                                                                                                                                                                                                                                                                            |
+| **Courier / Shipping Configuration**      |            **NO**            | Pathao, Steadfast, and Paperfly API credentials and webhook registrations reside in courier partner portals.                                                                                                                                                                                                                                                                    |
 
 ---
 
@@ -137,16 +137,17 @@ To enable the automated backup workflow, the repository owner must configure fiv
 
 > [!IMPORTANT]
 > **Connection String Distinction (`DIRECT_URL` vs. `DATABASE_URL`):**
+>
 > - **`DATABASE_URL` (Pooled):** Used exclusively by the Vercel application runtime and Prisma Client (`ep-...-pooler...`). Routes through PgBouncer for transaction connection pooling. PgBouncer does not support long-lived transactional snapshot locks required by `pg_dump`.
 > - **`DIRECT_URL` (Unpooled):** Direct unpooled connection string to the Neon compute endpoint (port 5432 with `sslmode=require`). The backup workflow specifically reads **`secrets.DIRECT_URL`** for `pg_dump`. Do not set `secrets.DATABASE_URL` for backup automation.
 
-| Secret Name | Value Description | Example / Format |
-| :--- | :--- | :--- |
-| **`DIRECT_URL`** | Neon direct PostgreSQL connection string (direct unpooled compute endpoint, port 5432 with `sslmode=require`). Bypasses PgBouncer pooler for reliable `pg_dump` streaming locks. Configured in GitHub Secrets as `DIRECT_URL`. | `postgres://user:password@ep-cool-butterfly-123456.ap-southeast-1.aws.neon.tech/neondb?sslmode=require` |
-| **`R2_ACCESS_KEY_ID`** | Cloudflare R2 token Access Key ID from the `vibelock-backup-automation` token. | `a1b2c3d4e5f67890abcdef1234567890` (32 characters) |
-| **`R2_SECRET_ACCESS_KEY`** | Cloudflare R2 token Secret Access Key from the `vibelock-backup-automation` token. | `0123456789abcdef...` (64-character hex string) |
-| **`R2_ACCOUNT_ID`** | Cloudflare Account ID (located in the right sidebar of the Cloudflare R2 overview dashboard). | `abc123def45678901234567890abcdef` (32 characters) |
-| **`BACKUP_AGE_RECIPIENT`** | Public `age` recipient key generated locally by the owner. | `age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p` |
+| Secret Name                | Value Description                                                                                                                                                                                                              | Example / Format                                                                                        |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| **`DIRECT_URL`**           | Neon direct PostgreSQL connection string (direct unpooled compute endpoint, port 5432 with `sslmode=require`). Bypasses PgBouncer pooler for reliable `pg_dump` streaming locks. Configured in GitHub Secrets as `DIRECT_URL`. | `postgres://user:password@ep-cool-butterfly-123456.ap-southeast-1.aws.neon.tech/neondb?sslmode=require` |
+| **`R2_ACCESS_KEY_ID`**     | Cloudflare R2 token Access Key ID from the `vibelock-backup-automation` token.                                                                                                                                                 | `a1b2c3d4e5f67890abcdef1234567890` (32 characters)                                                      |
+| **`R2_SECRET_ACCESS_KEY`** | Cloudflare R2 token Secret Access Key from the `vibelock-backup-automation` token.                                                                                                                                             | `0123456789abcdef...` (64-character hex string)                                                         |
+| **`R2_ACCOUNT_ID`**        | Cloudflare Account ID (located in the right sidebar of the Cloudflare R2 overview dashboard).                                                                                                                                  | `abc123def45678901234567890abcdef` (32 characters)                                                      |
+| **`BACKUP_AGE_RECIPIENT`** | Public `age` recipient key generated locally by the owner.                                                                                                                                                                     | `age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p`                                        |
 
 > [!CAUTION]
 > **Private Key Safety:** Never add the private identity key (`AGE-SECRET-KEY-1...`) to GitHub Secrets, repository files, or chat prompts. The private key is required only for decryption during emergency restoration and must be stored offline.
@@ -224,7 +225,7 @@ To verify backups stored in Cloudflare R2 from your local machine:
    ```bash
    aws s3 ls s3://vibelock-db-backups/postgres/ --endpoint-url "$R2_ENDPOINT"
    ```
-   *Expected output: List of `.dump.age` and `.dump.age.sha256` files.*
+   _Expected output: List of `.dump.age` and `.dump.age.sha256` files._
 3. **Download a specific backup artifact:**
    ```bash
    TARGET_FILE="vibelock-YYYY-MM-DD-HHmmss"
@@ -251,10 +252,12 @@ age --decrypt \
 ```
 
 Verify that the decrypted file is a valid PostgreSQL custom-format archive:
+
 ```bash
 pg_restore --list vibelock-decrypted.dump | head -n 25
 ```
-*Expected output: Valid TOC table of contents listing schemas, tables, and sequence definitions.*
+
+_Expected output: Valid TOC table of contents listing schemas, tables, and sequence definitions._
 
 ---
 
@@ -284,27 +287,27 @@ pg_restore --list vibelock-decrypted.dump | head -n 25
    rm -f vibelock-decrypted.dump
    ```
 
-
 ### 5.5 Verified Restore Drill — November 17, 2026
 
 **Result: SUCCESS.** The manual Neon-to-R2 backup artifact was downloaded, integrity-checked, decrypted locally, validated with PostgreSQL 18 tools, and restored into the separate Neon project `VibeLock-Staging`.
 
-| Check | Verified result |
-| :--- | :--- |
-| Backup object | `postgres/vibelock-2026-11-17-164031.dump.age` |
-| Backup timestamp | 2026-11-17 16:40:31 UTC |
-| Encrypted artifact SHA-256 | `cf58b4c1657ec5395754c292b5f6cb68ad5bff782d309a73078697e4d548a538` |
-| Archive format | PostgreSQL custom format |
-| Source dump version | pg_dump 18.6; source PostgreSQL 18.7 |
-| Archive TOC | 204 entries (215 listed objects) |
-| Restore utility | pg_restore 18.6 |
-| Restore target | Neon project `VibeLock-Staging`, branch `Staging`, database `neondb` |
-| Target region | AWS Asia Pacific 1 (Singapore) |
-| Post-restore public tables | 35 |
-| Prisma migration records | 12 |
-| Restore command result | `STAGING RESTORE COMPLETED SUCCESSFULLY.` |
+| Check                      | Verified result                                                      |
+| :------------------------- | :------------------------------------------------------------------- |
+| Backup object              | `postgres/vibelock-2026-11-17-164031.dump.age`                       |
+| Backup timestamp           | 2026-11-17 16:40:31 UTC                                              |
+| Encrypted artifact SHA-256 | `cf58b4c1657ec5395754c292b5f6cb68ad5bff782d309a73078697e4d548a538`   |
+| Archive format             | PostgreSQL custom format                                             |
+| Source dump version        | pg_dump 18.6; source PostgreSQL 18.7                                 |
+| Archive TOC                | 204 entries (215 listed objects)                                     |
+| Restore utility            | pg_restore 18.6                                                      |
+| Restore target             | Neon project `VibeLock-Staging`, branch `Staging`, database `neondb` |
+| Target region              | AWS Asia Pacific 1 (Singapore)                                       |
+| Post-restore public tables | 35                                                                   |
+| Prisma migration records   | 12                                                                   |
+| Restore command result     | `STAGING RESTORE COMPLETED SUCCESSFULLY.`                            |
 
 #### 5.5.1 Exact Verification Queries for Restored Staging Database
+
 Execute these queries against the restored staging database (`VibeLock-Staging`) to verify structure and migration counts:
 
 ```sql
@@ -346,30 +349,29 @@ Vercel project `vibelock` uses the Git branch `staging` for the staging Preview 
 
 **Operational note:** Environment-variable changes apply to new deployments. Redeploy the `staging` branch after changing Preview variables and verify the resulting deployment before testing. Never use a Preview deployment as evidence of Production health.
 
-
 ### 5.7 Staging Preview HTTP Smoke-Test Snapshot — November 18, 2026
 
 The Vercel deployment for branch `staging` reached `READY` and returned HTTP responses for these unauthenticated GET requests:
 
-| Route | HTTP result | Interpretation |
-| :--- | :---: | :--- |
-| `/` | 200 | Storefront route responds |
-| `/products` | 200 | Product listing route responds |
-| `/category/t-shirts` | 200 | Category route responds |
-| `/login` | 200 | Login route responds |
-| `/register` | 200 | Registration route responds |
-| `/cart` | 200 | Cart route responds |
-| `/account` | 200 | Route responds; authenticated account behavior not verified |
-| `/account/orders` | 200 | Route responds; authenticated order data not verified |
-| `/admin` | 200 | Route responds; admin authorization not verified |
-| `/shop` | 404 | This path is not a valid route in the tested build; use `/products` |
-| `/api/health` | 404 | No health endpoint exists at this path in the tested build |
+| Route                | HTTP result | Interpretation                                                      |
+| :------------------- | :---------: | :------------------------------------------------------------------ |
+| `/`                  |     200     | Storefront route responds                                           |
+| `/products`          |     200     | Product listing route responds                                      |
+| `/category/t-shirts` |     200     | Category route responds                                             |
+| `/login`             |     200     | Login route responds                                                |
+| `/register`          |     200     | Registration route responds                                         |
+| `/cart`              |     200     | Cart route responds                                                 |
+| `/account`           |     200     | Route responds; authenticated account behavior not verified         |
+| `/account/orders`    |     200     | Route responds; authenticated order data not verified               |
+| `/admin`             |     200     | Route responds; admin authorization not verified                    |
+| `/shop`              |     404     | This path is not a valid route in the tested build; use `/products` |
+| `/api/health`        |     404     | No health endpoint exists at this path in the tested build          |
 
 All tested Preview responses included `X-Robots-Tag: noindex`.
 
 **Blocking findings before calling the staging drill application-complete:**
 
-1. The tested staging deployment's canonical metadata pointed to `https://vibelock.com.bd`, which is not the VibeLock production canonical domain. Do not promote this staging deployment or treat its SEO metadata as correct. The production canonical domain remains `https://vibelock.bd`; fix and verify the branch before any production release. *(Resolved: Canonical domain configuration is defined as `https://vibelock.bd` in application site configuration `src/lib/seo/site.ts`).*
+1. The tested staging deployment's canonical metadata pointed to `https://vibelock.com.bd`, which is not the VibeLock production canonical domain. Do not promote this staging deployment or treat its SEO metadata as correct. The production canonical domain remains `https://vibelock.bd`; fix and verify the branch before any production release. _(Resolved: Canonical domain configuration is defined as `https://vibelock.bd` in application site configuration `src/lib/seo/site.ts`)._
 2. The tested deployment was built from staging commit `9f536757feed09e939002a14c6c3d68592a7279f` (October 10, 2026), not a current post-restore application commit. Re-deploy the intended, current staging commit before functional testing.
 3. HTTP 200 alone does not prove that authentication, authorization, product queries, cart persistence, checkout, order history, or admin workflows work. Those require browser/session tests using designated staging accounts and non-live integrations.
 4. Do not test real payment capture, real SMS/email delivery, or courier dispatch from staging. Use sandbox credentials and mocked courier behavior only.
@@ -383,6 +385,7 @@ This snapshot is a route-level smoke test, not a full end-to-end acceptance test
 Execute these SQL validation checks against the **restored staging database** to confirm data completeness and relational integrity.
 
 ### 6.1 Critical Table Existence & Row Population
+
 ```sql
 SELECT table_name,
        (xpath('/row/cnt/text()', xml_count))[1]::text::int AS approximate_row_count
@@ -402,6 +405,7 @@ ORDER BY table_name;
 ```
 
 ### 6.2 Referential Integrity & Orphan Record Check (Must return 0)
+
 ```sql
 SELECT 'Orphan OrderItems' AS check_name, COUNT(*) AS anomaly_count
 FROM "OrderItem" oi
@@ -438,6 +442,7 @@ WHERE pv.id IS NULL;
 ```
 
 ### 6.3 Inventory Ledger Invariant Consistency
+
 Verifying the authoritative formula from `docs/database.md`:
 $$\text{availableStock} = \sum \text{InventoryTransaction.quantity} - \sum \text{InventoryReservation.quantity (status = 'RESERVED')}$$
 
@@ -479,6 +484,7 @@ LIMIT 20;
 ### 7.1 How to Rotate Cloudflare R2 Credentials
 
 If R2 API tokens expire or need routine rotation:
+
 1. Log in to the Cloudflare Dashboard $\rightarrow$ **R2** $\rightarrow$ **Manage R2 API Tokens**.
 2. Click **Create API Token**:
    - Token Name: `vibelock-backup-automation-v2`
@@ -495,12 +501,12 @@ If R2 API tokens expire or need routine rotation:
 
 ### 7.2 Compromise Response Protocols
 
-| Compromise Scenario | Threat Impact | Required Immediate Containment Actions |
-| :--- | :--- | :--- |
-| **R2 API Token Compromised** | Attacker has read/write access to R2 bucket. | 1. Immediately revoke the token in Cloudflare Dashboard.<br>2. Generate a new R2 API token and update GitHub Secrets (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`).<br>3. Inspect bucket object list for unauthorized additions or deletions.<br>*(Note: Existing backups remain encrypted with `age`; attacker cannot read database contents without the offline private key).* |
+| Compromise Scenario                                                  | Threat Impact                                                           | Required Immediate Containment Actions                                                                                                                                                                                                                                                                                                                                                                                |
+| :------------------------------------------------------------------- | :---------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R2 API Token Compromised**                                         | Attacker has read/write access to R2 bucket.                            | 1. Immediately revoke the token in Cloudflare Dashboard.<br>2. Generate a new R2 API token and update GitHub Secrets (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`).<br>3. Inspect bucket object list for unauthorized additions or deletions.<br>_(Note: Existing backups remain encrypted with `age`; attacker cannot read database contents without the offline private key)._                                       |
 | **Database Credentials (`DIRECT_URL` / `DATABASE_URL`) Compromised** | Attacker has direct or pooled read/write access to production database. | 1. Reset database user password immediately in Neon Console.<br>2. Update `DATABASE_URL` (pooled) and `DIRECT_URL` (unpooled) in Vercel environment variables.<br>3. Update **`DIRECT_URL`** in GitHub Actions Secrets (the secret read by the backup workflow and migration jobs; do not confuse with the application's `DATABASE_URL`).<br>4. Inspect database audit logs in Neon Console for unauthorized queries. |
-| **`age` Private Key Compromised** | Attacker with bucket access can decrypt backup archives. | 1. Generate a new `age` key pair locally (`age-keygen`).<br>2. Update `BACKUP_AGE_RECIPIENT` in GitHub Actions Secrets.<br>3. Trigger an immediate manual backup to produce a backup under the new key.<br>4. Securely archive or re-encrypt historical backups under the new key. |
-| **GitHub Actions Runner Compromised** | Attacker compromises CI environment during execution. | 1. Rotate all repository secrets in GitHub Actions: update `DIRECT_URL` (direct database compute connection), `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_ACCOUNT_ID`.<br>2. Revoke GitHub personal access tokens and review repository collaborator permissions.<br>3. Audit workflow run logs and Neon query logs. |
+| **`age` Private Key Compromised**                                    | Attacker with bucket access can decrypt backup archives.                | 1. Generate a new `age` key pair locally (`age-keygen`).<br>2. Update `BACKUP_AGE_RECIPIENT` in GitHub Actions Secrets.<br>3. Trigger an immediate manual backup to produce a backup under the new key.<br>4. Securely archive or re-encrypt historical backups under the new key.                                                                                                                                    |
+| **GitHub Actions Runner Compromised**                                | Attacker compromises CI environment during execution.                   | 1. Rotate all repository secrets in GitHub Actions: update `DIRECT_URL` (direct database compute connection), `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_ACCOUNT_ID`.<br>2. Revoke GitHub personal access tokens and review repository collaborator permissions.<br>3. Audit workflow run logs and Neon query logs.                                                                                          |
 
 ---
 
@@ -511,6 +517,7 @@ If R2 API tokens expire or need routine rotation:
 > [!CAUTION]
 > **HIGH-RISK DESTRUCTIVE OPERATION — STRICT WRITTEN OWNER APPROVAL REQUIRED**
 > Restoring a database snapshot into Production is a catastrophic recovery procedure. Any transaction, customer account, or order created after the backup snapshot timestamp will be permanently lost unless manually reconciled from gateway logs.
+>
 > - **NEVER** run `pg_restore` directly against the live Production database without explicit, written authorization from the Project Owner.
 > - **NEVER** overwrite existing data in-place when Point-in-Time Recovery (PITR) or branch-swapping can achieve zero data loss.
 > - **ALWAYS** perform a pre-recovery safety dump of the existing production database before initiating any recovery cutover.
@@ -524,6 +531,7 @@ If R2 API tokens expire or need routine rotation:
 > Continuous WAL retention and Point-in-Time Recovery (PITR) / time-travel branching in Neon depend strictly on the active project plan and configured history retention (configurable in Neon Console $\rightarrow$ Project Settings $\rightarrow$ History Retention). The repository does not specify or guarantee a fixed PITR history retention limit (such as 6 hours). Operators must inspect the active Neon Console to confirm the available retention window before attempting branching.
 
 The operational choice between **Neon Branching (PITR)** and **Cloudflare R2 Cold Restore** depends on four technical criteria:
+
 1. **Available PITR History Window:** Check Neon Console $\rightarrow$ Project Settings $\rightarrow$ History Retention. Does the active Neon project retain continuous WAL history to a timestamp $T_{\text{safe}}$ prior to the incident?
 2. **Incident Scope & Infrastructure Health:**
    - Logical corruption / accidental DDL / bad migration within an accessible Neon project: Neon branching is preferred if within history limits.
@@ -535,11 +543,11 @@ The operational choice between **Neon Branching (PITR)** and **Cloudflare R2 Col
 
 #### Recovery Decision Matrix
 
-| Incident Scenario | Evaluation Condition | Primary Recovery Method | Secondary / Fallback Method |
-| :--- | :--- | :--- | :--- |
-| **Accidental DDL / Bad Migration / Logical Corruption** | Incident occurred **within available Neon PITR retention window** (verified in Neon Console) | **Neon Point-in-Time Recovery (PITR):** Create an isolated recovery branch from `main` at timestamp $T_{\text{safe}}$ immediately prior to the event. | Restore latest verified R2 backup into a new isolated recovery branch or database. |
-| **Data Corruption Beyond PITR History** | Incident occurred **outside available Neon PITR retention window**, or PITR is exhausted/unsupported on active plan | **Cloudflare R2 Encrypted Backup Restore:** Download `.dump.age`, verify SHA-256, decrypt with offline key, and restore into a new clean database/branch. | Reconcile missing transactions from gateway/courier logs from snapshot time to incident time. |
-| **Catastrophic Failure / Neon Account or Project Loss** | Neon project or AWS Singapore infrastructure is completely unavailable, corrupted, or deleted | **Cross-Provider / Fresh Instance R2 Restore:** Provision a new PostgreSQL instance (Neon or alternative cloud PostgreSQL) and restore from R2 offsite backup. | None (Offsite Cloudflare R2 backup is the independent source of truth). |
+| Incident Scenario                                       | Evaluation Condition                                                                                                | Primary Recovery Method                                                                                                                                        | Secondary / Fallback Method                                                                   |
+| :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| **Accidental DDL / Bad Migration / Logical Corruption** | Incident occurred **within available Neon PITR retention window** (verified in Neon Console)                        | **Neon Point-in-Time Recovery (PITR):** Create an isolated recovery branch from `main` at timestamp $T_{\text{safe}}$ immediately prior to the event.          | Restore latest verified R2 backup into a new isolated recovery branch or database.            |
+| **Data Corruption Beyond PITR History**                 | Incident occurred **outside available Neon PITR retention window**, or PITR is exhausted/unsupported on active plan | **Cloudflare R2 Encrypted Backup Restore:** Download `.dump.age`, verify SHA-256, decrypt with offline key, and restore into a new clean database/branch.      | Reconcile missing transactions from gateway/courier logs from snapshot time to incident time. |
+| **Catastrophic Failure / Neon Account or Project Loss** | Neon project or AWS Singapore infrastructure is completely unavailable, corrupted, or deleted                       | **Cross-Provider / Fresh Instance R2 Restore:** Provision a new PostgreSQL instance (Neon or alternative cloud PostgreSQL) and restore from R2 offsite backup. | None (Offsite Cloudflare R2 backup is the independent source of truth).                       |
 
 ---
 
@@ -549,6 +557,7 @@ To achieve zero downtime and eliminate the risk of a botched in-place restore, V
 
 > [!CAUTION]
 > **MANDATORY OWNER APPROVAL — NO AUTOMATIC CUTOVER:**
+>
 > - Production database connection string changes are **NEVER** automated.
 > - Every step in this workflow requires explicit, written approval from the Project Owner.
 > - **Zero Production Targeting in Restore:** All restore commands restore into an **isolated recovery target** (`$RECOVERY_TARGET_DIRECT_URL`). Never execute `pg_restore` against the active production compute (`$PROD_DIRECT_URL`).
@@ -624,6 +633,7 @@ flowchart TD
 
 > [!CAUTION]
 > **CRITICAL DATA-LOSS WARNING ON ROLLBACK:**
+>
 > - **Post-Cutover Writes:** Once production traffic was directed to the recovery database, subsequent customer orders, user registrations, payment confirmations, and inventory updates may have been committed to it.
 > - **Silent Data Loss Risk:** Simply reverting `DATABASE_URL` and `DIRECT_URL` in Vercel to the previous database is **NOT** a complete or data-safe rollback on its own. Any transaction created on the recovery database after cutover will be stranded or permanently lost if connection strings are blindly swapped back.
 > - **Stop Writes First:** Application writes must be halted immediately (via Maintenance Mode) before any rollback actions begin.
@@ -674,16 +684,9 @@ If post-cutover smoke tests fail, data anomalies are discovered, or the Project 
 [ ] 3. WRITE FREEZE: Enable Maintenance Mode on Vercel; pause payment/courier webhooks.
 [ ] 4. FORENSIC RECORD: Record incident detection time and save current database logs.
 [ ] 5. PRE-RECOVERY SNAPSHOT: Execute read-only pg_dump against current production for forensic safety.
-[ ] 6. SELECT RECOVERY SOURCE:
-      - Verify active Neon PITR history window in Neon Console.
-      - If corruption occurred within available PITR history and Neon is healthy: Create isolated Neon branch at T_safe via Neon Console / CLI.
-      - If corruption exceeds PITR history or Neon project is lost/unreachable: Download latest offsite backup from R2, verify SHA-256, decrypt with offline age key.
+[ ] 6. SELECT RECOVERY SOURCE: - Verify active Neon PITR history window in Neon Console. - If corruption occurred within available PITR history and Neon is healthy: Create isolated Neon branch at T_safe via Neon Console / CLI. - If corruption exceeds PITR history or Neon project is lost/unreachable: Download latest offsite backup from R2, verify SHA-256, decrypt with offline age key.
 [ ] 7. RESTORE TO ISOLATED TARGET: Restore into a NEW isolated Neon branch or database (NEVER in-place production; NEVER target production DIRECT_URL).
-[ ] 8. VERIFY INTEGRITY: Execute read-only SQL verification suite (Section 6) on the isolated recovery target.
-      - Confirm 35 public base tables.
-      - Confirm 12 Prisma migrations.
-      - Confirm 0 orphan records.
-      - Confirm inventory ledger invariant holds.
+[ ] 8. VERIFY INTEGRITY: Execute read-only SQL verification suite (Section 6) on the isolated recovery target. - Confirm 35 public base tables. - Confirm 12 Prisma migrations. - Confirm 0 orphan records. - Confirm inventory ledger invariant holds.
 [ ] 9. PRISMA VALIDATION: Run `npm run db:validate` against isolated recovery target.
 [ ] 10. MEDIA AUDIT: Check Cloudinary image URLs for HTTP 200 reachability.
 [ ] 11. CUTOVER APPROVAL: Present verification evidence to Owner. Receive explicit written approval before modifying production connection strings.
@@ -703,14 +706,15 @@ If post-cutover smoke tests fail, data anomalies are discovered, or the Project 
 
 The offsite backup architecture strictly distinguishes between verified object storage, unverified lifecycle rules, intended retention policies, and actual object retention behavior:
 
-| Status Dimension | Current Operational State | Verification Evidence / Method | Operational Significance |
-| :--- | :--- | :--- | :--- |
-| **Verified Backup Object Storage** | **VERIFIED** | GitHub Actions Run ID `44128346808` successfully uploaded `postgres/vibelock-2026-11-17-164031.dump.age` (117,019 B) and `.sha256` (102 B), verified with a remote SHA-256 match. | Encrypted dumps are confirmed properly structured and written to the `vibelock-db-backups` bucket. |
-| **Unverified Cloudflare Lifecycle Rules** | **UNVERIFIED (Requires Dashboard Verification)** | Programmatic S3 API lifecycle rule inspection is not configured in local tooling; Cloudflare Dashboard access is required. | It is **unconfirmed** whether automatic deletion rules are currently enabled in the bucket. Operators must not assume automatic deletion is active. |
-| **Intended Retention Policy** | **7-Day Sliding Window** | Architecture design specification (Section 2.2 / 2.3). | Designed to automatically prune backup objects older than 7 days, maintaining a steady-state storage footprint under 350 MB (< 4% of free tier). |
-| **Actual Retention Once Confirmed** | **Persistent until rules confirmed/configured** | Absent active lifecycle rules in Cloudflare R2, objects persist indefinitely. Once confirmed or added in Cloudflare Console, actual retention matches the 7-day rule. | Until an operator verifies or creates the rules in Cloudflare Dashboard, backup objects will accumulate indefinitely without automatic pruning. |
+| Status Dimension                          | Current Operational State                        | Verification Evidence / Method                                                                                                                                                    | Operational Significance                                                                                                                            |
+| :---------------------------------------- | :----------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Verified Backup Object Storage**        | **VERIFIED**                                     | GitHub Actions Run ID `44128346808` successfully uploaded `postgres/vibelock-2026-11-17-164031.dump.age` (117,019 B) and `.sha256` (102 B), verified with a remote SHA-256 match. | Encrypted dumps are confirmed properly structured and written to the `vibelock-db-backups` bucket.                                                  |
+| **Unverified Cloudflare Lifecycle Rules** | **UNVERIFIED (Requires Dashboard Verification)** | Programmatic S3 API lifecycle rule inspection is not configured in local tooling; Cloudflare Dashboard access is required.                                                        | It is **unconfirmed** whether automatic deletion rules are currently enabled in the bucket. Operators must not assume automatic deletion is active. |
+| **Intended Retention Policy**             | **7-Day Sliding Window**                         | Architecture design specification (Section 2.2 / 2.3).                                                                                                                            | Designed to automatically prune backup objects older than 7 days, maintaining a steady-state storage footprint under 350 MB (< 4% of free tier).    |
+| **Actual Retention Once Confirmed**       | **Persistent until rules confirmed/configured**  | Absent active lifecycle rules in Cloudflare R2, objects persist indefinitely. Once confirmed or added in Cloudflare Console, actual retention matches the 7-day rule.             | Until an operator verifies or creates the rules in Cloudflare Dashboard, backup objects will accumulate indefinitely without automatic pruning.     |
 
 #### Required Cloudflare Dashboard Verification Procedure:
+
 1. Log into the [Cloudflare Dashboard](https://dash.cloudflare.com/).
 2. Navigate to **R2** $\rightarrow$ **Overview** $\rightarrow$ Click **`vibelock-db-backups`**.
 3. Select the **Settings** tab.
@@ -724,12 +728,12 @@ The offsite backup architecture strictly distinguishes between verified object s
 
 ### 9.2 Daily Schedule & Bangladesh Time Conversion
 
-| Parameter | Specification | Details |
-| :--- | :--- | :--- |
-| **Configured Cron Expression** | `'0 3 * * *'` | Runs daily at 03:00 UTC. |
-| **Timezone Conversion** | $\text{03:00 UTC} + 6\text{h} = \mathbf{09:00 \text{ Asia/Dhaka (BST)}}$ | 09:00 AM Bangladesh Standard Time (UTC+6). |
-| **Operational Rationale** | Off-peak morning window | Selected to run before peak e-commerce browsing hours in Bangladesh while compute load is minimal. |
-| **Current Operational Status** | **DISABLED / COMMENTED OUT** | In `.github/workflows/backup-neon-to-r2.yml`, lines 6–8 are commented out. The workflow operates in **manual-only mode (`workflow_dispatch`)** until the repository owner explicitly approves enabling the daily cron. |
+| Parameter                      | Specification                                                            | Details                                                                                                                                                                                                                |
+| :----------------------------- | :----------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Configured Cron Expression** | `'0 3 * * *'`                                                            | Runs daily at 03:00 UTC.                                                                                                                                                                                               |
+| **Timezone Conversion**        | $\text{03:00 UTC} + 6\text{h} = \mathbf{09:00 \text{ Asia/Dhaka (BST)}}$ | 09:00 AM Bangladesh Standard Time (UTC+6).                                                                                                                                                                             |
+| **Operational Rationale**      | Off-peak morning window                                                  | Selected to run before peak e-commerce browsing hours in Bangladesh while compute load is minimal.                                                                                                                     |
+| **Current Operational Status** | **DISABLED / COMMENTED OUT**                                             | In `.github/workflows/backup-neon-to-r2.yml`, lines 6–8 are commented out. The workflow operates in **manual-only mode (`workflow_dispatch`)** until the repository owner explicitly approves enabling the daily cron. |
 
 ---
 
@@ -737,24 +741,24 @@ The offsite backup architecture strictly distinguishes between verified object s
 
 ### 10.1 Backup Pipeline Failure Modes (GitHub Actions)
 
-| Error Message / Symptom | Root Cause | Resolution Step |
-| :--- | :--- | :--- |
-| `pg_dump: error: connection to server at ... failed: FATAL: password authentication failed` | `DIRECT_URL` secret has expired, contains mistyped credentials, or password was rotated in Neon. | Verify and update `DIRECT_URL` in GitHub Actions Secrets (`Settings` $\rightarrow$ `Secrets` $\rightarrow$ `Actions`). Must be the unpooled compute connection string. |
-| `pg_dump: error: query failed: ERROR: prepared transactions are not supported on pooler` | Workflow attempted to connect via pooled `DATABASE_URL` (PgBouncer) instead of direct `DIRECT_URL`. | Ensure `secrets.DIRECT_URL` points directly to the Neon compute endpoint (port 5432, `ep-...`), not the PgBouncer pooler (`ep-...-pooler...`). |
-| `age: error: recipient "..." has unrecognized format` | `BACKUP_AGE_RECIPIENT` secret is malformed, missing, or contains leading/trailing whitespace. | Re-copy the public recipient key generated by `age-keygen`. Key must begin with `age1...` (e.g. `age1ql3z...`). Never paste the private `AGE-SECRET-KEY-1...` key into GitHub Secrets. |
-| `upload failed: ... An error occurred (InvalidAccessKeyId) when calling the PutObject operation` | `R2_ACCESS_KEY_ID` or `R2_SECRET_ACCESS_KEY` is invalid, revoked, or mistyped. | Re-generate API token in Cloudflare Dashboard (`R2` $\rightarrow$ `Manage R2 API Tokens`) with Object Read & Write permissions and update GitHub Secrets. |
-| `upload failed: ... An error occurred (AccessDenied) when calling the PutObject operation` | R2 API token is scoped to a different bucket or lacks Write permissions. | Confirm token permission includes **Object Read & Write** and bucket scope includes `vibelock-db-backups`. |
-| `Integrity check failed: Remote SHA-256 does not match local checksum` | Network corruption, interrupted upload, or multipart chunk mismatch during R2 upload. | Workflow automatically fails and exits. Re-trigger manual workflow run (`backup-neon-to-r2.yml`). Inspect Cloudflare R2 status page if repeated. |
-| `Required secret '...' is missing or empty` | One of the 5 required secrets is missing from the GitHub Actions environment. | Ensure all 5 required secrets are configured in GitHub Repository Secrets: `DIRECT_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, and `BACKUP_AGE_RECIPIENT`. |
+| Error Message / Symptom                                                                          | Root Cause                                                                                          | Resolution Step                                                                                                                                                                        |
+| :----------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pg_dump: error: connection to server at ... failed: FATAL: password authentication failed`      | `DIRECT_URL` secret has expired, contains mistyped credentials, or password was rotated in Neon.    | Verify and update `DIRECT_URL` in GitHub Actions Secrets (`Settings` $\rightarrow$ `Secrets` $\rightarrow$ `Actions`). Must be the unpooled compute connection string.                 |
+| `pg_dump: error: query failed: ERROR: prepared transactions are not supported on pooler`         | Workflow attempted to connect via pooled `DATABASE_URL` (PgBouncer) instead of direct `DIRECT_URL`. | Ensure `secrets.DIRECT_URL` points directly to the Neon compute endpoint (port 5432, `ep-...`), not the PgBouncer pooler (`ep-...-pooler...`).                                         |
+| `age: error: recipient "..." has unrecognized format`                                            | `BACKUP_AGE_RECIPIENT` secret is malformed, missing, or contains leading/trailing whitespace.       | Re-copy the public recipient key generated by `age-keygen`. Key must begin with `age1...` (e.g. `age1ql3z...`). Never paste the private `AGE-SECRET-KEY-1...` key into GitHub Secrets. |
+| `upload failed: ... An error occurred (InvalidAccessKeyId) when calling the PutObject operation` | `R2_ACCESS_KEY_ID` or `R2_SECRET_ACCESS_KEY` is invalid, revoked, or mistyped.                      | Re-generate API token in Cloudflare Dashboard (`R2` $\rightarrow$ `Manage R2 API Tokens`) with Object Read & Write permissions and update GitHub Secrets.                              |
+| `upload failed: ... An error occurred (AccessDenied) when calling the PutObject operation`       | R2 API token is scoped to a different bucket or lacks Write permissions.                            | Confirm token permission includes **Object Read & Write** and bucket scope includes `vibelock-db-backups`.                                                                             |
+| `Integrity check failed: Remote SHA-256 does not match local checksum`                           | Network corruption, interrupted upload, or multipart chunk mismatch during R2 upload.               | Workflow automatically fails and exits. Re-trigger manual workflow run (`backup-neon-to-r2.yml`). Inspect Cloudflare R2 status page if repeated.                                       |
+| `Required secret '...' is missing or empty`                                                      | One of the 5 required secrets is missing from the GitHub Actions environment.                       | Ensure all 5 required secrets are configured in GitHub Repository Secrets: `DIRECT_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, and `BACKUP_AGE_RECIPIENT`.      |
 
 ---
 
 ### 10.2 Decryption & Restore Failure Modes (Operator / Local)
 
-| Error Message / Symptom | Root Cause | Resolution Step |
-| :--- | :--- | :--- |
-| `age: error: no identity matched any of the recipients` | Attempting decryption with the wrong identity file or key pair. | Use the exact private identity file (`vibelock-backup-identity.txt`) that corresponds to the `BACKUP_AGE_RECIPIENT` public key used during backup. |
-| `pg_restore: error: unsupported version (1.15) in file header` | Local `pg_restore` utility version is older than source `pg_dump` version. | Upgrade local PostgreSQL client tools to match or exceed source database version (PostgreSQL 16+ or 18+). Run `pg_restore --version` to check. |
-| `pg_restore: error: could not execute query: ERROR: relation "..." already exists` | Target database already contains existing tables and `--clean --if-exists` was omitted. | Pass `--clean --if-exists` flags to `pg_restore`, or restore into an empty database / fresh Neon branch. |
-| `sha256sum: WARNING: 1 computed checksum did NOT match` | Downloaded `.dump.age` file is corrupted or incomplete. | Re-download the backup file from R2 using `aws s3 cp`. Verify file size matches size recorded in GitHub Actions workflow log. |
-| `could not connect to server: Connection refused / Operation timed out` | Target Neon compute is suspended (scale-to-zero) or IP is blocked by network firewall. | Connect via `psql` or Neon Console to wake the compute endpoint before running `pg_restore`. Ensure `sslmode=require` is present in connection string. |
+| Error Message / Symptom                                                            | Root Cause                                                                              | Resolution Step                                                                                                                                        |
+| :--------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `age: error: no identity matched any of the recipients`                            | Attempting decryption with the wrong identity file or key pair.                         | Use the exact private identity file (`vibelock-backup-identity.txt`) that corresponds to the `BACKUP_AGE_RECIPIENT` public key used during backup.     |
+| `pg_restore: error: unsupported version (1.15) in file header`                     | Local `pg_restore` utility version is older than source `pg_dump` version.              | Upgrade local PostgreSQL client tools to match or exceed source database version (PostgreSQL 16+ or 18+). Run `pg_restore --version` to check.         |
+| `pg_restore: error: could not execute query: ERROR: relation "..." already exists` | Target database already contains existing tables and `--clean --if-exists` was omitted. | Pass `--clean --if-exists` flags to `pg_restore`, or restore into an empty database / fresh Neon branch.                                               |
+| `sha256sum: WARNING: 1 computed checksum did NOT match`                            | Downloaded `.dump.age` file is corrupted or incomplete.                                 | Re-download the backup file from R2 using `aws s3 cp`. Verify file size matches size recorded in GitHub Actions workflow log.                          |
+| `could not connect to server: Connection refused / Operation timed out`            | Target Neon compute is suspended (scale-to-zero) or IP is blocked by network firewall.  | Connect via `psql` or Neon Console to wake the compute endpoint before running `pg_restore`. Ensure `sslmode=require` is present in connection string. |

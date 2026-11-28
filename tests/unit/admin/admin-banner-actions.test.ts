@@ -1,6 +1,6 @@
-import { describe, expect, test, vi, beforeEach } from "vitest";
-import { saveBannerAction, toggleBannerAction, deleteBannerAction } from "@/lib/admin/banners";
+import { deleteBannerAction, saveBannerAction, toggleBannerAction } from "@/lib/admin/banners";
 import prisma from "@/lib/prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("@/lib/auth/authorization", () => ({
   requireRole: vi.fn().mockResolvedValue(undefined),
@@ -107,7 +107,10 @@ describe("Admin Banner Actions", () => {
       function createBannerFormData(categoryIds: string[] = []) {
         const formData = new FormData();
         formData.append("title", "Category Banners Drop");
-        formData.append("imageUrl", "https://res.cloudinary.com/vibelock/image/upload/desktop.webp");
+        formData.append(
+          "imageUrl",
+          "https://res.cloudinary.com/vibelock/image/upload/desktop.webp"
+        );
         formData.append("linkUrl", "/shop");
         formData.append("placement", "BOTH");
         formData.append("sortOrder", "1");
@@ -117,7 +120,9 @@ describe("Admin Banner Actions", () => {
       }
 
       test("accepts empty categoryIds (defaults to empty array)", async () => {
-        (prisma.banner.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "new-banner-id" });
+        (prisma.banner.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+          id: "new-banner-id",
+        });
         const formData = createBannerFormData([]);
         const result = await saveBannerAction({ error: null }, formData);
         expect(result.error).toBeNull();
@@ -131,7 +136,9 @@ describe("Admin Banner Actions", () => {
       });
 
       test("accepts valid category UUIDs within the limit", async () => {
-        (prisma.banner.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "new-banner-id" });
+        (prisma.banner.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+          id: "new-banner-id",
+        });
         const validIds = [
           "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
           "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",

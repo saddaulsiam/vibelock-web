@@ -1,26 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Banknote,
-  QrCode,
-  CreditCard,
-  Loader2,
-  CheckCircle2,
-  AlertTriangle,
-  Layers,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { PosPaymentMethod, PosPaymentSplitInput } from "@/lib/pos/pos-types";
+import {
+  AlertTriangle,
+  Banknote,
+  CheckCircle2,
+  CreditCard,
+  Layers,
+  Loader2,
+  QrCode,
+} from "lucide-react";
+import { useState } from "react";
 
 interface PosPaymentModalProps {
   isOpen: boolean;
@@ -148,8 +148,7 @@ function PosPaymentModalContent({
   const isSubmitDisabled =
     isSubmitting ||
     (method === "CASH" && isShortage) ||
-    (method === "SPLIT" &&
-      (isSplitShortage || isSplitOverAllocated || isSplitCashTenderShortage));
+    (method === "SPLIT" && (isSplitShortage || isSplitOverAllocated || isSplitCashTenderShortage));
 
   return (
     <DialogContent className="border-vl-white-500 rounded-brand max-h-[92vh] w-full overflow-y-auto border bg-white p-6 shadow-xl sm:max-w-xl">

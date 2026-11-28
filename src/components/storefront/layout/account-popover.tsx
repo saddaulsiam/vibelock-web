@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { logoutAction } from "@/app/actions/auth";
+import { Button } from "@/components/ui/button";
+import { Box, CircleUserRound, Heart, LogOut, Sparkles, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { User, CircleUserRound, Heart, Box, Sparkles, LogOut } from "lucide-react";
-import { logoutAction } from "@/app/actions/auth";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface AccountPopoverProps {

@@ -1,11 +1,11 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { BannerForm } from "@/components/admin/banners";
 import { Card, CardContent } from "@/components/ui/card";
-import prisma from "@/lib/prisma/client";
-import { requireRole } from "@/lib/auth/authorization";
 import { getAdminBannerById } from "@/lib/admin/banners";
+import { requireRole } from "@/lib/auth/authorization";
+import prisma from "@/lib/prisma/client";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 async function getBannerAndCategories(id: string) {
   for (let attempt = 1; attempt <= 2; attempt++) {

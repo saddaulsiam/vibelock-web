@@ -1,41 +1,41 @@
 "use client";
 
-import { useState } from "react";
-import {
-  RotateCcw,
-  Search,
-  Loader2,
-  Receipt,
-  ArrowRightLeft,
-  Banknote,
-  Trash2,
-  Check,
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { NativeSelect } from "@/components/ui/select-native";
-import type {
-  PosOrderLookupResult,
-  PosReturnReason,
-  PosItemCondition,
-  PosReturnSelectedItem,
-  PosExchangeReplacementItem,
-  PosReturnReceiptData,
-} from "@/lib/pos/pos-returns-types";
-import type { PosProductSummary } from "@/lib/pos/pos-types";
 import {
   lookupPosOrderForReturnAction,
   processPosReturnAction,
 } from "@/lib/pos/pos-returns-actions";
+import type {
+  PosExchangeReplacementItem,
+  PosItemCondition,
+  PosOrderLookupResult,
+  PosReturnReason,
+  PosReturnReceiptData,
+  PosReturnSelectedItem,
+} from "@/lib/pos/pos-returns-types";
+import type { PosProductSummary } from "@/lib/pos/pos-types";
+import {
+  ArrowRightLeft,
+  Banknote,
+  Check,
+  Loader2,
+  Receipt,
+  RotateCcw,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface PosReturnModalProps {

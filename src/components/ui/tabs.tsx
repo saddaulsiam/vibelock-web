@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
+import { cn } from "@/lib/utils";
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
+import * as React from "react";
 
 // Context for cascading variant & size from TabsRoot or TabsList to TabsTrigger
 interface TabsContextValue {
@@ -37,9 +37,7 @@ const tabsVariants = cva("group/tabs flex gap-2 data-horizontal:flex-col", {
   },
 });
 
-export interface TabsProps
-  extends TabsPrimitive.Root.Props,
-    VariantProps<typeof tabsVariants> {}
+export interface TabsProps extends TabsPrimitive.Root.Props, VariantProps<typeof tabsVariants> {}
 
 function Tabs({
   className,
@@ -87,13 +85,11 @@ const tabsListVariants = cva(
          * line — VibeLock Underline Minimalist Tabs.
          * Borderless transparent container with bottom rail for workspace headers.
          */
-        line:
-          "w-full justify-start gap-3 rounded-none border-b border-neutral-200 bg-transparent p-0 dark:border-vl-dark-700",
+        line: "w-full justify-start gap-3 rounded-none border-b border-neutral-200 bg-transparent p-0 dark:border-vl-dark-700",
         /**
          * pills — Free-floating pills without outer bordered container.
          */
-        pills:
-          "gap-1.5 rounded-none bg-transparent p-0",
+        pills: "gap-1.5 rounded-none bg-transparent p-0",
       },
       size: {
         sm: "h-7 p-0.5 gap-0.5 text-xs group-data-horizontal/tabs:h-7",
@@ -109,15 +105,9 @@ const tabsListVariants = cva(
 );
 
 export interface TabsListProps
-  extends TabsPrimitive.List.Props,
-    VariantProps<typeof tabsListVariants> {}
+  extends TabsPrimitive.List.Props, VariantProps<typeof tabsListVariants> {}
 
-function TabsList({
-  className,
-  variant,
-  size,
-  ...props
-}: TabsListProps) {
+function TabsList({ className, variant, size, ...props }: TabsListProps) {
   const parentContext = React.useContext(TabsContext);
   const resolvedVariant = variant ?? parentContext.variant ?? "default";
   const resolvedSize = size ?? parentContext.size ?? "default";
@@ -133,7 +123,10 @@ function TabsList({
         data-slot="tabs-list"
         data-variant={resolvedVariant}
         data-size={resolvedSize}
-        className={cn(tabsListVariants({ variant: resolvedVariant, size: resolvedSize }), className)}
+        className={cn(
+          tabsListVariants({ variant: resolvedVariant, size: resolvedSize }),
+          className
+        )}
         {...props}
       />
     </TabsContext.Provider>
@@ -193,8 +186,7 @@ const tabsTriggerVariants = cva(
 );
 
 export interface TabsTriggerProps
-  extends TabsPrimitive.Tab.Props,
-    VariantProps<typeof tabsTriggerVariants> {}
+  extends TabsPrimitive.Tab.Props, VariantProps<typeof tabsTriggerVariants> {}
 
 function TabsTrigger({
   className,
@@ -223,7 +215,10 @@ function TabsTrigger({
       data-size={resolvedSize}
       render={render}
       nativeButton={resolvedNativeButton}
-      className={cn(tabsTriggerVariants({ variant: resolvedVariant, size: resolvedSize }), className)}
+      className={cn(
+        tabsTriggerVariants({ variant: resolvedVariant, size: resolvedSize }),
+        className
+      )}
       {...props}
     />
   );
@@ -235,7 +230,7 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
     <TabsPrimitive.Panel
       data-slot="tabs-content"
       className={cn(
-        "flex-1 text-sm outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan",
+        "focus-visible:ring-vl-cyan flex-1 text-sm outline-none focus-visible:ring-2 focus-visible:outline-none",
         className
       )}
       {...props}
@@ -245,10 +240,10 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
 
 export {
   Tabs,
-  TabsList,
-  TabsTrigger,
   TabsContent,
-  tabsVariants,
+  TabsList,
   tabsListVariants,
+  TabsTrigger,
   tabsTriggerVariants,
+  tabsVariants,
 };

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, test, expect, beforeEach, vi } from "vitest";
 import { Prisma } from "@prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const { mockEnv } = vi.hoisted(() => ({
   mockEnv: {
@@ -256,7 +256,9 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
           status: "INITIATED",
           gateway: "PAYSTATION",
           merchantReferenceId: "PS-ACTIVE-REF-1",
-          gatewayPayload: { redirectUrl: "https://sandbox.paystation.com.bd/checkout/active-session" },
+          gatewayPayload: {
+            redirectUrl: "https://sandbox.paystation.com.bd/checkout/active-session",
+          },
           createdAt: new Date(),
         });
 
@@ -304,7 +306,9 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
       const response = await paymentService.initiatePayment(pendingOrder, "PAYSTATION");
 
       expect(response.success).toBe(false);
-      expect(response.error).toContain("A payment initiation is already in progress for this order");
+      expect(response.error).toContain(
+        "A payment initiation is already in progress for this order"
+      );
       // Network call must NOT be made!
       expect(mockProvider.initiatePayment).not.toHaveBeenCalled();
     });

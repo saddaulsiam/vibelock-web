@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, test, expect, beforeEach, vi } from "vitest";
 import { calculateReviewSummary } from "@/lib/reviews/queries";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock prisma using vi.hoisted
 const { mockPrisma } = vi.hoisted(() => {
@@ -45,12 +45,12 @@ vi.mock("@/lib/security/rate-limit", () => ({
   checkRateLimit: vi.fn(),
 }));
 
-import { getProductReviews, getUserReviewEligibility } from "@/lib/reviews/queries";
-import { submitReviewAction, deleteReviewAction } from "@/lib/reviews/actions";
-import { renderToStaticMarkup } from "react-dom/server";
-import { StarRating } from "@/components/storefront/product/reviews/star-rating";
-import { ProductReviewsSummary } from "@/components/storefront/product/reviews/product-reviews-summary";
 import { ProductReviewList } from "@/components/storefront/product/reviews/product-review-list";
+import { ProductReviewsSummary } from "@/components/storefront/product/reviews/product-reviews-summary";
+import { StarRating } from "@/components/storefront/product/reviews/star-rating";
+import { deleteReviewAction, submitReviewAction } from "@/lib/reviews/actions";
+import { getProductReviews, getUserReviewEligibility } from "@/lib/reviews/queries";
+import { renderToStaticMarkup } from "react-dom/server";
 
 describe("Product Reviews System", () => {
   beforeEach(() => {

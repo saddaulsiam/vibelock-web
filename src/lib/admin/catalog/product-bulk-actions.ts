@@ -1,12 +1,12 @@
 "use server";
 
-import { Prisma, ProductStatus } from "@prisma/client";
-import { z } from "zod";
+import { recordAuditLog } from "@/lib/audit";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import { recordAuditLog } from "@/lib/audit";
+import { Prisma, ProductStatus } from "@prisma/client";
+import { z } from "zod";
+import { refreshCatalog, type AdminActionState } from "./catalog-action-helpers";
 import { getAdminProducts, type AdminProductsQueryOptions } from "./catalog-queries";
-import { type AdminActionState, refreshCatalog } from "./catalog-action-helpers";
 
 export async function bulkUpdateProductStatusAction(
   productIds: string[],

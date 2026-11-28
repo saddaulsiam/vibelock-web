@@ -1,10 +1,10 @@
 "use server";
 
+import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import { Prisma } from "@prisma/client";
-import { requireRole } from "@/lib/auth/authorization";
-import type { PosActionResult, PosPaymentMethod, PosReceiptItem } from "./pos-types";
 import type { PosOrderSummaryItem, PosTodayOrdersStats } from "./pos-order-history-types";
+import type { PosActionResult, PosPaymentMethod, PosReceiptItem } from "./pos-types";
 
 /**
  * Fetches recent POS counter sales with aggregated stats and receipt data
@@ -80,7 +80,7 @@ export async function getPosTodayOrdersAction(
         totalRevenue += totalVal;
         const pts =
           typeof (o as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed === "number"
-            ? (o as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed ?? 0
+            ? ((o as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed ?? 0)
             : 0;
         if (pts > 0) {
           totalLoyaltyPointsRedeemed += pts;
@@ -110,7 +110,10 @@ export async function getPosTodayOrdersAction(
       const amountPaid = isSplitOrder
         ? o.payments.reduce((sum, p) => {
             const pLoad = p.gatewayPayload as Record<string, unknown> | null;
-            return sum + (typeof pLoad?.tenderAmount === "number" ? pLoad.tenderAmount : Number(p.amount));
+            return (
+              sum +
+              (typeof pLoad?.tenderAmount === "number" ? pLoad.tenderAmount : Number(p.amount))
+            );
           }, 0)
         : typeof payload?.tenderAmount === "number"
           ? payload.tenderAmount

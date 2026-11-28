@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Boxes,
   CircleDollarSign,
@@ -8,7 +8,7 @@ import {
   ShoppingBag,
   TrendingUp,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 export function formatBdt(value: { toFixed: (decimalPlaces?: number) => string } | number) {
   const num = typeof value === "number" ? value : Number(value);
@@ -121,9 +121,7 @@ export function DashboardFinancialKpis({
 
         <FinancialKpiCard
           label="Gross Margin"
-          value={
-            financials.grossMargin !== null ? `${financials.grossMargin.toFixed(1)}%` : "—"
-          }
+          value={financials.grossMargin !== null ? `${financials.grossMargin.toFixed(1)}%` : "—"}
           detail="Profit efficiency percentage on net sales"
           icon={Percent}
           href={reportHref}
@@ -147,9 +145,7 @@ export function DashboardFinancialKpis({
 
         <FinancialKpiCard
           label="Return Loss Rate"
-          value={
-            financials.soldUnits > 0 ? `${financials.returnRate.toFixed(1)}%` : "—"
-          }
+          value={financials.soldUnits > 0 ? `${financials.returnRate.toFixed(1)}%` : "—"}
           detail={`${financials.returnedUnits.toLocaleString("en-BD")} returns out of ${financials.soldUnits.toLocaleString("en-BD")} units sold`}
           icon={RotateCcw}
           href={reportHref}

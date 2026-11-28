@@ -1,14 +1,22 @@
 "use client";
 
-import * as React from "react";
-import { Sparkles, Award, ArrowUpRight, ArrowDownRight, PlusCircle, MinusCircle, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import { adjustCustomerLoyaltyPointsAction } from "@/lib/admin/customers/customer-actions";
 import type { AdminCustomerLoyaltyInfo } from "@/lib/admin/customers/customer-query-types";
+import {
+  AlertCircle,
+  ArrowDownRight,
+  ArrowUpRight,
+  Award,
+  MinusCircle,
+  PlusCircle,
+  Sparkles,
+} from "lucide-react";
+import * as React from "react";
+import { toast } from "sonner";
 
 interface CustomerLoyaltyCardProps {
   customerId: string;
@@ -91,15 +99,15 @@ export function CustomerLoyaltyCard({
   };
 
   return (
-    <div className="bg-card text-card-foreground rounded-lg border p-6 space-y-6">
+    <div className="bg-card text-card-foreground space-y-6 rounded-lg border p-6">
       {/* Header */}
       <div className="flex items-center justify-between border-b pb-4">
         <div className="flex items-center gap-2.5">
-          <div className="rounded-md bg-vl-cyan-500/10 p-2 text-vl-cyan-600">
+          <div className="bg-vl-cyan-500/10 text-vl-cyan-600 rounded-md p-2">
             <Award className="size-5" />
           </div>
           <div>
-            <h3 className="font-heading text-base font-semibold leading-none">
+            <h3 className="font-heading text-base leading-none font-semibold">
               Loyalty & Rewards Program
             </h3>
             <p className="text-muted-foreground mt-1 text-xs">
@@ -118,7 +126,7 @@ export function CustomerLoyaltyCard({
           }}
           className="gap-1.5 text-xs font-medium"
         >
-          <Sparkles className="size-3.5 text-vl-cyan-600" />
+          <Sparkles className="text-vl-cyan-600 size-3.5" />
           Adjust Points
         </Button>
       </div>
@@ -128,7 +136,10 @@ export function CustomerLoyaltyCard({
         <div className="rounded-md border p-3">
           <span className="text-muted-foreground text-xs font-medium">VIP Tier</span>
           <div className="mt-1 flex items-center gap-1.5">
-            <Badge variant="outline" className={`font-mono text-xs font-bold uppercase ${getTierBadgeClass(tier)}`}>
+            <Badge
+              variant="outline"
+              className={`font-mono text-xs font-bold uppercase ${getTierBadgeClass(tier)}`}
+            >
               {tier}
             </Badge>
           </div>
@@ -136,7 +147,7 @@ export function CustomerLoyaltyCard({
 
         <div className="rounded-md border p-3">
           <span className="text-muted-foreground text-xs font-medium">Active Points</span>
-          <p className="font-mono text-xl font-bold tracking-tight text-vl-cyan-600">
+          <p className="text-vl-cyan-600 font-mono text-xl font-bold tracking-tight">
             {currentPoints.toLocaleString("en-BD")}
           </p>
         </div>
@@ -163,7 +174,7 @@ export function CustomerLoyaltyCard({
         </h4>
 
         {loyalty?.recentTransactions && loyalty.recentTransactions.length > 0 ? (
-          <div className="rounded-md border overflow-hidden">
+          <div className="overflow-hidden rounded-md border">
             <div className="divide-y text-xs">
               {loyalty.recentTransactions.map((tx) => {
                 const isPositive = tx.points > 0;
@@ -185,9 +196,9 @@ export function CustomerLoyaltyCard({
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-foreground">{tx.type}</span>
+                          <span className="text-foreground font-semibold">{tx.type}</span>
                           {tx.orderNumber && (
-                            <span className="font-mono text-2xs text-muted-foreground">
+                            <span className="text-2xs text-muted-foreground font-mono">
                               #{tx.orderNumber}
                             </span>
                           )}
@@ -223,7 +234,7 @@ export function CustomerLoyaltyCard({
             </div>
           </div>
         ) : (
-          <div className="rounded-md border border-dashed p-6 text-center text-xs text-muted-foreground">
+          <div className="text-muted-foreground rounded-md border border-dashed p-6 text-center text-xs">
             No loyalty transactions recorded yet for this customer.
           </div>
         )}
@@ -232,7 +243,7 @@ export function CustomerLoyaltyCard({
       {/* Adjust Points Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="bg-card text-card-foreground w-full max-w-md rounded-lg border p-6 shadow-xl space-y-4">
+          <div className="bg-card text-card-foreground w-full max-w-md space-y-4 rounded-lg border p-6 shadow-xl">
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="font-heading text-base font-semibold">
                 Adjust Points {customerName ? `· ${customerName}` : ""}
@@ -283,7 +294,7 @@ export function CustomerLoyaltyCard({
                   className="mt-1 font-mono text-sm"
                   required
                 />
-                <p className="text-muted-foreground mt-1 text-2xs">
+                <p className="text-muted-foreground text-2xs mt-1">
                   Current customer balance: {currentPoints} points
                 </p>
               </div>
@@ -304,13 +315,13 @@ export function CustomerLoyaltyCard({
               </div>
 
               {error && (
-                <div className="flex items-center gap-1.5 text-xs text-destructive">
+                <div className="text-destructive flex items-center gap-1.5 text-xs">
                   <AlertCircle className="size-4 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2 border-t">
+              <div className="flex justify-end gap-2 border-t pt-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -320,12 +331,7 @@ export function CustomerLoyaltyCard({
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  loading={isSubmitting}
-                  className="gap-1.5"
-                >
+                <Button type="submit" size="sm" loading={isSubmitting} className="gap-1.5">
                   <Sparkles className="size-3.5" />
                   Confirm Adjustment
                 </Button>

@@ -1,4 +1,4 @@
-import type { Event, Breadcrumb } from "@sentry/nextjs";
+import type { Breadcrumb, Event } from "@sentry/nextjs";
 
 // Safe standard diagnostic contexts only
 const SAFE_CONTEXT_KEYS = new Set([
@@ -331,9 +331,11 @@ export function sanitizeSentryEvent<T extends Event>(event: T): T {
  * Filter for breadcrumbs in Sentry.init
  */
 export function sanitizeSentryBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
-  if (typeof breadcrumb.data?.url === "string") breadcrumb.data.url = sanitizeUrl(breadcrumb.data.url);
+  if (typeof breadcrumb.data?.url === "string")
+    breadcrumb.data.url = sanitizeUrl(breadcrumb.data.url);
   if (typeof breadcrumb.data?.to === "string") breadcrumb.data.to = sanitizeUrl(breadcrumb.data.to);
-  if (typeof breadcrumb.data?.from === "string") breadcrumb.data.from = sanitizeUrl(breadcrumb.data.from);
+  if (typeof breadcrumb.data?.from === "string")
+    breadcrumb.data.from = sanitizeUrl(breadcrumb.data.from);
   if (typeof breadcrumb.message === "string") breadcrumb.message = scrubString(breadcrumb.message);
   if (breadcrumb.data && typeof breadcrumb.data === "object") {
     delete (breadcrumb.data as Record<string, unknown>).headers;

@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 interface MockSession {
   user?: {
@@ -63,16 +63,16 @@ vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
 }));
 
-import {
-  getGeneralStoreSettings,
-  updateGeneralStoreSettings,
-  getDefaultGeneralStoreSettings,
-  STORE_SETTING_KEYS,
-  type GeneralStoreSettings,
-} from "../../src/lib/settings/store-settings-service";
-import { updateGeneralSettingsAction } from "../../src/lib/admin/settings/general-settings-actions";
 import AdminGeneralSettingsPage from "../../src/app/(protected)/admin/settings/general/page";
 import AdminSettingsLayout from "../../src/app/(protected)/admin/settings/layout";
+import { updateGeneralSettingsAction } from "../../src/lib/admin/settings/general-settings-actions";
+import {
+  getDefaultGeneralStoreSettings,
+  getGeneralStoreSettings,
+  STORE_SETTING_KEYS,
+  updateGeneralStoreSettings,
+  type GeneralStoreSettings,
+} from "../../src/lib/settings/store-settings-service";
 
 describe("Phase 1: VibeLock General Store Settings & Foundation", () => {
   beforeEach(() => {
@@ -287,7 +287,9 @@ describe("Phase 1: VibeLock General Store Settings & Foundation", () => {
 
       const res = await updateGeneralSettingsAction({ error: null }, formData);
       expect(res.error).toBeNull();
-      expect(res.message).toContain("Store identity, legal compliance, and emergency settings updated");
+      expect(res.message).toContain(
+        "Store identity, legal compliance, and emergency settings updated"
+      );
     });
 
     test("successfully processes partial section update from isolated card form without overwriting other cards", async () => {

@@ -1,7 +1,7 @@
+import { env } from "@/lib/config/env";
 import { MockCourierProvider } from "./providers/mock/client";
 import { SteadfastCourierProvider } from "./providers/steadfast";
 import { ShippingProvider } from "./types";
-import { env } from "@/lib/config/env";
 
 export function getShippingProvider(): ShippingProvider {
   const apiKey = env.STEADFAST_API_KEY || process.env.STEADFAST_API_KEY;

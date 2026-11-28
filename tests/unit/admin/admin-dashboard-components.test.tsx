@@ -1,5 +1,3 @@
-import { describe, expect, test } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import {
   DashboardActionRadar,
   DashboardFulfillmentRibbon,
@@ -8,6 +6,8 @@ import {
   DashboardRecentOrders,
   formatOrderDisplayNumber,
 } from "@/components/admin/dashboard";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test } from "vitest";
 
 describe("DashboardHeader component", () => {
   test("renders manager command center with range presets and quick action buttons", () => {

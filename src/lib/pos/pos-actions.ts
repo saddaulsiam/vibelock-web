@@ -1,24 +1,24 @@
 "use server";
 
-import crypto from "crypto";
-import prisma from "@/lib/prisma/client";
-import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import { InventoryService } from "@/lib/inventory/service";
-import { getActiveShiftRecord } from "./pos-shift-actions";
-import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
-import { revalidatePath } from "next/cache";
 import {
   generatePosOrderNumber,
   isOrderNumberCollision,
   MAX_ORDER_NUMBER_COLLISION_RETRIES,
 } from "@/lib/orders/order-number";
+import prisma from "@/lib/prisma/client";
+import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
+import { Prisma } from "@prisma/client";
+import crypto from "crypto";
+import { revalidatePath } from "next/cache";
+import { getActiveShiftRecord } from "./pos-shift-actions";
 import type {
   PosActionResult,
   PosCreateOrderInput,
+  PosPaymentSplitDetail,
   PosReceiptData,
   PosReceiptItem,
-  PosPaymentSplitDetail,
 } from "./pos-types";
 
 /**
@@ -54,597 +54,616 @@ export async function createPosOrderAction(
       attempt++;
       try {
         receipt = await prisma.$transaction(async (tx) => {
-      // 3a. Enforce active register shift on server when auditLog delegate is available
-      if (typeof tx.auditLog?.findFirst === "function") {
-        const activeShift = await getActiveShiftRecord(tx, cashier.id);
-        if (!activeShift) {
-          throw new Error("No active register shift open. Please open a shift before checkout.");
-        }
-      }
-
-      // 3b. Collect unique variant IDs and lock them in alphabetical order to avoid deadlocks
-      const variantIds = Array.from(new Set(input.items.map((i) => i.variantId))).sort();
-      if (variantIds.length > 0) {
-        await tx.$queryRaw`SELECT id FROM "ProductVariant" WHERE id IN (${Prisma.join(variantIds)}) FOR UPDATE`;
-      }
-
-      // 4. Fetch variant details
-      const variants = await tx.productVariant.findMany({
-        where: { id: { in: variantIds } },
-        include: {
-          product: {
-            select: { id: true, name: true, status: true },
-          },
-        },
-      });
-
-      const variantMap = new Map(variants.map((v) => [v.id, v]));
-
-      // 5. Verify availability and active product status
-      for (const item of input.items) {
-        const v = variantMap.get(item.variantId);
-        if (!v) {
-          throw new Error(`Product variant ${item.variantId} not found.`);
-        }
-        if (v.product.status !== "PUBLISHED") {
-          throw new Error(`Product "${v.product.name}" is not active for sale.`);
-        }
-
-        const available = await InventoryService.calculateAvailableQuantity(tx, item.variantId);
-        if (available < item.quantity) {
-          throw new Error(
-            `Insufficient stock for "${v.product.name}" (${v.sku}). Available: ${available}, requested: ${item.quantity}.`
-          );
-        }
-      }
-
-      // 6. Build item financial snapshots
-      let subtotal = 0;
-      const orderItemsData = [];
-      const receiptItems: PosReceiptItem[] = [];
-
-      for (const item of input.items) {
-        const v = variantMap.get(item.variantId)!;
-        const sellingPrice = Number(v.sellingPrice);
-        let discountPrice = v.discountPrice ? Number(v.discountPrice) : null;
-        if (discountPrice !== null && discountPrice >= sellingPrice) {
-          discountPrice = null;
-        }
-        const unitPrice = discountPrice !== null ? discountPrice : sellingPrice;
-        const costPrice = Number(v.costPrice);
-        const lineSubtotal = unitPrice * item.quantity;
-        const lineTotal = lineSubtotal;
-
-        subtotal += lineSubtotal;
-
-        orderItemsData.push({
-          productName: v.product.name,
-          sku: v.sku,
-          size: v.size,
-          color: v.color,
-          quantity: item.quantity,
-          unitPrice,
-          costPrice,
-          appliedDiscount: 0,
-          taxRate: 0,
-          taxIncluded: false,
-          lineSubtotal,
-          discountAmount: 0,
-          taxAmount: 0,
-          lineTotal,
-        });
-
-        receiptItems.push({
-          name: v.product.name,
-          sku: v.sku,
-          size: v.size,
-          color: v.color,
-          unitPrice,
-          quantity: item.quantity,
-          lineTotal,
-        });
-      }
-
-      // 7. Calculate discounts and totals with role-based cap
-      const rawDiscount = Number(input.discount) || 0;
-      if (!Number.isFinite(rawDiscount) || rawDiscount < 0) {
-        throw new Error("Invalid discount amount.");
-      }
-
-      const loyaltyRedeemed = Number(input.loyaltyPointsRedeemed) || 0;
-      if (loyaltyRedeemed < 0 || !Number.isFinite(loyaltyRedeemed)) {
-        throw new Error("Invalid loyalty points amount.");
-      }
-
-      let activePointRedemptionValue = 1;
-
-      if (loyaltyRedeemed > 0) {
-        if (!input.customerPhone?.trim()) {
-          throw new Error("Customer phone number is required to redeem loyalty points.");
-        }
-
-        // Fetch loyalty settings to enforce active rules and channel policies
-        const loyaltyConfig =
-          typeof tx.loyaltySetting?.findFirst === "function"
-            ? await tx.loyaltySetting.findFirst()
-            : null;
-
-        if (loyaltyConfig) {
-          if (!loyaltyConfig.enabled || !loyaltyConfig.enableInPos) {
-            throw new Error("Loyalty point redemption is currently disabled for POS sales.");
-          }
-          if (
-            loyaltyConfig.minPointsToRedeem > 0 &&
-            loyaltyRedeemed < loyaltyConfig.minPointsToRedeem
-          ) {
-            throw new Error(
-              `Minimum of ${loyaltyConfig.minPointsToRedeem} points required for redemption.`
-            );
-          }
-          activePointRedemptionValue = Number(loyaltyConfig.pointRedemptionValue);
-
-          const expectedDiscount =
-            Math.round(loyaltyRedeemed * activePointRedemptionValue * 100) / 100;
-          if (expectedDiscount > rawDiscount + 0.01) {
-            throw new Error(
-              "Loyalty points redemption value cannot exceed total applied discount."
-            );
-          }
-
-          const maxAllowedDiscountPct = loyaltyConfig.maxCartDiscountPercentage ?? 100;
-          const maxAllowedDiscount = Math.round((subtotal * maxAllowedDiscountPct) / 100);
-          if (expectedDiscount > maxAllowedDiscount + 0.01) {
-            throw new Error(
-              `Loyalty discount exceeds maximum allowed ${maxAllowedDiscountPct}% of cart subtotal.`
-            );
-          }
-        } else {
-          if (loyaltyRedeemed > rawDiscount) {
-            throw new Error("Loyalty points redeemed cannot exceed total applied discount.");
-          }
-        }
-
-        // Verify customer has sufficient available loyalty points via LoyaltyAccount ledger with row-lock
-        if (typeof tx.loyaltyAccount?.findFirst === "function") {
-          const normalized = normalizeBdPhoneNumber(input.customerPhone.trim());
-          const searchSuffix = normalized.slice(-10);
-
-          // Acquire pessimistic lock on the LoyaltyAccount row to prevent concurrent double-spend race conditions
-          if (typeof tx.$queryRaw === "function") {
-            try {
-              await tx.$queryRaw`SELECT id FROM "LoyaltyAccount" WHERE phone LIKE ${"%" + searchSuffix} FOR UPDATE`;
-            } catch {
-              // Non-blocking in mock/test environments
-            }
-          }
-
-          const account = await tx.loyaltyAccount.findFirst({
-            where: { phone: { endsWith: searchSuffix } },
-            select: { points: true },
-          });
-          const availablePoints = account?.points ?? 0;
-          if (loyaltyRedeemed > availablePoints) {
-            throw new Error(
-              `Cannot redeem ${loyaltyRedeemed} loyalty points. Customer only has ${availablePoints} available points.`
-            );
-          }
-        }
-      }
-
-      if (cashier.role === "STAFF" && subtotal > 0) {
-        const maxStaffDiscount = Math.round(subtotal * 0.1 * 100) / 100;
-        // Staff discount cap applies to arbitrary counter discounts (loyalty redemption is earned by customer)
-        const counterDiscountExcludingLoyalty = Math.max(0, rawDiscount - loyaltyRedeemed);
-        if (counterDiscountExcludingLoyalty > maxStaffDiscount + 0.01) {
-          throw new Error(
-            `Staff discount cannot exceed 10% (৳${maxStaffDiscount.toFixed(2)}). Manager or Admin approval required.`
-          );
-        }
-      }
-
-      const discount = Math.min(subtotal, rawDiscount);
-      const total = Math.max(0, Math.round((subtotal - discount) * 100) / 100);
-
-      // Pro-rate order-level discount across order items so snapshots & returns stay consistent
-      if (discount > 0 && subtotal > 0 && orderItemsData.length > 0) {
-        let allocatedDiscount = 0;
-        for (let idx = 0; idx < orderItemsData.length; idx++) {
-          const item = orderItemsData[idx];
-          const isLast = idx === orderItemsData.length - 1;
-          const itemDiscount = isLast
-            ? Math.round((discount - allocatedDiscount) * 100) / 100
-            : Math.round(((item.lineSubtotal / subtotal) * discount) * 100) / 100;
-          allocatedDiscount += itemDiscount;
-          item.appliedDiscount = itemDiscount;
-          item.discountAmount = itemDiscount;
-          item.lineTotal = Math.max(0, Math.round((item.lineSubtotal - itemDiscount) * 100) / 100);
-        }
-      }
-
-      // Support Split Payments (Multiple Tenders)
-      const isSplit =
-        input.paymentMethod === "SPLIT" ||
-        (Array.isArray(input.splitPayments) && input.splitPayments.length > 0);
-
-      let effectiveAmountPaid = Number(input.amountPaid);
-      if (!Number.isFinite(effectiveAmountPaid)) {
-        effectiveAmountPaid = 0;
-      }
-      let changeDue = 0;
-      let receiptSplits: PosPaymentSplitDetail[] | undefined = undefined;
-
-      if (isSplit) {
-        if (!input.splitPayments || input.splitPayments.length === 0) {
-          throw new Error("Split payment selected but no payment tenders were provided.");
-        }
-
-        for (const split of input.splitPayments) {
-          const amt = Number(split.amount);
-          if (!Number.isFinite(amt) || amt <= 0) {
-            throw new Error(`Invalid split payment amount for ${split.method}.`);
-          }
-          if (split.tenderAmount !== undefined) {
-            const tender = Number(split.tenderAmount);
-            if (!Number.isFinite(tender) || tender < amt) {
+          // 3a. Enforce active register shift on server when auditLog delegate is available
+          if (typeof tx.auditLog?.findFirst === "function") {
+            const activeShift = await getActiveShiftRecord(tx, cashier.id);
+            if (!activeShift) {
               throw new Error(
-                `Tender amount (৳${Number.isFinite(tender) ? tender.toFixed(2) : "0.00"}) cannot be less than allocated amount (৳${amt.toFixed(2)}) for ${split.method}.`
+                "No active register shift open. Please open a shift before checkout."
               );
             }
           }
-        }
 
-        const totalSplitAllocated = input.splitPayments.reduce(
-          (sum, s) => sum + Number(s.amount),
-          0
-        );
-        if (totalSplitAllocated < total - 0.01) {
-          throw new Error(
-            `Total allocated across split payment methods (৳${totalSplitAllocated.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
-          );
-        }
-        if (totalSplitAllocated > total + 0.01) {
-          throw new Error(
-            `Total allocated across split payment methods (৳${totalSplitAllocated.toFixed(2)}) exceeds total amount (৳${total.toFixed(2)}).`
-          );
-        }
+          // 3b. Collect unique variant IDs and lock them in alphabetical order to avoid deadlocks
+          const variantIds = Array.from(new Set(input.items.map((i) => i.variantId))).sort();
+          if (variantIds.length > 0) {
+            await tx.$queryRaw`SELECT id FROM "ProductVariant" WHERE id IN (${Prisma.join(variantIds)}) FOR UPDATE`;
+          }
 
-        const cashSplits = input.splitPayments.filter((s) => s.method === "CASH");
-        if (cashSplits.length > 1) {
-          throw new Error("Only one CASH tender entry is allowed per split payment.");
-        }
+          // 4. Fetch variant details
+          const variants = await tx.productVariant.findMany({
+            where: { id: { in: variantIds } },
+            include: {
+              product: {
+                select: { id: true, name: true, status: true },
+              },
+            },
+          });
 
-        // Calculate cash change if customer handed more than the cash portion
-        const cashSplit = cashSplits[0];
-        if (cashSplit) {
-          const cashTender = Number(cashSplit.tenderAmount ?? cashSplit.amount);
-          const cashPortion = Number(cashSplit.amount);
-          changeDue = Math.max(0, Math.round((cashTender - cashPortion) * 100) / 100);
-        }
+          const variantMap = new Map(variants.map((v) => [v.id, v]));
 
-        effectiveAmountPaid = input.splitPayments.reduce(
-          (sum, s) => sum + Number(s.tenderAmount ?? s.amount),
-          0
-        );
+          // 5. Verify availability and active product status
+          for (const item of input.items) {
+            const v = variantMap.get(item.variantId);
+            if (!v) {
+              throw new Error(`Product variant ${item.variantId} not found.`);
+            }
+            if (v.product.status !== "PUBLISHED") {
+              throw new Error(`Product "${v.product.name}" is not active for sale.`);
+            }
 
-        receiptSplits = input.splitPayments.map((s) => {
-          const sTender = Number(s.tenderAmount ?? s.amount);
-          const sAmount = Number(s.amount);
-          return {
-            method: s.method,
-            amount: sAmount,
-            tenderAmount: sTender,
-            changeDue:
-              s.method === "CASH" ? Math.max(0, Math.round((sTender - sAmount) * 100) / 100) : 0,
-            reference: s.reference || undefined,
-          };
-        });
-      } else {
-        if (effectiveAmountPaid < total - 0.01) {
-          throw new Error(
-            `Amount paid (৳${effectiveAmountPaid.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
-          );
-        }
-        changeDue = Math.max(0, Math.round((effectiveAmountPaid - total) * 100) / 100);
-      }
+            const available = await InventoryService.calculateAvailableQuantity(tx, item.variantId);
+            if (available < item.quantity) {
+              throw new Error(
+                `Insufficient stock for "${v.product.name}" (${v.sku}). Available: ${available}, requested: ${item.quantity}.`
+              );
+            }
+          }
 
-      // 8. Generate order identifiers (with client-provided idempotency key when available)
-      const trimmedClientKey = input.clientRequestId?.trim();
-      const idempotencyKey = trimmedClientKey
-        ? `pos-${trimmedClientKey}`
-        : `pos-${crypto.randomBytes(12).toString("hex")}`;
+          // 6. Build item financial snapshots
+          let subtotal = 0;
+          const orderItemsData = [];
+          const receiptItems: PosReceiptItem[] = [];
 
-      if (trimmedClientKey && typeof tx.order?.findUnique === "function") {
-        const existingOrder = await tx.order.findUnique({
-          where: { checkoutIdempotencyKey: idempotencyKey },
-          select: { id: true, orderNumber: true },
-        });
-        if (existingOrder) {
-          throw new Error(
-            `Duplicate checkout request detected. Order ${existingOrder.orderNumber} was already completed.`
-          );
-        }
-      }
+          for (const item of input.items) {
+            const v = variantMap.get(item.variantId)!;
+            const sellingPrice = Number(v.sellingPrice);
+            let discountPrice = v.discountPrice ? Number(v.discountPrice) : null;
+            if (discountPrice !== null && discountPrice >= sellingPrice) {
+              discountPrice = null;
+            }
+            const unitPrice = discountPrice !== null ? discountPrice : sellingPrice;
+            const costPrice = Number(v.costPrice);
+            const lineSubtotal = unitPrice * item.quantity;
+            const lineTotal = lineSubtotal;
 
-      candidateOrderNumber = generatePosOrderNumber();
+            subtotal += lineSubtotal;
 
-      const customerName = input.customerName?.trim() || "Walk-in Customer";
-      const customerPhone = input.customerPhone?.trim() || "N/A";
-      const customerEmail = input.customerEmail?.trim() || "pos-walkin@vibelock.com";
+            orderItemsData.push({
+              productName: v.product.name,
+              sku: v.sku,
+              size: v.size,
+              color: v.color,
+              quantity: item.quantity,
+              unitPrice,
+              costPrice,
+              appliedDiscount: 0,
+              taxRate: 0,
+              taxIncluded: false,
+              lineSubtotal,
+              discountAmount: 0,
+              taxAmount: 0,
+              lineTotal,
+            });
 
-      // Determine order-level payment method: COD if any cash involved, otherwise ONLINE
-      const orderPaymentMethod = isSplit
-        ? input.splitPayments!.some((s) => s.method === "CASH")
-          ? "COD"
-          : "ONLINE"
-        : input.paymentMethod === "CASH"
-          ? "COD"
-          : "ONLINE";
+            receiptItems.push({
+              name: v.product.name,
+              sku: v.sku,
+              size: v.size,
+              color: v.color,
+              unitPrice,
+              quantity: item.quantity,
+              lineTotal,
+            });
+          }
 
-      // 9. Create Order
-      const newOrder = await tx.order.create({
-        data: {
-          checkoutIdempotencyKey: idempotencyKey,
-          orderNumber: candidateOrderNumber,
-          userId: cashier.id,
-          status: "DELIVERED",
-          paymentStatus: "SUCCESS",
-          paymentMethod: orderPaymentMethod,
-          salesChannel: "POS",
-          customerName,
-          customerPhone,
-          customerEmail,
-          shippingStreet: "Physical Store Counter",
-          shippingCity: "Dhaka",
-          shippingCountry: "BD",
-          shippingMethodName: "In-Store Counter Pickup",
-          shippingCost: 0,
-          taxRate: 0,
-          taxIncluded: false,
-          taxAmount: 0,
-          subtotal,
-          discount,
-          total,
-          items: {
-            create: orderItemsData,
-          },
-        },
-      });
+          // 7. Calculate discounts and totals with role-based cap
+          const rawDiscount = Number(input.discount) || 0;
+          if (!Number.isFinite(rawDiscount) || rawDiscount < 0) {
+            throw new Error("Invalid discount amount.");
+          }
 
-      // 10. Record Payment(s)
-      if (isSplit && input.splitPayments) {
-        for (let i = 0; i < input.splitPayments.length; i++) {
-          const split = input.splitPayments[i];
-          const splitAmt = Number(split.amount);
-          const splitTender = Number(split.tenderAmount ?? split.amount);
-          const splitChange = split.method === "CASH" ? Math.max(0, splitTender - splitAmt) : 0;
+          const loyaltyRedeemed = Number(input.loyaltyPointsRedeemed) || 0;
+          if (loyaltyRedeemed < 0 || !Number.isFinite(loyaltyRedeemed)) {
+            throw new Error("Invalid loyalty points amount.");
+          }
 
-          await tx.payment.create({
+          let activePointRedemptionValue = 1;
+
+          if (loyaltyRedeemed > 0) {
+            if (!input.customerPhone?.trim()) {
+              throw new Error("Customer phone number is required to redeem loyalty points.");
+            }
+
+            // Fetch loyalty settings to enforce active rules and channel policies
+            const loyaltyConfig =
+              typeof tx.loyaltySetting?.findFirst === "function"
+                ? await tx.loyaltySetting.findFirst()
+                : null;
+
+            if (loyaltyConfig) {
+              if (!loyaltyConfig.enabled || !loyaltyConfig.enableInPos) {
+                throw new Error("Loyalty point redemption is currently disabled for POS sales.");
+              }
+              if (
+                loyaltyConfig.minPointsToRedeem > 0 &&
+                loyaltyRedeemed < loyaltyConfig.minPointsToRedeem
+              ) {
+                throw new Error(
+                  `Minimum of ${loyaltyConfig.minPointsToRedeem} points required for redemption.`
+                );
+              }
+              activePointRedemptionValue = Number(loyaltyConfig.pointRedemptionValue);
+
+              const expectedDiscount =
+                Math.round(loyaltyRedeemed * activePointRedemptionValue * 100) / 100;
+              if (expectedDiscount > rawDiscount + 0.01) {
+                throw new Error(
+                  "Loyalty points redemption value cannot exceed total applied discount."
+                );
+              }
+
+              const maxAllowedDiscountPct = loyaltyConfig.maxCartDiscountPercentage ?? 100;
+              const maxAllowedDiscount = Math.round((subtotal * maxAllowedDiscountPct) / 100);
+              if (expectedDiscount > maxAllowedDiscount + 0.01) {
+                throw new Error(
+                  `Loyalty discount exceeds maximum allowed ${maxAllowedDiscountPct}% of cart subtotal.`
+                );
+              }
+            } else {
+              if (loyaltyRedeemed > rawDiscount) {
+                throw new Error("Loyalty points redeemed cannot exceed total applied discount.");
+              }
+            }
+
+            // Verify customer has sufficient available loyalty points via LoyaltyAccount ledger with row-lock
+            if (typeof tx.loyaltyAccount?.findFirst === "function") {
+              const normalized = normalizeBdPhoneNumber(input.customerPhone.trim());
+              const searchSuffix = normalized.slice(-10);
+
+              // Acquire pessimistic lock on the LoyaltyAccount row to prevent concurrent double-spend race conditions
+              if (typeof tx.$queryRaw === "function") {
+                try {
+                  await tx.$queryRaw`SELECT id FROM "LoyaltyAccount" WHERE phone LIKE ${"%" + searchSuffix} FOR UPDATE`;
+                } catch {
+                  // Non-blocking in mock/test environments
+                }
+              }
+
+              const account = await tx.loyaltyAccount.findFirst({
+                where: { phone: { endsWith: searchSuffix } },
+                select: { points: true },
+              });
+              const availablePoints = account?.points ?? 0;
+              if (loyaltyRedeemed > availablePoints) {
+                throw new Error(
+                  `Cannot redeem ${loyaltyRedeemed} loyalty points. Customer only has ${availablePoints} available points.`
+                );
+              }
+            }
+          }
+
+          if (cashier.role === "STAFF" && subtotal > 0) {
+            const maxStaffDiscount = Math.round(subtotal * 0.1 * 100) / 100;
+            // Staff discount cap applies to arbitrary counter discounts (loyalty redemption is earned by customer)
+            const counterDiscountExcludingLoyalty = Math.max(0, rawDiscount - loyaltyRedeemed);
+            if (counterDiscountExcludingLoyalty > maxStaffDiscount + 0.01) {
+              throw new Error(
+                `Staff discount cannot exceed 10% (৳${maxStaffDiscount.toFixed(2)}). Manager or Admin approval required.`
+              );
+            }
+          }
+
+          const discount = Math.min(subtotal, rawDiscount);
+          const total = Math.max(0, Math.round((subtotal - discount) * 100) / 100);
+
+          // Pro-rate order-level discount across order items so snapshots & returns stay consistent
+          if (discount > 0 && subtotal > 0 && orderItemsData.length > 0) {
+            let allocatedDiscount = 0;
+            for (let idx = 0; idx < orderItemsData.length; idx++) {
+              const item = orderItemsData[idx];
+              const isLast = idx === orderItemsData.length - 1;
+              const itemDiscount = isLast
+                ? Math.round((discount - allocatedDiscount) * 100) / 100
+                : Math.round((item.lineSubtotal / subtotal) * discount * 100) / 100;
+              allocatedDiscount += itemDiscount;
+              item.appliedDiscount = itemDiscount;
+              item.discountAmount = itemDiscount;
+              item.lineTotal = Math.max(
+                0,
+                Math.round((item.lineSubtotal - itemDiscount) * 100) / 100
+              );
+            }
+          }
+
+          // Support Split Payments (Multiple Tenders)
+          const isSplit =
+            input.paymentMethod === "SPLIT" ||
+            (Array.isArray(input.splitPayments) && input.splitPayments.length > 0);
+
+          let effectiveAmountPaid = Number(input.amountPaid);
+          if (!Number.isFinite(effectiveAmountPaid)) {
+            effectiveAmountPaid = 0;
+          }
+          let changeDue = 0;
+          let receiptSplits: PosPaymentSplitDetail[] | undefined = undefined;
+
+          if (isSplit) {
+            if (!input.splitPayments || input.splitPayments.length === 0) {
+              throw new Error("Split payment selected but no payment tenders were provided.");
+            }
+
+            for (const split of input.splitPayments) {
+              const amt = Number(split.amount);
+              if (!Number.isFinite(amt) || amt <= 0) {
+                throw new Error(`Invalid split payment amount for ${split.method}.`);
+              }
+              if (split.tenderAmount !== undefined) {
+                const tender = Number(split.tenderAmount);
+                if (!Number.isFinite(tender) || tender < amt) {
+                  throw new Error(
+                    `Tender amount (৳${Number.isFinite(tender) ? tender.toFixed(2) : "0.00"}) cannot be less than allocated amount (৳${amt.toFixed(2)}) for ${split.method}.`
+                  );
+                }
+              }
+            }
+
+            const totalSplitAllocated = input.splitPayments.reduce(
+              (sum, s) => sum + Number(s.amount),
+              0
+            );
+            if (totalSplitAllocated < total - 0.01) {
+              throw new Error(
+                `Total allocated across split payment methods (৳${totalSplitAllocated.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
+              );
+            }
+            if (totalSplitAllocated > total + 0.01) {
+              throw new Error(
+                `Total allocated across split payment methods (৳${totalSplitAllocated.toFixed(2)}) exceeds total amount (৳${total.toFixed(2)}).`
+              );
+            }
+
+            const cashSplits = input.splitPayments.filter((s) => s.method === "CASH");
+            if (cashSplits.length > 1) {
+              throw new Error("Only one CASH tender entry is allowed per split payment.");
+            }
+
+            // Calculate cash change if customer handed more than the cash portion
+            const cashSplit = cashSplits[0];
+            if (cashSplit) {
+              const cashTender = Number(cashSplit.tenderAmount ?? cashSplit.amount);
+              const cashPortion = Number(cashSplit.amount);
+              changeDue = Math.max(0, Math.round((cashTender - cashPortion) * 100) / 100);
+            }
+
+            effectiveAmountPaid = input.splitPayments.reduce(
+              (sum, s) => sum + Number(s.tenderAmount ?? s.amount),
+              0
+            );
+
+            receiptSplits = input.splitPayments.map((s) => {
+              const sTender = Number(s.tenderAmount ?? s.amount);
+              const sAmount = Number(s.amount);
+              return {
+                method: s.method,
+                amount: sAmount,
+                tenderAmount: sTender,
+                changeDue:
+                  s.method === "CASH"
+                    ? Math.max(0, Math.round((sTender - sAmount) * 100) / 100)
+                    : 0,
+                reference: s.reference || undefined,
+              };
+            });
+          } else {
+            if (effectiveAmountPaid < total - 0.01) {
+              throw new Error(
+                `Amount paid (৳${effectiveAmountPaid.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
+              );
+            }
+            changeDue = Math.max(0, Math.round((effectiveAmountPaid - total) * 100) / 100);
+          }
+
+          // 8. Generate order identifiers (with client-provided idempotency key when available)
+          const trimmedClientKey = input.clientRequestId?.trim();
+          const idempotencyKey = trimmedClientKey
+            ? `pos-${trimmedClientKey}`
+            : `pos-${crypto.randomBytes(12).toString("hex")}`;
+
+          if (trimmedClientKey && typeof tx.order?.findUnique === "function") {
+            const existingOrder = await tx.order.findUnique({
+              where: { checkoutIdempotencyKey: idempotencyKey },
+              select: { id: true, orderNumber: true },
+            });
+            if (existingOrder) {
+              throw new Error(
+                `Duplicate checkout request detected. Order ${existingOrder.orderNumber} was already completed.`
+              );
+            }
+          }
+
+          candidateOrderNumber = generatePosOrderNumber();
+
+          const customerName = input.customerName?.trim() || "Walk-in Customer";
+          const customerPhone = input.customerPhone?.trim() || "N/A";
+          const customerEmail = input.customerEmail?.trim() || "pos-walkin@vibelock.com";
+
+          // Determine order-level payment method: COD if any cash involved, otherwise ONLINE
+          const orderPaymentMethod = isSplit
+            ? input.splitPayments!.some((s) => s.method === "CASH")
+              ? "COD"
+              : "ONLINE"
+            : input.paymentMethod === "CASH"
+              ? "COD"
+              : "ONLINE";
+
+          // 9. Create Order
+          const newOrder = await tx.order.create({
+            data: {
+              checkoutIdempotencyKey: idempotencyKey,
+              orderNumber: candidateOrderNumber,
+              userId: cashier.id,
+              status: "DELIVERED",
+              paymentStatus: "SUCCESS",
+              paymentMethod: orderPaymentMethod,
+              salesChannel: "POS",
+              customerName,
+              customerPhone,
+              customerEmail,
+              shippingStreet: "Physical Store Counter",
+              shippingCity: "Dhaka",
+              shippingCountry: "BD",
+              shippingMethodName: "In-Store Counter Pickup",
+              shippingCost: 0,
+              taxRate: 0,
+              taxIncluded: false,
+              taxAmount: 0,
+              subtotal,
+              discount,
+              total,
+              items: {
+                create: orderItemsData,
+              },
+            },
+          });
+
+          // 10. Record Payment(s)
+          if (isSplit && input.splitPayments) {
+            for (let i = 0; i < input.splitPayments.length; i++) {
+              const split = input.splitPayments[i];
+              const splitAmt = Number(split.amount);
+              const splitTender = Number(split.tenderAmount ?? split.amount);
+              const splitChange = split.method === "CASH" ? Math.max(0, splitTender - splitAmt) : 0;
+
+              await tx.payment.create({
+                data: {
+                  orderId: newOrder.id,
+                  amount: splitAmt,
+                  status: "SUCCESS",
+                  gateway: split.method,
+                  merchantReferenceId: `POS-${newOrder.id}-${split.method}-${i + 1}`,
+                  gatewayTransactionId:
+                    split.reference?.trim() ||
+                    (split.method === "CASH"
+                      ? `CASH-${Date.now()}-${i + 1}`
+                      : `POS-${split.method}-${Date.now()}-${i + 1}`),
+                  gatewayPayload: {
+                    tenderAmount: splitTender,
+                    changeReturned: splitChange,
+                    cashierId: cashier.id,
+                    cashierName: cashier.name || cashier.email,
+                    paymentMethod: split.method,
+                    reference: split.reference || null,
+                    loyaltyPointsRedeemed: i === 0 ? loyaltyRedeemed : 0,
+                  },
+                },
+              });
+            }
+          } else {
+            await tx.payment.create({
+              data: {
+                orderId: newOrder.id,
+                amount: total,
+                status: "SUCCESS",
+                gateway: input.paymentMethod,
+                merchantReferenceId: `POS-${newOrder.id}`,
+                gatewayTransactionId:
+                  input.paymentMethod === "CASH"
+                    ? `CASH-${Date.now()}`
+                    : input.notes?.trim() || `POS-${input.paymentMethod}-${Date.now()}`,
+                gatewayPayload: {
+                  tenderAmount: effectiveAmountPaid,
+                  changeReturned: changeDue,
+                  cashierId: cashier.id,
+                  cashierName: cashier.name || cashier.email,
+                  paymentMethod: input.paymentMethod,
+                  loyaltyPointsRedeemed: loyaltyRedeemed,
+                },
+              },
+            });
+          }
+
+          // 11. Deduct Inventory in real-time via InventoryTransaction records
+          for (const item of input.items) {
+            await tx.inventoryTransaction.create({
+              data: {
+                variantId: item.variantId,
+                type: "SALE",
+                quantity: -item.quantity,
+                salesChannel: "POS",
+                referenceId: newOrder.id,
+                notes: `POS Counter Sale - ${newOrder.orderNumber}`,
+              },
+            });
+          }
+
+          // 12. Loyalty Ledger — Earn & Redeem points atomically
+          if (customerPhone && customerPhone !== "N/A") {
+            const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
+            const loyaltyConfig =
+              typeof tx.loyaltySetting?.findFirst === "function"
+                ? await tx.loyaltySetting.findFirst()
+                : null;
+            const spendAmountPerPoint = loyaltyConfig?.spendAmountPerPoint ?? 100;
+            const pointRedemptionValue = loyaltyConfig
+              ? Number(loyaltyConfig.pointRedemptionValue)
+              : activePointRedemptionValue;
+            const silverThreshold = loyaltyConfig ? Number(loyaltyConfig.silverThreshold) : 5000;
+            const goldThreshold = loyaltyConfig ? Number(loyaltyConfig.goldThreshold) : 20000;
+            const platinumThreshold = loyaltyConfig
+              ? Number(loyaltyConfig.platinumThreshold)
+              : 50000;
+            const loyaltyEnabled =
+              (loyaltyConfig?.enabled ?? true) && (loyaltyConfig?.enableInPos ?? true);
+
+            if (loyaltyEnabled) {
+              // Fetch pre-existing account to compute exact balances and tier multiplier without double-counting
+              const existingAccount = await tx.loyaltyAccount.findUnique({
+                where: { phone: normalizedPhone },
+                select: {
+                  id: true,
+                  points: true,
+                  lifetimePoints: true,
+                  lifetimeSpend: true,
+                  tier: true,
+                },
+              });
+
+              const currentTier = existingAccount?.tier ?? "BRONZE";
+              const { calculateTierEarnedPoints, determineLoyaltyTier } =
+                await import("@/lib/settings/loyalty-settings");
+              const earnedPointsThisOrder = calculateTierEarnedPoints(
+                total,
+                currentTier,
+                spendAmountPerPoint
+              );
+
+              const previousPoints = existingAccount?.points ?? 0;
+              // Ledger order: REDEEM first, then EARN — gives coherent running balance.
+              // e.g. prev=200, redeem=50, earn=10 → afterRedeem=150 → afterEarn=160 (final)
+              const balanceAfterRedeem = Math.max(0, previousPoints - loyaltyRedeemed);
+              const finalPoints = balanceAfterRedeem + earnedPointsThisOrder;
+              const newLifetimePoints =
+                (existingAccount?.lifetimePoints ?? 0) + earnedPointsThisOrder;
+              const newLifetimeSpend =
+                (existingAccount ? Number(existingAccount.lifetimeSpend) : 0) + total;
+
+              const newTier = determineLoyaltyTier(newLifetimeSpend, {
+                platinumThreshold,
+                goldThreshold,
+                silverThreshold,
+              });
+
+              // Upsert LoyaltyAccount — link to userId if we can find the registered user
+              const linkedUser = await tx.user.findFirst({
+                where: { phone: { endsWith: normalizedPhone.slice(-10) } },
+                select: { id: true },
+              });
+
+              const account = await tx.loyaltyAccount.upsert({
+                where: { phone: normalizedPhone },
+                create: {
+                  phone: normalizedPhone,
+                  userId: linkedUser?.id ?? null,
+                  points: finalPoints,
+                  lifetimePoints: newLifetimePoints,
+                  lifetimeSpend: newLifetimeSpend,
+                  tier: newTier,
+                },
+                update: {
+                  points: finalPoints,
+                  lifetimePoints: newLifetimePoints,
+                  lifetimeSpend: newLifetimeSpend,
+                  tier: newTier,
+                  ...(linkedUser?.id ? { userId: linkedUser.id } : {}),
+                },
+              });
+
+              // Record REDEEMED transaction FIRST (ledger order: redeem before earn)
+              if (loyaltyRedeemed > 0) {
+                await tx.loyaltyTransaction.create({
+                  data: {
+                    loyaltyAccountId: account.id,
+                    orderId: newOrder.id,
+                    type: "REDEEMED",
+                    points: -loyaltyRedeemed,
+                    balanceAfter: balanceAfterRedeem,
+                    reason: `POS Redemption - ৳${(loyaltyRedeemed * pointRedemptionValue).toFixed(2)} discount on ${newOrder.orderNumber}`,
+                  },
+                });
+              }
+
+              // Record EARNED transaction SECOND (balance after both redeem + earn = finalPoints)
+              if (earnedPointsThisOrder > 0) {
+                await tx.loyaltyTransaction.create({
+                  data: {
+                    loyaltyAccountId: account.id,
+                    orderId: newOrder.id,
+                    type: "EARNED",
+                    points: earnedPointsThisOrder,
+                    balanceAfter: finalPoints,
+                    reason: `POS Sale - ${newOrder.orderNumber}`,
+                  },
+                });
+              }
+
+              // Update Order with loyalty tracking fields
+              await tx.order.update({
+                where: { id: newOrder.id },
+                data: {
+                  loyaltyPointsEarned: earnedPointsThisOrder,
+                  loyaltyPointsRedeemed: loyaltyRedeemed,
+                },
+              });
+            }
+          }
+
+          // 12. Create Order History snapshot
+          await tx.orderHistory.create({
             data: {
               orderId: newOrder.id,
-              amount: splitAmt,
-              status: "SUCCESS",
-              gateway: split.method,
-              merchantReferenceId: `POS-${newOrder.id}-${split.method}-${i + 1}`,
-              gatewayTransactionId:
-                split.reference?.trim() ||
-                (split.method === "CASH"
-                  ? `CASH-${Date.now()}-${i + 1}`
-                  : `POS-${split.method}-${Date.now()}-${i + 1}`),
-              gatewayPayload: {
-                tenderAmount: splitTender,
-                changeReturned: splitChange,
-                cashierId: cashier.id,
-                cashierName: cashier.name || cashier.email,
-                paymentMethod: split.method,
-                reference: split.reference || null,
-                loyaltyPointsRedeemed: i === 0 ? loyaltyRedeemed : 0,
-              },
-            },
-          });
-        }
-      } else {
-        await tx.payment.create({
-          data: {
-            orderId: newOrder.id,
-            amount: total,
-            status: "SUCCESS",
-            gateway: input.paymentMethod,
-            merchantReferenceId: `POS-${newOrder.id}`,
-            gatewayTransactionId:
-              input.paymentMethod === "CASH"
-                ? `CASH-${Date.now()}`
-                : input.notes?.trim() || `POS-${input.paymentMethod}-${Date.now()}`,
-            gatewayPayload: {
-              tenderAmount: effectiveAmountPaid,
-              changeReturned: changeDue,
-              cashierId: cashier.id,
-              cashierName: cashier.name || cashier.email,
-              paymentMethod: input.paymentMethod,
-              loyaltyPointsRedeemed: loyaltyRedeemed,
-            },
-          },
-        });
-      }
-
-      // 11. Deduct Inventory in real-time via InventoryTransaction records
-      for (const item of input.items) {
-        await tx.inventoryTransaction.create({
-          data: {
-            variantId: item.variantId,
-            type: "SALE",
-            quantity: -item.quantity,
-            salesChannel: "POS",
-            referenceId: newOrder.id,
-            notes: `POS Counter Sale - ${newOrder.orderNumber}`,
-          },
-        });
-      }
-
-      // 12. Loyalty Ledger — Earn & Redeem points atomically
-      if (customerPhone && customerPhone !== "N/A") {
-        const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
-        const loyaltyConfig =
-          typeof tx.loyaltySetting?.findFirst === "function"
-            ? await tx.loyaltySetting.findFirst()
-            : null;
-        const spendAmountPerPoint = loyaltyConfig?.spendAmountPerPoint ?? 100;
-        const pointRedemptionValue = loyaltyConfig
-          ? Number(loyaltyConfig.pointRedemptionValue)
-          : activePointRedemptionValue;
-        const silverThreshold = loyaltyConfig ? Number(loyaltyConfig.silverThreshold) : 5000;
-        const goldThreshold = loyaltyConfig ? Number(loyaltyConfig.goldThreshold) : 20000;
-        const platinumThreshold = loyaltyConfig ? Number(loyaltyConfig.platinumThreshold) : 50000;
-        const loyaltyEnabled =
-          (loyaltyConfig?.enabled ?? true) && (loyaltyConfig?.enableInPos ?? true);
-
-        if (loyaltyEnabled) {
-          // Fetch pre-existing account to compute exact balances and tier multiplier without double-counting
-          const existingAccount = await tx.loyaltyAccount.findUnique({
-            where: { phone: normalizedPhone },
-            select: { id: true, points: true, lifetimePoints: true, lifetimeSpend: true, tier: true },
-          });
-
-          const currentTier = existingAccount?.tier ?? "BRONZE";
-          const { calculateTierEarnedPoints, determineLoyaltyTier } = await import(
-            "@/lib/settings/loyalty-settings"
-          );
-          const earnedPointsThisOrder = calculateTierEarnedPoints(total, currentTier, spendAmountPerPoint);
-
-          const previousPoints = existingAccount?.points ?? 0;
-          // Ledger order: REDEEM first, then EARN — gives coherent running balance.
-          // e.g. prev=200, redeem=50, earn=10 → afterRedeem=150 → afterEarn=160 (final)
-          const balanceAfterRedeem = Math.max(0, previousPoints - loyaltyRedeemed);
-          const finalPoints = balanceAfterRedeem + earnedPointsThisOrder;
-          const newLifetimePoints = (existingAccount?.lifetimePoints ?? 0) + earnedPointsThisOrder;
-          const newLifetimeSpend =
-            (existingAccount ? Number(existingAccount.lifetimeSpend) : 0) + total;
-
-          const newTier = determineLoyaltyTier(newLifetimeSpend, {
-            platinumThreshold,
-            goldThreshold,
-            silverThreshold,
-          });
-
-          // Upsert LoyaltyAccount — link to userId if we can find the registered user
-          const linkedUser = await tx.user.findFirst({
-            where: { phone: { endsWith: normalizedPhone.slice(-10) } },
-            select: { id: true },
-          });
-
-          const account = await tx.loyaltyAccount.upsert({
-            where: { phone: normalizedPhone },
-            create: {
-              phone: normalizedPhone,
-              userId: linkedUser?.id ?? null,
-              points: finalPoints,
-              lifetimePoints: newLifetimePoints,
-              lifetimeSpend: newLifetimeSpend,
-              tier: newTier,
-            },
-            update: {
-              points: finalPoints,
-              lifetimePoints: newLifetimePoints,
-              lifetimeSpend: newLifetimeSpend,
-              tier: newTier,
-              ...(linkedUser?.id ? { userId: linkedUser.id } : {}),
+              status: "DELIVERED",
+              notes: `POS Counter checkout completed by ${cashier.name || cashier.email}. Method: ${input.paymentMethod}.`,
             },
           });
 
-          // Record REDEEMED transaction FIRST (ledger order: redeem before earn)
-          if (loyaltyRedeemed > 0) {
-            await tx.loyaltyTransaction.create({
-              data: {
-                loyaltyAccountId: account.id,
-                orderId: newOrder.id,
-                type: "REDEEMED",
-                points: -loyaltyRedeemed,
-                balanceAfter: balanceAfterRedeem,
-                reason: `POS Redemption - ৳${(loyaltyRedeemed * pointRedemptionValue).toFixed(2)} discount on ${newOrder.orderNumber}`,
-              },
-            });
-          }
-
-          // Record EARNED transaction SECOND (balance after both redeem + earn = finalPoints)
-          if (earnedPointsThisOrder > 0) {
-            await tx.loyaltyTransaction.create({
-              data: {
-                loyaltyAccountId: account.id,
-                orderId: newOrder.id,
-                type: "EARNED",
-                points: earnedPointsThisOrder,
-                balanceAfter: finalPoints,
-                reason: `POS Sale - ${newOrder.orderNumber}`,
-              },
-            });
-          }
-
-          // Update Order with loyalty tracking fields
-          await tx.order.update({
-            where: { id: newOrder.id },
+          // 13. Create Audit Log
+          await tx.auditLog.create({
             data: {
-              loyaltyPointsEarned: earnedPointsThisOrder,
-              loyaltyPointsRedeemed: loyaltyRedeemed,
+              actorId: cashier.id,
+              action: "POS_ORDER_CREATED",
+              entityType: "Order",
+              entityId: newOrder.id,
+              metadata: {
+                orderNumber: newOrder.orderNumber,
+                total,
+                discount,
+                loyaltyPointsRedeemed: loyaltyRedeemed,
+                paymentMethod: input.paymentMethod,
+                amountPaid: effectiveAmountPaid,
+                changeDue,
+                isSplit,
+                splitsCount: receiptSplits ? receiptSplits.length : 1,
+              },
             },
           });
-        }
-      }
 
-      // 12. Create Order History snapshot
-      await tx.orderHistory.create({
-        data: {
-          orderId: newOrder.id,
-          status: "DELIVERED",
-          notes: `POS Counter checkout completed by ${cashier.name || cashier.email}. Method: ${input.paymentMethod}.`,
-        },
-      });
-
-      // 13. Create Audit Log
-      await tx.auditLog.create({
-        data: {
-          actorId: cashier.id,
-          action: "POS_ORDER_CREATED",
-          entityType: "Order",
-          entityId: newOrder.id,
-          metadata: {
+          const receiptData: PosReceiptData = {
+            orderId: newOrder.id,
             orderNumber: newOrder.orderNumber,
-            total,
+            createdAt: newOrder.createdAt.toISOString(),
+            cashierName: cashier.name || cashier.email || "Cashier",
+            cashierEmail: cashier.email || "",
+            customerName,
+            customerPhone,
+            items: receiptItems,
+            subtotal,
             discount,
-            loyaltyPointsRedeemed: loyaltyRedeemed,
+            total,
             paymentMethod: input.paymentMethod,
             amountPaid: effectiveAmountPaid,
             changeDue,
-            isSplit,
-            splitsCount: receiptSplits ? receiptSplits.length : 1,
-          },
-        },
-      });
+            loyaltyPointsRedeemed: loyaltyRedeemed > 0 ? loyaltyRedeemed : undefined,
+            loyaltyDiscountAmount:
+              loyaltyRedeemed > 0
+                ? Math.round(loyaltyRedeemed * activePointRedemptionValue * 100) / 100
+                : undefined,
+            notes: input.notes?.trim() || null,
+            splits: receiptSplits,
+          };
 
-      const receiptData: PosReceiptData = {
-        orderId: newOrder.id,
-        orderNumber: newOrder.orderNumber,
-        createdAt: newOrder.createdAt.toISOString(),
-        cashierName: cashier.name || cashier.email || "Cashier",
-        cashierEmail: cashier.email || "",
-        customerName,
-        customerPhone,
-        items: receiptItems,
-        subtotal,
-        discount,
-        total,
-        paymentMethod: input.paymentMethod,
-        amountPaid: effectiveAmountPaid,
-        changeDue,
-        loyaltyPointsRedeemed: loyaltyRedeemed > 0 ? loyaltyRedeemed : undefined,
-        loyaltyDiscountAmount:
-          loyaltyRedeemed > 0
-            ? Math.round(loyaltyRedeemed * activePointRedemptionValue * 100) / 100
-            : undefined,
-        notes: input.notes?.trim() || null,
-        splits: receiptSplits,
-      };
-
-      return receiptData;
-    });
+          return receiptData;
+        });
         break; // POS transaction succeeded
       } catch (txError) {
         if (isOrderNumberCollision(txError) && attempt < MAX_ORDER_NUMBER_COLLISION_RETRIES) {

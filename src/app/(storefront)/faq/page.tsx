@@ -1,9 +1,9 @@
+import { Container } from "@/components/shared/container";
+import { getWhatsAppUrl } from "@/lib/config/contact";
+import { SITE_URL } from "@/lib/seo/site";
+import { ArrowRight, ChevronDown, HelpCircle, MessageSquare } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Container } from "@/components/shared/container";
-import { SITE_URL } from "@/lib/seo/site";
-import { getWhatsAppUrl } from "@/lib/config/contact";
-import { HelpCircle, ChevronDown, MessageSquare, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Frequently Asked Questions & Support",

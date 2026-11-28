@@ -1,16 +1,16 @@
 "use client";
 
-import Image from "next/image";
-import { Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import type { PosProductSummary, PosProductVariant } from "@/lib/pos/pos-types";
+import { Package } from "lucide-react";
+import Image from "next/image";
 
 interface PosVariantPickerModalProps {
   product: PosProductSummary | null;

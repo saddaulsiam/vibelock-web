@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
-import { Check, ShoppingBag } from "lucide-react";
-import { toast } from "sonner";
-import { addVariantToCartAction } from "@/lib/cart/actions";
-import { trackMetaPixelEvent } from "@/lib/analytics/meta-pixel";
 import { Button } from "@/components/ui/button";
+import { trackMetaPixelEvent } from "@/lib/analytics/meta-pixel";
+import { addVariantToCartAction } from "@/lib/cart/actions";
 import { cn } from "@/lib/utils";
+import { Check, ShoppingBag } from "lucide-react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
 
 interface AddToCartButtonProps {
   variantId: string | null;

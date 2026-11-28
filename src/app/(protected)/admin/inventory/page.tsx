@@ -1,14 +1,13 @@
-import Link from "next/link";
-import { Suspense } from "react";
-import { AlertTriangle, Boxes, Coins, Lock, PackageCheck, Sparkles } from "lucide-react";
+import { AdminInventoryTable } from "@/components/admin/inventory/admin-inventory-table";
+import { AdminKpiCard, AdminKpiGrid, AdminPageHeader } from "@/components/admin/shared";
 import {
   getAdminInventory,
   getAdminInventorySummary,
   type InventoryFilter,
 } from "@/lib/admin/inventory";
-import { AdminInventoryTable } from "@/components/admin/inventory/admin-inventory-table";
-import { AdminPageHeader } from "@/components/admin/shared";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
+import { AlertTriangle, Boxes, Coins, Lock, PackageCheck, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Suspense } from "react";
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;

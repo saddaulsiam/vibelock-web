@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import { Check, ChevronDown, FolderTree, Search, Tag, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Check, ChevronDown, FolderTree, Search, Tag, X } from "lucide-react";
+import * as React from "react";
 
 export interface CategorySearchableSelectProps {
   categories: { id: string; name: string }[];
@@ -48,10 +48,7 @@ export function CategorySearchableSelect({
 
   // All selectable items including top-level root option at index 0
   const selectableItems = React.useMemo(() => {
-    return [
-      { id: "", name: "No parent (Top-level category)" },
-      ...filteredCategories,
-    ];
+    return [{ id: "", name: "No parent (Top-level category)" }, ...filteredCategories];
   }, [filteredCategories]);
 
   const itemIndexMap = React.useMemo(() => {

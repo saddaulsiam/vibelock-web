@@ -1,6 +1,6 @@
+import { ShippingRulesForm } from "@/components/admin/settings/shipping-rules-form";
 import { requireRole } from "@/lib/auth/authorization";
 import { getShippingRulesSettings } from "@/lib/settings/shipping-rules-settings";
-import { ShippingRulesForm } from "@/components/admin/settings/shipping-rules-form";
 
 export const dynamic = "force-dynamic";
 

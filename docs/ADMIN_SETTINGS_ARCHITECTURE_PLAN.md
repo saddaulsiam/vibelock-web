@@ -3,7 +3,7 @@
 > **Document Version:** 1.0.0  
 > **Target System:** VibeLock E-Commerce Platform (Next.js 16 App Router, TypeScript, Prisma, Neon PostgreSQL)  
 > **Status:** Proposed / Pending Architecture Sign-Off  
-> **Author:** Antigravity AI & VibeLock Core Engineering  
+> **Author:** Antigravity AI & VibeLock Core Engineering
 
 ---
 
@@ -12,13 +12,17 @@
 Currently, VibeLock's administrative configuration is heavily bifurcated: payment channels are partially controlled via `/admin/settings/payments`, while crucial operational variables—such as store contact information, WhatsApp numbers, currency, SMS gateway secrets, return windows, low-stock thresholds, and free-shipping triggers—are hardcoded in static TypeScript constants (`src/lib/config/app.ts`) or `.env` configuration files.
 
 ### 1.1 The Problem Statement
+
 In a fast-growing streetwear brand in Bangladesh:
+
 1. **Developer Bottleneck:** Every business pivot (e.g. changing support hours, updating WhatsApp numbers, enabling Eid vacation announcements) requires a code commit and production deployment.
 2. **Margin Bleed via COD Fraud:** Without fine-grained checkout governance (advance delivery fee rules, max COD thresholds), fake orders result in massive courier return expenses (৳120–৳150 per failed delivery).
 3. **Audit & Compliance Risk:** Changes to store policies and financial configurations are not tracked in an immutable audit ledger.
 
 ### 1.2 The Architectural Goal
+
 Transform the `/admin/settings` module into an **Enterprise-Grade Store Operating System**:
+
 - **Zero-Code Operation:** Business owners can configure policies, thresholds, and integrations in real time without developer intervention.
 - **Polymorphic Database Storage:** A single, strongly-typed `StoreSetting` database model stores all setting categories without requiring repeated database migrations.
 - **Resilient Fallback (Strategy A):** If the database is unreachable or table migrations are unapplied, the system gracefully falls back to verified static defaults (`appConfig` and `.env`) without runtime exceptions.
@@ -29,6 +33,7 @@ Transform the `/admin/settings` module into an **Enterprise-Grade Store Operatin
 ## 2. Core Architecture & Database Design
 
 ### 2.1 The Polymorphic `StoreSetting` Model
+
 Instead of creating dozens of disparate tables or wide tables with 50+ columns, we utilize a polymorphic JSON model validated by Zod schemas in the application service layer:
 
 ```prisma
@@ -90,17 +95,20 @@ flowchart LR
 ### Phase 1: Foundation & General Store Settings (`/admin/settings/general`)
 
 #### Objective
+
 Establish the `StoreSetting` database engine, service abstraction layer, and the core store identity configuration.
 
 #### Key Features
+
 1. **Store Identity:** Legal business name, public brand name, DBID (Digital Business Identification) number, Trade License / BIN.
 2. **Omnichannel Contact:** Customer service hotline, official WhatsApp digits, support email, physical warehouse/studio address.
 3. **Operational Killswitches:**
    - **Maintenance Mode:** Disables customer checkout with a customizable announcement banner. Includes an admin bypass token.
-   - **Vacation / Eid Mode:** Keeps checkout open but displays a prominent notice (e.g. *"Orders placed between 10–15 April will ship on 16 April"*).
+   - **Vacation / Eid Mode:** Keeps checkout open but displays a prominent notice (e.g. _"Orders placed between 10–15 April will ship on 16 April"_).
 4. **Localization:** Store default currency (BDT), timezone (`Asia/Dhaka`), locale (`en-BD` / `bn-BD`).
 
 #### TypeScript Contract (`GeneralSettingsSchema`)
+
 ```typescript
 export interface GeneralStoreSettings {
   storeName: string;
@@ -130,9 +138,11 @@ export interface GeneralStoreSettings {
 ### Phase 2: Checkout & COD Risk Governance (`/admin/settings/checkout`)
 
 #### Objective
+
 Eliminate cash bleed from fake or uncollected Cash on Delivery (COD) consignments and regulate inventory reservation timeouts.
 
 #### Key Features
+
 1. **Partial Advance Delivery Charge Rule:**
    - Require customers to pay the courier fee (e.g. ৳100 inside Dhaka, ৳150 outside Dhaka) via bKash/PayStation upfront to confirm high-value COD orders.
 2. **Maximum COD Order Value Ceiling:**
@@ -145,6 +155,7 @@ Eliminate cash bleed from fake or uncollected Cash on Delivery (COD) consignment
    - Require SMS OTP verification for customers with zero prior successful deliveries.
 
 #### TypeScript Contract (`CheckoutSettingsSchema`)
+
 ```typescript
 export interface CheckoutSettings {
   minOrderValue: number;
@@ -163,27 +174,31 @@ export interface CheckoutSettings {
 ### Phase 3: Logistics, Shipping & Free Delivery Thresholds (`/admin/settings/shipping-rules`)
 
 #### Objective
+
 Centralize nationwide delivery economics and courier fulfillment defaults.
 
 #### Key Features
+
 1. **Free Shipping Incentive Engine:**
-   - Global threshold (e.g. *"Free delivery on orders above ৳2,500"*).
+   - Global threshold (e.g. _"Free delivery on orders above ৳2,500"_).
    - Zone exclusions (e.g. Free shipping applies only inside Dhaka or nationwide).
 2. **Default Pickup Hub & Warehouse:**
    - Address, contact person, and phone number transmitted in Steadfast / Pathao courier dispatch APIs.
 3. **Estimated Delivery Promises:**
    - Configurable delivery SLA strings displayed at checkout:
-     - Inside Dhaka: *"24–48 Hours"*
-     - Outside Dhaka: *"3–5 Business Days"*
+     - Inside Dhaka: _"24–48 Hours"_
+     - Outside Dhaka: _"3–5 Business Days"_
 
 ---
 
 ### Phase 4: Omnichannel SMS & Notifications Engine (`/admin/settings/notifications`)
 
 #### Objective
+
 Automate customer SMS lifecycle tracking and internal operational alerts.
 
 #### Key Features
+
 1. **SMS Gateway Credentials & Provider Selection:**
    - UI configuration for BulkSMSBD, Greenweb, ReveSMS, or custom HTTP endpoint.
 2. **Transactional Event Switches:**
@@ -201,13 +216,15 @@ Automate customer SMS lifecycle tracking and internal operational alerts.
 ### Phase 5: Inventory Intelligence & Return Policies (`/admin/settings/inventory-returns`)
 
 #### Objective
+
 Protect product margins and automate inventory threshold triggers.
 
 #### Key Features
+
 1. **Global Low-Stock Alert Threshold:**
    - Trigger visual dashboard warning when variant inventory falls below $N$ units (default: 3).
 2. **Out-of-Stock Display Behavior:**
-   - Toggle between *"Display as Sold Out"*, *"Hide from Catalog"*, or *"Allow Pre-Order / Backorder"*.
+   - Toggle between _"Display as Sold Out"_, _"Hide from Catalog"_, or _"Allow Pre-Order / Backorder"_.
 3. **Customer Return Window:**
    - Days allowed for returns post-delivery timestamp (e.g. 3 days vs 7 days).
 4. **Courier Cost Allocation on Return:**
@@ -220,9 +237,11 @@ Protect product margins and automate inventory threshold triggers.
 ### Phase 6: Tax, VAT & Invoicing Compliance (`/admin/settings/tax-invoice`)
 
 #### Objective
+
 Ensure legal compliance with National Board of Revenue (NBR) digital commerce guidelines.
 
 #### Key Features
+
 1. **NBR Mushak-6.3 VAT Engine:**
    - Configurable VAT percentage (e.g. 5%, 7.5%, 15%).
    - Price calculation mode: **Inclusive** (VAT built into product price) vs **Exclusive** (VAT added at checkout).
@@ -236,9 +255,11 @@ Ensure legal compliance with National Board of Revenue (NBR) digital commerce gu
 ### Phase 7: Analytics, Tracking Pixels & Admin Security (`/admin/settings/security`)
 
 #### Objective
+
 Streamline marketing tracking and internal system security.
 
 #### Key Features
+
 1. **Marketing Tracking Integration:**
    - Meta (Facebook) Pixel ID and Conversions API (CAPI) Server Access Token.
    - Google Tag Manager (GTM) Container ID.
@@ -251,15 +272,15 @@ Streamline marketing tracking and internal system security.
 
 ## 4. Implementation Matrix & File Manifest
 
-| Phase | Files to Create / Modify | Scope Description |
-| :--- | :--- | :--- |
+| Phase       | Files to Create / Modify                                                                                                                                                                                                                   | Scope Description                                                                      |
+| :---------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
 | **Phase 1** | `prisma/schema.prisma`<br>`src/lib/settings/store-settings-service.ts`<br>`src/lib/admin/settings/general-settings-actions.ts`<br>`src/app/(protected)/admin/settings/layout.tsx`<br>`src/app/(protected)/admin/settings/general/page.tsx` | `StoreSetting` database model, service layer, general settings form, tabs integration. |
-| **Phase 2** | `src/lib/settings/checkout-settings.ts`<br>`src/lib/admin/settings/checkout-settings-actions.ts`<br>`src/app/(protected)/admin/settings/checkout/page.tsx`<br>`src/lib/checkout/order-creation.ts` | COD advance charges, max order limit, TTL reservation guardrails. |
-| **Phase 3** | `src/app/(protected)/admin/settings/shipping/page.tsx`<br>`src/lib/admin/shipping/shipping-rules-actions.ts`<br>`src/lib/checkout/shipping-calculator.ts` | Free shipping threshold, warehouse hub defaults. |
-| **Phase 4** | `src/app/(protected)/admin/settings/notifications/page.tsx`<br>`src/lib/sms/client.ts`<br>`src/lib/admin/settings/notification-actions.ts` | Dynamic SMS provider switcher, event toggles. |
-| **Phase 5** | `src/app/(protected)/admin/settings/policies/page.tsx`<br>`src/lib/returns/validation.ts` | Return window verification, low-stock threshold triggers. |
-| **Phase 6** | `src/app/(protected)/admin/settings/invoicing/page.tsx`<br>`src/lib/invoices/generator.ts` | NBR Mushak-6.3 VAT engine, invoice prefixing. |
-| **Phase 7** | `src/app/(protected)/admin/settings/security/page.tsx`<br>`src/components/analytics/pixel-loader.tsx` | Pixel/CAPI tokens, session timeout controls. |
+| **Phase 2** | `src/lib/settings/checkout-settings.ts`<br>`src/lib/admin/settings/checkout-settings-actions.ts`<br>`src/app/(protected)/admin/settings/checkout/page.tsx`<br>`src/lib/checkout/order-creation.ts`                                         | COD advance charges, max order limit, TTL reservation guardrails.                      |
+| **Phase 3** | `src/app/(protected)/admin/settings/shipping/page.tsx`<br>`src/lib/admin/shipping/shipping-rules-actions.ts`<br>`src/lib/checkout/shipping-calculator.ts`                                                                                  | Free shipping threshold, warehouse hub defaults.                                       |
+| **Phase 4** | `src/app/(protected)/admin/settings/notifications/page.tsx`<br>`src/lib/sms/client.ts`<br>`src/lib/admin/settings/notification-actions.ts`                                                                                                 | Dynamic SMS provider switcher, event toggles.                                          |
+| **Phase 5** | `src/app/(protected)/admin/settings/policies/page.tsx`<br>`src/lib/returns/validation.ts`                                                                                                                                                  | Return window verification, low-stock threshold triggers.                              |
+| **Phase 6** | `src/app/(protected)/admin/settings/invoicing/page.tsx`<br>`src/lib/invoices/generator.ts`                                                                                                                                                 | NBR Mushak-6.3 VAT engine, invoice prefixing.                                          |
+| **Phase 7** | `src/app/(protected)/admin/settings/security/page.tsx`<br>`src/components/analytics/pixel-loader.tsx`                                                                                                                                      | Pixel/CAPI tokens, session timeout controls.                                           |
 
 ---
 

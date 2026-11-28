@@ -1,9 +1,9 @@
+import { mapProductSummary } from "@/lib/catalog/mappers";
+import prisma from "@/lib/prisma/client";
+import { checkRateLimit, getIp, hashForRateLimit } from "@/lib/security/rate-limit";
+import { ProductStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import prisma from "@/lib/prisma/client";
-import { ProductStatus } from "@prisma/client";
-import { mapProductSummary } from "@/lib/catalog/mappers";
-import { checkRateLimit, getIp, hashForRateLimit } from "@/lib/security/rate-limit";
 
 export const dynamic = "force-dynamic";
 

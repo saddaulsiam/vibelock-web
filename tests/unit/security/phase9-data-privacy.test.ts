@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
-  detectImageMimeFromBuffer,
-  containsSvgOrScriptPayload,
-  validateImageFile,
   AVATAR_ALLOWED_IMAGE_MIMES,
+  containsSvgOrScriptPayload,
+  detectImageMimeFromBuffer,
+  validateImageFile,
 } from "@/lib/media/validation";
 import { maskPhoneNumber } from "@/lib/sms/client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mocks for database and authorization
 const {
@@ -150,9 +150,18 @@ describe("Phase 9: Data Protection & Privacy Security", () => {
 
     it("correctly identifies valid WebP magic bytes (RIFF....WEBP)", () => {
       const webpBytes = new Uint8Array([
-        0x52, 0x49, 0x46, 0x46, // RIFF
-        0x20, 0x00, 0x00, 0x00, // size
-        0x57, 0x45, 0x42, 0x50, // WEBP
+        0x52,
+        0x49,
+        0x46,
+        0x46, // RIFF
+        0x20,
+        0x00,
+        0x00,
+        0x00, // size
+        0x57,
+        0x45,
+        0x42,
+        0x50, // WEBP
       ]);
       expect(detectImageMimeFromBuffer(webpBytes)).toBe("image/webp");
     });
@@ -168,10 +177,14 @@ describe("Phase 9: Data Protection & Privacy Security", () => {
     });
 
     it("detects and flags SVG or script payloads in buffer", () => {
-      const svgBuffer = new TextEncoder().encode("<svg xmlns='http://www.w3.org/2000/svg'><script>alert(1)</script></svg>");
+      const svgBuffer = new TextEncoder().encode(
+        "<svg xmlns='http://www.w3.org/2000/svg'><script>alert(1)</script></svg>"
+      );
       expect(containsSvgOrScriptPayload(svgBuffer)).toBe(true);
 
-      const htmlBuffer = new TextEncoder().encode("<!DOCTYPE html><html><body><script>malicious()</script></body></html>");
+      const htmlBuffer = new TextEncoder().encode(
+        "<!DOCTYPE html><html><body><script>malicious()</script></body></html>"
+      );
       expect(containsSvgOrScriptPayload(htmlBuffer)).toBe(true);
 
       const safeJpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]);
@@ -218,7 +231,9 @@ describe("Phase 9: Data Protection & Privacy Security", () => {
     });
 
     it("successfully validates genuine JPEG image", async () => {
-      const validJpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]);
+      const validJpeg = new Uint8Array([
+        0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46,
+      ]);
       const file = createMockFile("profile.jpg", "image/jpeg", validJpeg);
 
       const result = await validateImageFile(file);
@@ -262,7 +277,9 @@ describe("Phase 9: Data Protection & Privacy Security", () => {
       const { uploadAvatarAction } = await import("@/lib/account/actions");
       mockRequireUser.mockResolvedValue({ id: "user-avatar-test" });
 
-      const jpegBytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]);
+      const jpegBytes = new Uint8Array([
+        0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46,
+      ]);
       const file = createMockFile("avatar.jpg", "image/jpeg", jpegBytes);
       const formData = new FormData();
       formData.append("file", file);
@@ -486,7 +503,10 @@ describe("Phase 9: Data Protection & Privacy Security", () => {
     it("blocks account deletion when user has active refund with status PROCESSING", async () => {
       const { deleteAccountAction } = await import("@/app/actions/account-deletion");
 
-      mockRequireUser.mockResolvedValue({ id: "user-processing-refund", email: "cust@example.com" });
+      mockRequireUser.mockResolvedValue({
+        id: "user-processing-refund",
+        email: "cust@example.com",
+      });
       mockCheckRateLimit.mockResolvedValue(undefined);
       mockPrismaUserFindUnique.mockResolvedValue({
         passwordHash: "$2b$12$dummyhashforpasswordtestinghere...",
@@ -579,28 +599,28 @@ describe("Phase 9: Data Protection & Privacy Security", () => {
       // 1. User lock query
       const userLockCall = mockPrismaQueryRaw.mock.calls[0];
       const userLockSql = (userLockCall[0] as unknown as string[]).join(" ");
-      expect(userLockSql).toContain("SELECT \"id\"");
-      expect(userLockSql).toContain("FROM \"User\"");
-      expect(userLockSql).toContain("WHERE \"id\" =");
+      expect(userLockSql).toContain('SELECT "id"');
+      expect(userLockSql).toContain('FROM "User"');
+      expect(userLockSql).toContain('WHERE "id" =');
       expect(userLockSql).toContain("FOR UPDATE");
       expect(userLockCall[1]).toBe("user-lock-test");
 
       // 2. Order lock query
       const orderLockCall = mockPrismaQueryRaw.mock.calls[1];
       const orderLockSql = (orderLockCall[0] as unknown as string[]).join(" ");
-      expect(orderLockSql).toContain("SELECT \"id\"");
-      expect(orderLockSql).toContain("FROM \"Order\"");
-      expect(orderLockSql).toContain("WHERE \"userId\" =");
+      expect(orderLockSql).toContain('SELECT "id"');
+      expect(orderLockSql).toContain('FROM "Order"');
+      expect(orderLockSql).toContain('WHERE "userId" =');
       expect(orderLockSql).toContain("FOR UPDATE");
       expect(orderLockCall[1]).toBe("user-lock-test");
 
       // 3. Payment lock query
       const paymentLockCall = mockPrismaQueryRaw.mock.calls[2];
       const paymentLockSql = (paymentLockCall[0] as unknown as string[]).join(" ");
-      expect(paymentLockSql).toContain("SELECT p.\"id\"");
-      expect(paymentLockSql).toContain("FROM \"Payment\" p");
-      expect(paymentLockSql).toContain("JOIN \"Order\" o ON p.\"orderId\" = o.\"id\"");
-      expect(paymentLockSql).toContain("WHERE o.\"userId\" =");
+      expect(paymentLockSql).toContain('SELECT p."id"');
+      expect(paymentLockSql).toContain('FROM "Payment" p');
+      expect(paymentLockSql).toContain('JOIN "Order" o ON p."orderId" = o."id"');
+      expect(paymentLockSql).toContain('WHERE o."userId" =');
       expect(paymentLockSql).toContain("FOR UPDATE");
       expect(paymentLockCall[1]).toBe("user-lock-test");
     });

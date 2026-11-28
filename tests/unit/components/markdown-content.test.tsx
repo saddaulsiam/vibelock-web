@@ -1,7 +1,6 @@
-import { describe, it, expect } from "vitest";
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { MarkdownContent } from "@/components/chat/MarkdownContent";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 describe("MarkdownContent Component", () => {
   it("renders internal relative links like [T-Shirt](/product/t-shirt) as clickable links", () => {
@@ -25,9 +24,7 @@ describe("MarkdownContent Component", () => {
   });
 
   it("sanitizes dangerous schemes like javascript:", () => {
-    const html = renderToStaticMarkup(
-      <MarkdownContent content="[Click](javascript:alert(1))" />
-    );
+    const html = renderToStaticMarkup(<MarkdownContent content="[Click](javascript:alert(1))" />);
 
     expect(html).not.toContain("javascript:");
     expect(html).not.toContain("<a");

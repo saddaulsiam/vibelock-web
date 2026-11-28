@@ -1,5 +1,5 @@
-import * as React from "react";
 import { cn } from "cn";
+import * as React from "react";
 
 export interface ProductBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   label: string;
@@ -48,7 +48,7 @@ export function ProductBadge({
   return (
     <span
       className={cn(
-        "inline-flex h-5 w-fit shrink-0 items-center justify-center rounded-2xs border px-2 font-mono text-[10px] tracking-widest uppercase select-none shadow-2xs whitespace-nowrap",
+        "rounded-2xs inline-flex h-5 w-fit shrink-0 items-center justify-center border px-2 font-mono text-[10px] tracking-widest whitespace-nowrap uppercase shadow-2xs select-none",
         variantStyles[normalizedVariant] ?? variantStyles.default,
         className
       )}
