@@ -13,6 +13,168 @@ const updateRoleSchema = z.object({
   newRole: z.enum(["ADMIN", "MANAGER", "STAFF", "CUSTOMER"]),
 });
 
+function resolveActorId(id: unknown): string | null {
+  return typeof id === "string" && z.string().uuid().safeParse(id).success ? id : null;
+}
+
+export type PromotionUserPreview = {
+  id: string;
+  name: string | null;
+  email: string;
+  role: Role;
+  isEmailVerified: boolean;
+};
+
+export async function lookupUserByEmailForPromotionAction(
+  email: string
+): Promise<{ success: boolean; user?: PromotionUserPreview; error?: string }> {
+  const admin = await requireRole("ADMIN");
+
+  try {
+    await checkRateLimit("adminUserManagement", admin.id, { skipIp: true });
+  } catch {
+    return { success: false, error: "Too many admin management attempts. Please try again later." };
+  }
+
+  const parsed = z.string().trim().email("Please enter a valid email address.").safeParse(email);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "Invalid email address." };
+  }
+
+  const cleanEmail = parsed.data.toLowerCase();
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: cleanEmail },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        emailVerified: true,
+      },
+    });
+
+    if (!user) {
+      return { success: false, error: "No registered user found with this email address." };
+    }
+
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isEmailVerified: Boolean(user.emailVerified),
+      },
+    };
+  } catch (err: unknown) {
+    console.error("[AdminUserActions] lookupUserByEmailForPromotion error:", err);
+    return { success: false, error: "Failed to look up user." };
+  }
+}
+
+const promoteExistingUserSchema = z.object({
+  userId: z.string().uuid(),
+  newRole: z.enum(["ADMIN", "MANAGER", "STAFF"]),
+});
+
+export async function promoteExistingUserAction(input: {
+  userId: string;
+  newRole: "ADMIN" | "MANAGER" | "STAFF";
+}): Promise<{ success: boolean; error?: string }> {
+  const currentAdmin = await requireRole("ADMIN");
+  const parsed = promoteExistingUserSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid promotion payload." };
+  }
+
+  const { userId, newRole } = parsed.data;
+
+  try {
+    await checkRateLimit("adminUserManagement", currentAdmin.id, { skipIp: true });
+  } catch {
+    return { success: false, error: "Too many admin management attempts. Please try again later." };
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      if (typeof tx.$executeRaw === "function") {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(982347102)`;
+      }
+
+      const lockedUsers = await tx.$queryRaw<
+        Array<{
+          id: string;
+          role: Role;
+          email: string;
+          name: string | null;
+          emailVerified: Date | null;
+        }>
+      >`
+        SELECT "id", "role", "email", "name", "emailVerified"
+        FROM "User"
+        WHERE "id" = ${userId}
+        FOR UPDATE
+      `;
+
+      if (lockedUsers.length === 0) {
+        throw new Error("User not found.");
+      }
+
+      const currentUser = lockedUsers[0];
+
+      if (currentUser.role !== "CUSTOMER") {
+        throw new Error("This user already has staff or administrator access.");
+      }
+
+      if (!currentUser.emailVerified) {
+        throw new Error(
+          "Cannot promote an unverified customer account. The user must verify their email first."
+        );
+      }
+
+      await tx.user.update({
+        where: { id: userId },
+        data: { role: newRole as Role },
+      });
+
+      // Invalidate active sessions and outstanding reset tokens on privilege elevation
+      await tx.session.deleteMany({
+        where: { userId },
+      });
+
+      await tx.passwordResetToken.deleteMany({
+        where: { userId },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorId: resolveActorId(currentAdmin.id),
+          action: "ADMIN_USER_ROLE_UPDATED",
+          entityType: "User",
+          entityId: userId,
+          metadata: {
+            targetEmail: currentUser.email,
+            previousRole: currentUser.role,
+            newRole,
+            actorName: currentAdmin.name || currentAdmin.email,
+            promotionFlow: true,
+          },
+        },
+      });
+    });
+
+    revalidatePath("/admin/admins");
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to promote user.";
+    console.error("[AdminUserActions] promoteExistingUser error:", err);
+    return { success: false, error: msg };
+  }
+}
+
 export async function updateAdminUserRoleAction(input: {
   userId: string;
   newRole: Role;

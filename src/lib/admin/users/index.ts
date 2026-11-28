@@ -1,4 +1,10 @@
-export { updateAdminUserRoleAction, createAdminUserAction } from "./admin-user-actions";
+export {
+  updateAdminUserRoleAction,
+  createAdminUserAction,
+  lookupUserByEmailForPromotionAction,
+  promoteExistingUserAction,
+  type PromotionUserPreview,
+} from "./admin-user-actions";
 export {
   getAdminUserStats,
   getAdminUsers,
