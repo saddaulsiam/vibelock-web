@@ -7,7 +7,7 @@ export default function CategoryLoading() {
     <Section
       role="status"
       aria-label="Loading category collection"
-      className="relative z-10 min-h-screen bg-white pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-24"
+      className="relative z-10 min-h-screen bg-white pt-[calc(4rem+var(--vl-announcement-h,0px))] pb-12 sm:pt-[calc(5rem+var(--vl-announcement-h,0px))] sm:pb-16 lg:pt-[calc(6rem+var(--vl-announcement-h,0px))]"
     >
       <Container>
         {/* ── 2. Category Breadcrumb & Header ── */}

@@ -7,7 +7,7 @@ export default function CartLoading() {
     <Section
       role="status"
       aria-label="Loading shopping cart"
-      className="relative z-10 min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16 lg:pt-28 xl:pt-32"
+      className="relative z-10 min-h-screen bg-white pt-[calc(5rem+var(--vl-announcement-h,0px))] pb-12 sm:pt-[calc(6rem+var(--vl-announcement-h,0px))] sm:pb-16 lg:pt-[calc(7rem+var(--vl-announcement-h,0px))] xl:pt-[calc(8rem+var(--vl-announcement-h,0px))]"
     >
       <Container className="max-w-6xl">
         {/* ── Top Bar Skeleton ── */}
@@ -54,7 +54,7 @@ export default function CartLoading() {
           </div>
 
           {/* Right Column: Order Summary Skeleton */}
-          <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+          <aside className="min-w-0 lg:sticky lg:top-[calc(6rem+var(--vl-announcement-h,0px))] lg:self-start">
             <div className="border-vl-dark-100 bg-vl-white-50/70 border p-6 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] sm:p-7">
               {/* Header */}
               <div className="border-vl-dark-100 flex items-center justify-between border-b pb-4">

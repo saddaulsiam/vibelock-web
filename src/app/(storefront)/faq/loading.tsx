@@ -9,7 +9,7 @@ export default function FAQLoading() {
       className="bg-vl-white-300 text-vl-dark-900 flex flex-col"
     >
       {/* ── 1. Hero Header Banner Skeleton ── */}
-      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-20">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-[calc(6rem+var(--vl-announcement-h,0px))] pb-16 sm:pt-[calc(7rem+var(--vl-announcement-h,0px))] sm:pb-20">
         <Container className="relative z-10 text-center">
           <div className="mx-auto max-w-2xl space-y-4">
             <div className="inline-flex items-center gap-2">
@@ -28,7 +28,7 @@ export default function FAQLoading() {
       </section>
 
       {/* ── 2. Category Filter Pills Skeleton ── */}
-      <div className="border-vl-dark-900/10 sticky top-16 z-20 border-b bg-white/95 py-4 backdrop-blur-md">
+      <div className="border-vl-dark-900/10 sticky top-[calc(4rem+var(--vl-announcement-h,0px))] z-20 border-b bg-white/95 py-4 backdrop-blur-md">
         <Container>
           <div className="flex gap-2 overflow-x-auto pb-1 sm:justify-center">
             {Array.from({ length: 5 }).map((_, i) => (

@@ -7,7 +7,7 @@ export default function ProductDetailLoading() {
     <Section
       role="status"
       aria-label="Loading product details"
-      className="min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16"
+      className="min-h-screen bg-white pt-[calc(5rem+var(--vl-announcement-h,0px))] pb-12 sm:pt-[calc(6rem+var(--vl-announcement-h,0px))] sm:pb-16"
     >
       <span className="sr-only">Loading product details...</span>
       <Container className="max-w-6xl">
@@ -59,7 +59,7 @@ export default function ProductDetailLoading() {
           </div>
 
           {/* Right Column: Product Details Skeleton */}
-          <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+          <div className="min-w-0 lg:sticky lg:top-[calc(6rem+var(--vl-announcement-h,0px))] lg:self-start">
             {/* Header border block */}
             <div className="border-border/50 mb-3 border-b pb-2 sm:mb-5 sm:pb-3.5">
               <div className="mb-1 flex items-center justify-between gap-2 pt-1 md:pt-0">

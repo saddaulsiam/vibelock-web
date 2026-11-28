@@ -270,7 +270,7 @@ export function HeroSection({ categories = [], words }: HeroSectionProps) {
 
       {/* Left content panel */}
       <div
-        className="relative z-20 flex flex-col justify-start px-6 pt-20 sm:px-10 sm:pt-24 lg:px-14 lg:pt-28 xl:px-20 xl:pt-32"
+        className="relative z-20 flex flex-col justify-start px-6 pt-[calc(5rem+var(--vl-announcement-h,0px))] sm:px-10 sm:pt-[calc(6rem+var(--vl-announcement-h,0px))] lg:px-14 lg:pt-[calc(7rem+var(--vl-announcement-h,0px))] xl:px-20 xl:pt-[calc(8rem+var(--vl-announcement-h,0px))]"
         style={{ pointerEvents: "none" }}
       >
         <div className="relative w-full">

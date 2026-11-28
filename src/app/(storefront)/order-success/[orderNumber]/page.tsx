@@ -167,7 +167,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
         aria-hidden="true"
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-5xl px-4 pt-24 pb-16 sm:px-6 sm:pt-28 lg:px-8">
+      <div className="relative z-10 mx-auto w-full max-w-5xl px-4 pt-[calc(6rem+var(--vl-announcement-h,0px))] pb-16 sm:px-6 sm:pt-[calc(7rem+var(--vl-announcement-h,0px))] lg:px-8">
         {/* ── Top Navigation & Utility Toolbar ── */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-6 print:hidden">
           <Link

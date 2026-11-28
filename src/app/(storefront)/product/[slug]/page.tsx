@@ -73,7 +73,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   });
 
   return (
-    <Section className="min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16">
+    <Section className="min-h-screen bg-white pt-[calc(5rem+var(--vl-announcement-h,0px))] pb-12 sm:pt-[calc(6rem+var(--vl-announcement-h,0px))] sm:pb-16">
       <MetaViewContent
         productId={product.id}
         productName={product.name}
@@ -92,7 +92,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       />
       <Container className="max-w-6xl">
         <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)] sm:gap-8 lg:gap-12 xl:gap-16">
-          <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+          <div className="min-w-0 lg:sticky lg:top-[calc(6rem+var(--vl-announcement-h,0px))] lg:self-start">
             <nav
               aria-label="Breadcrumb"
               className="text-muted-foreground mb-2.5 flex flex-wrap items-center gap-1.5 text-xs sm:mb-4 sm:gap-2 sm:text-sm"
@@ -134,7 +134,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             <ImageGallery images={product.images} productName={product.name} />
           </div>
 
-          <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+          <div className="min-w-0 lg:sticky lg:top-[calc(6rem+var(--vl-announcement-h,0px))] lg:self-start">
             <div className="border-border/50 mb-3 border-b pb-2 sm:mb-5 sm:pb-3.5">
               <div className="mb-1 flex flex-wrap items-center justify-between gap-2 pt-1 md:pt-0">
                 {mainCategory && (

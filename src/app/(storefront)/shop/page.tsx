@@ -69,7 +69,9 @@ export default async function ShopPage({
     <Section
       className={cn(
         "relative z-10 min-h-screen bg-white pb-12 sm:pb-16",
-        promoBanners.length > 0 ? "pt-16 sm:pt-20 lg:pt-24" : "pt-20 sm:pt-24 lg:pt-28"
+        promoBanners.length > 0
+          ? "pt-[calc(4rem+var(--vl-announcement-h,0px))] sm:pt-[calc(5rem+var(--vl-announcement-h,0px))] lg:pt-[calc(6rem+var(--vl-announcement-h,0px))]"
+          : "pt-[calc(5rem+var(--vl-announcement-h,0px))] sm:pt-[calc(6rem+var(--vl-announcement-h,0px))] lg:pt-[calc(7rem+var(--vl-announcement-h,0px))]"
       )}
     >
       <Container>
