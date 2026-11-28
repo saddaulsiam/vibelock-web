@@ -76,13 +76,15 @@ export async function lookupPosCustomerByPhoneAction(
           },
         },
       }),
-      // Fetch loyalty account directly from the ledger table (O(1), no aggregation)
-      prisma.loyaltyAccount.findFirst({
-        where: { phone: { endsWith: searchSuffix } },
-        select: { points: true, lifetimeSpend: true, tier: true },
-      }),
-      // Load live loyalty config from LoyaltySetting table
-      prisma.loyaltySetting.findFirst(),
+      // Fetch loyalty account directly from the ledger table (O(1), graceful fallback)
+      prisma.loyaltyAccount
+        .findFirst({
+          where: { phone: { endsWith: searchSuffix } },
+          select: { points: true, lifetimeSpend: true, tier: true },
+        })
+        .catch(() => null),
+      // Load live loyalty config from LoyaltySetting table (graceful fallback)
+      prisma.loyaltySetting.findFirst().catch(() => null),
     ]);
 
     // If no past orders and no registered user and no loyalty account, customer is completely new

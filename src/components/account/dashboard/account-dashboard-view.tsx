@@ -20,6 +20,10 @@ interface AccountDashboardViewProps {
     }>;
     totalSpent: number;
     activeCouponsCount: number;
+    loyalty?: {
+      points: number;
+      tier: string;
+    };
     recentOrders: Array<{
       id: string;
       orderNumber: string;
@@ -45,12 +49,13 @@ interface AccountDashboardViewProps {
 export function AccountDashboardView({ account }: AccountDashboardViewProps) {
   return (
     <div className="flex min-w-0 flex-col">
-      {/* 4 Summary Cards */}
+      {/* 5 Summary Cards */}
       <AccountMetrics
         orderCount={account.orderCount}
         totalSpent={account.totalSpent}
         wishlistCount={0}
         activeCouponsCount={account.activeCouponsCount}
+        loyalty={account.loyalty}
       />
 
       {/* Recent Orders Section */}

@@ -7,6 +7,7 @@ import { requireRole } from "@/lib/auth/authorization";
 import { ReturnService } from "@/lib/returns/service";
 import { InventoryService } from "@/lib/inventory/service";
 import { getActiveShiftRecord, getCurrentShiftAction } from "./pos-shift-actions";
+import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
 import { revalidatePath } from "next/cache";
 import type {
   PosOrderLookupResult,
@@ -375,6 +376,97 @@ export async function processPosReturnAction(
                 reason: `POS Return Cash Refund - Memo ${returnMemoNumber} (Order ${order.orderNumber})`,
                 recordedAt: new Date().toISOString(),
               },
+            },
+          });
+        }
+      }
+
+      // 10. Reconcile Loyalty Points on Return/Exchange (Prevent Infinite Points Exploit)
+      if (
+        order.customerPhone &&
+        order.customerPhone !== "N/A" &&
+        typeof tx.loyaltyAccount?.findFirst === "function"
+      ) {
+        const normalizedPhone = normalizeBdPhoneNumber(order.customerPhone);
+        const searchSuffix = normalizedPhone.slice(-10);
+
+        const account = await tx.loyaltyAccount.findFirst({
+          where: { phone: { endsWith: searchSuffix } },
+        });
+
+        if (account) {
+          const originalTotal = Math.max(1, Number(order.total));
+          const returnedFraction = Math.min(1, totalReturnValue / originalTotal);
+
+          const earnedPointsOnOrder =
+            (order as { loyaltyPointsEarned?: number }).loyaltyPointsEarned ?? 0;
+          const redeemedPointsOnOrder =
+            (order as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed ?? 0;
+
+          const pointsToReverse = Math.round(returnedFraction * earnedPointsOnOrder);
+          const pointsToRefund =
+            netAction === "REFUND_TO_CUSTOMER"
+              ? Math.round(returnedFraction * redeemedPointsOnOrder)
+              : 0;
+
+          let currentPoints = account.points;
+
+          if (pointsToReverse > 0) {
+            currentPoints = Math.max(0, currentPoints - pointsToReverse);
+            if (typeof tx.loyaltyTransaction?.create === "function") {
+              await tx.loyaltyTransaction.create({
+                data: {
+                  loyaltyAccountId: account.id,
+                  orderId: order.id,
+                  type: "ADJUSTED",
+                  points: -pointsToReverse,
+                  balanceAfter: currentPoints,
+                  reason: `POS Return Reversal - ${order.orderNumber} (${returnMemoNumber})`,
+                },
+              });
+            }
+          }
+
+          if (pointsToRefund > 0) {
+            currentPoints += pointsToRefund;
+            if (typeof tx.loyaltyTransaction?.create === "function") {
+              await tx.loyaltyTransaction.create({
+                data: {
+                  loyaltyAccountId: account.id,
+                  orderId: order.id,
+                  type: "REFUNDED",
+                  points: pointsToRefund,
+                  balanceAfter: currentPoints,
+                  reason: `POS Return Points Refund - ${order.orderNumber} (${returnMemoNumber})`,
+                },
+              });
+            }
+          }
+
+          const newLifetimePoints = Math.max(0, (account.lifetimePoints ?? 0) - pointsToReverse);
+          const newLifetimeSpend = Math.max(0, Number(account.lifetimeSpend ?? 0) - totalReturnValue);
+
+          // Tier recalculation
+          const loyaltyConfig =
+            typeof tx.loyaltySetting?.findFirst === "function"
+              ? await tx.loyaltySetting.findFirst()
+              : null;
+          const platinumThreshold = loyaltyConfig ? Number(loyaltyConfig.platinumThreshold) : 50000;
+          const goldThreshold = loyaltyConfig ? Number(loyaltyConfig.goldThreshold) : 20000;
+          const silverThreshold = loyaltyConfig ? Number(loyaltyConfig.silverThreshold) : 5000;
+
+          let newTier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM" = "BRONZE";
+          if (newLifetimeSpend >= platinumThreshold) newTier = "PLATINUM";
+          else if (newLifetimeSpend >= goldThreshold) newTier = "GOLD";
+          else if (newLifetimeSpend >= silverThreshold) newTier = "SILVER";
+
+          await tx.loyaltyAccount.update({
+            where: { id: account.id },
+            data: {
+              points: currentPoints,
+              lifetimePoints: newLifetimePoints,
+              lifetimeSpend: newLifetimeSpend,
+              tier: newTier,
             },
           });
         }

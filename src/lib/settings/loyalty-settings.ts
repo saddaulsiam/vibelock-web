@@ -75,30 +75,35 @@ export function getDefaultLoyaltySettings(): LoyaltyProgramSettings {
 
 /**
  * Returns current loyalty program settings from the LoyaltySetting table.
- * Falls back to Strategy A defaults if no row exists yet.
+ * Falls back to Strategy A defaults if no row exists yet or if the table has not been migrated.
  */
 export async function getLoyaltySettings(): Promise<{
   settings: LoyaltyProgramSettings;
   isPersisted: boolean;
 }> {
-  const row = await prisma.loyaltySetting.findFirst();
-  if (!row) {
+  try {
+    const row = await prisma.loyaltySetting.findFirst();
+    if (!row) {
+      return { settings: getDefaultLoyaltySettings(), isPersisted: false };
+    }
+
+    const settings: LoyaltyProgramSettings = {
+      enabled: row.enabled,
+      spendAmountPerPoint: row.spendAmountPerPoint,
+      pointRedemptionValue: Number(row.pointRedemptionValue),
+      minPointsToRedeem: row.minPointsToRedeem,
+      maxCartDiscountPercentage: row.maxCartDiscountPercentage,
+      silverThreshold: Number(row.silverThreshold),
+      goldThreshold: Number(row.goldThreshold),
+      platinumThreshold: Number(row.platinumThreshold),
+      enableInPos: row.enableInPos,
+      enableOnline: row.enableOnline,
+    };
+    return { settings, isPersisted: true };
+  } catch (error) {
+    console.warn("[LoyaltySettings] Could not query LoyaltySetting table, using Strategy A defaults:", error);
     return { settings: getDefaultLoyaltySettings(), isPersisted: false };
   }
-
-  const settings: LoyaltyProgramSettings = {
-    enabled: row.enabled,
-    spendAmountPerPoint: row.spendAmountPerPoint,
-    pointRedemptionValue: Number(row.pointRedemptionValue),
-    minPointsToRedeem: row.minPointsToRedeem,
-    maxCartDiscountPercentage: row.maxCartDiscountPercentage,
-    silverThreshold: Number(row.silverThreshold),
-    goldThreshold: Number(row.goldThreshold),
-    platinumThreshold: Number(row.platinumThreshold),
-    enableInPos: row.enableInPos,
-    enableOnline: row.enableOnline,
-  };
-  return { settings, isPersisted: true };
 }
 
 /**

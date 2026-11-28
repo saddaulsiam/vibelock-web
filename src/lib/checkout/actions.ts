@@ -808,6 +808,82 @@ export async function createOrderAction(
           });
         }
 
+        // Loyalty Program: Award points on online orders if enabled for website
+        if (customerPhone && typeof tx.loyaltySetting?.findFirst === "function") {
+          try {
+            const loyaltyConfig = await tx.loyaltySetting.findFirst();
+            if (loyaltyConfig?.enabled && loyaltyConfig?.enableOnline) {
+              const spendPerPoint = Math.max(1, loyaltyConfig.spendAmountPerPoint);
+              const earnedPoints = Math.floor(Number(total) / spendPerPoint);
+
+              if (earnedPoints > 0) {
+                const { normalizeBdPhoneNumber } = await import("@/lib/validations/auth");
+                const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
+
+                const existingAccount = await tx.loyaltyAccount.findFirst({
+                  where: {
+                    OR: [
+                      { phone: normalizedPhone },
+                      ...(session.user.id ? [{ userId: session.user.id }] : []),
+                    ],
+                  },
+                });
+
+                const prevPoints = existingAccount?.points ?? 0;
+                const newPoints = prevPoints + earnedPoints;
+                const newLifetimePoints = (existingAccount?.lifetimePoints ?? 0) + earnedPoints;
+                const newLifetimeSpend =
+                  (existingAccount ? Number(existingAccount.lifetimeSpend) : 0) + Number(total);
+
+                const plat = Number(loyaltyConfig.platinumThreshold);
+                const gold = Number(loyaltyConfig.goldThreshold);
+                const silv = Number(loyaltyConfig.silverThreshold);
+                let tier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM" = "BRONZE";
+                if (newLifetimeSpend >= plat) tier = "PLATINUM";
+                else if (newLifetimeSpend >= gold) tier = "GOLD";
+                else if (newLifetimeSpend >= silv) tier = "SILVER";
+
+                const account = await tx.loyaltyAccount.upsert({
+                  where: { phone: existingAccount?.phone ?? normalizedPhone },
+                  create: {
+                    phone: normalizedPhone,
+                    userId: session.user.id ?? null,
+                    points: newPoints,
+                    lifetimePoints: newLifetimePoints,
+                    lifetimeSpend: newLifetimeSpend,
+                    tier,
+                  },
+                  update: {
+                    points: newPoints,
+                    lifetimePoints: newLifetimePoints,
+                    lifetimeSpend: newLifetimeSpend,
+                    tier,
+                    ...(session.user.id ? { userId: session.user.id } : {}),
+                  },
+                });
+
+                await tx.loyaltyTransaction.create({
+                  data: {
+                    loyaltyAccountId: account.id,
+                    orderId: newOrder.id,
+                    type: "EARNED",
+                    points: earnedPoints,
+                    balanceAfter: newPoints,
+                    reason: `Online Order ${newOrder.orderNumber}`,
+                  },
+                });
+
+                await tx.order.update({
+                  where: { id: newOrder.id },
+                  data: { loyaltyPointsEarned: earnedPoints },
+                });
+              }
+            }
+          } catch (loyaltyErr) {
+            console.warn("Failed to process online loyalty points (non-blocking):", loyaltyErr);
+          }
+        }
+
         await InventoryService.reserveInventoryForOrder(newOrder.id, tx);
 
         if (paymentMethod === "COD") {

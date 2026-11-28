@@ -90,12 +90,14 @@ export async function getCurrentShiftAction(): Promise<PosActionResult<PosShiftS
         orderId: true,
         amount: true,
         gateway: true,
+        gatewayPayload: true,
       },
     });
 
     let cashSales = 0;
     let banglaQrSales = 0;
     let cardSales = 0;
+    let loyaltyPointsRedeemedTotal = 0;
     const distinctOrderIds = new Set<string>();
 
     for (const p of payments) {
@@ -109,6 +111,10 @@ export async function getCurrentShiftAction(): Promise<PosActionResult<PosShiftS
         banglaQrSales += amt;
       } else if (p.gateway === "CARD") {
         cardSales += amt;
+      }
+      const pl = p.gatewayPayload as Record<string, unknown> | null;
+      if (typeof pl?.loyaltyPointsRedeemed === "number" && pl.loyaltyPointsRedeemed > 0) {
+        loyaltyPointsRedeemedTotal += pl.loyaltyPointsRedeemed;
       }
     }
 
@@ -148,6 +154,7 @@ export async function getCurrentShiftAction(): Promise<PosActionResult<PosShiftS
       cashDrops,
       ordersCount,
       expectedCash,
+      loyaltyPointsRedeemedTotal,
       notes,
     };
 
@@ -416,6 +423,7 @@ export async function closeRegisterShiftAction(
       countedCash,
       variance,
       varianceStatus,
+      loyaltyPointsRedeemedTotal: shift.loyaltyPointsRedeemedTotal,
       closingNotes: input.notes?.trim() || null,
     };
 

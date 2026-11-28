@@ -24,6 +24,7 @@ export interface PosShiftSummary {
   cashDrops: number;
   ordersCount: number;
   expectedCash: number; // openingFloat + cashSales - cashDrops
+  loyaltyPointsRedeemedTotal?: number;
   notes?: string | null;
 }
 
@@ -46,6 +47,7 @@ export interface PosZReportData {
   countedCash: number;
   variance: number; // countedCash - expectedCash
   varianceStatus: "EXACT" | "SHORTAGE" | "SURPLUS";
+  loyaltyPointsRedeemedTotal?: number;
   closingNotes?: string | null;
 }
 

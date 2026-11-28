@@ -204,10 +204,20 @@ export async function createPosOrderAction(
           }
         }
 
-        // Verify customer has sufficient available loyalty points via LoyaltyAccount ledger (O(1))
+        // Verify customer has sufficient available loyalty points via LoyaltyAccount ledger with row-lock
         if (typeof tx.loyaltyAccount?.findFirst === "function") {
           const normalized = normalizeBdPhoneNumber(input.customerPhone.trim());
           const searchSuffix = normalized.slice(-10);
+
+          // Acquire pessimistic lock on the LoyaltyAccount row to prevent concurrent double-spend race conditions
+          if (typeof tx.$queryRaw === "function") {
+            try {
+              await tx.$queryRaw`SELECT id FROM "LoyaltyAccount" WHERE phone LIKE ${"%" + searchSuffix} FOR UPDATE`;
+            } catch {
+              // Non-blocking in mock/test environments
+            }
+          }
+
           const account = await tx.loyaltyAccount.findFirst({
             where: { phone: { endsWith: searchSuffix } },
             select: { points: true },

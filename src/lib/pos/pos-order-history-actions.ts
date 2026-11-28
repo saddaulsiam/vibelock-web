@@ -57,6 +57,8 @@ export async function getPosTodayOrdersAction(
     let totalRevenue = 0;
     let cashTotal = 0;
     let digitalTotal = 0;
+    let totalLoyaltyPointsRedeemed = 0;
+    let totalLoyaltyDiscount = 0;
 
     const formattedOrders: PosOrderSummaryItem[] = orders.map((o) => {
       const isSplitOrder = o.payments.length > 1;
@@ -76,6 +78,15 @@ export async function getPosTodayOrdersAction(
 
       if (o.status !== "CANCELLED") {
         totalRevenue += totalVal;
+        const pts =
+          typeof (o as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed === "number"
+            ? (o as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed ?? 0
+            : 0;
+        if (pts > 0) {
+          totalLoyaltyPointsRedeemed += pts;
+          totalLoyaltyDiscount += Math.min(discountVal, pts);
+        }
+
         if (o.payments.length > 0) {
           for (const p of o.payments) {
             const pAmt =
@@ -198,6 +209,8 @@ export async function getPosTodayOrdersAction(
           totalRevenue,
           cashTotal,
           digitalTotal,
+          totalLoyaltyPointsRedeemed,
+          totalLoyaltyDiscount,
         },
       },
     };

@@ -165,6 +165,15 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
                 ৳{report.totalSales.toFixed(0)}
               </span>
             </div>
+            {typeof report.loyaltyPointsRedeemedTotal === "number" &&
+              report.loyaltyPointsRedeemedTotal > 0 && (
+                <div className="flex items-center justify-between pt-0.5 text-[10px] text-slate-600">
+                  <span className="shrink-0">Loyalty Points Redeemed:</span>
+                  <span className="shrink-0 text-right font-mono font-semibold">
+                    {report.loyaltyPointsRedeemedTotal} pts
+                  </span>
+                </div>
+              )}
           </div>
 
           {/* Notes */}

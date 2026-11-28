@@ -25,4 +25,6 @@ export interface PosTodayOrdersStats {
   totalRevenue: number;
   cashTotal: number;
   digitalTotal: number;
+  totalLoyaltyPointsRedeemed?: number;
+  totalLoyaltyDiscount?: number;
 }
